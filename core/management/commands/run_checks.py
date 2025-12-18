@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import Site
+from core.models import Site, CheckRun
 import requests
 
 
@@ -17,17 +17,27 @@ class Command(BaseCommand):
             try:
                 response = requests.get(site.url, timeout=10)
                 status = response.status_code
+                is_up = 200 <= status < 400
 
-                if 200 <= status < 400:
-                    self.stdout.write(
-                        f"[OK] {site.name} — {site.url} (HTTP {status})"
-                    )
-                else:
-                    self.stdout.write(
-                        f"[WARN] {site.name} — {site.url} (HTTP {status})"
-                    )
+                # 1) сохраняем в базу
+                CheckRun.objects.create(
+                    site=site,
+                    is_up=is_up,
+                    http_status=status,
+                    error=""
+                )
+
+                # 2) выводим в терминал
+                label = "OK" if is_up else "WARN"
+                self.stdout.write(f"[{label}] {site.name} — {site.url} (HTTP {status})")
 
             except Exception as e:
-                self.stdout.write(
-                    f"[ERROR] {site.name} — {site.url} ({e})"
+                # сохраняем ошибку как неуспешную проверку
+                CheckRun.objects.create(
+                    site=site,
+                    is_up=False,
+                    http_status=None,
+                    error=str(e)
                 )
+
+                self.stdout.write(f"[ERROR] {site.name} — {site.url} ({e})")
