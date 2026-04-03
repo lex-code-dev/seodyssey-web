@@ -1,0 +1,54 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}SEOdyssey{% endblock %}</title>
+
+  <link rel="icon" href="{% static 'core/favicon.ico' %}" sizes="any">
+  <link rel="icon" href="{% static 'core/favicon.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'core/favicon-32.png' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Manrope', 'ui-sans-serif', 'system-ui'] }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .navlink {
+      display:flex; align-items:center; gap:.6rem;
+      padding:.6rem .75rem; border-radius: .9rem;
+      color:#0f172a;
+    }
+    .navlink:hover { background:#f1f5f9; }
+    .navlink.active { background:#ecfdf5; color:#065f46; font-weight:700; }
+    .mnavlink { padding:.65rem .75rem; border:1px solid #e2e8f0; border-radius:1rem; background:white; }
+    .kbd { border:1px solid #e2e8f0; background:#f8fafc; border-bottom-width:2px; border-radius:.6rem; padding:.1rem .35rem; font-size:.75rem; }
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+  {% include "ui/components/topbar.html" %}
+  <div class="min-h-screen flex">
+    {% include "ui/components/sidebar.html" %}
+    <main class="flex-1">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
+        {% include "ui/components/flash.html" %}
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+</body>
+</html>

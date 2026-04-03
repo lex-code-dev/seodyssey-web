@@ -1,0 +1,66 @@
+{% extends "ui/base.html" %}
+{% block title %}Помощь · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="text-2xl font-extrabold">Помощь</h1>
+    <p class="text-slate-600 mt-1">Ответы на «что это», «почему так» и «куда делся мой трафик».</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <section class="lg:col-span-2 space-y-4">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <h2 class="text-lg font-extrabold">Частые вопросы</h2>
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="font-extrabold">SEOdyssey может «вмешиваться» в сайт?</div>
+            <div class="mt-1 text-slate-600">Нет. Мониторинг = чтение данных. Никаких правок и деплоев.</div>
+          </div>
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="font-extrabold">Почему нет данных по трафику?</div>
+            <div class="mt-1 text-slate-600">Не подключена Метрика или нет доступа к счётчику.</div>
+          </div>
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="font-extrabold">Можно ли отключить алерты?</div>
+            <div class="mt-1 text-slate-600">Да — в настройках уведомлений и на уровне сайта (позже).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <h2 class="text-lg font-extrabold">Написать в поддержку</h2>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-bold">Тема</label>
+            <input class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50" placeholder="Например: не приходит Telegram" />
+          </div>
+          <div>
+            <label class="text-sm font-bold">Сайт (опционально)</label>
+            <select class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white">
+              <option>Не выбран</option>
+              {% for s in sites %}
+                <option>{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-sm font-bold">Сообщение</label>
+            <textarea class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50" rows="5" placeholder="Опиши проблему и приложи скрин (если есть)."></textarea>
+          </div>
+        </div>
+        <button class="mt-5 px-5 py-3 rounded-2xl bg-emerald-600 text-white font-semibold" disabled>Отправить (позже)</button>
+      </div>
+    </section>
+
+    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+      <h2 class="text-lg font-extrabold">Быстрые ссылки</h2>
+      <div class="mt-4 space-y-2 text-sm">
+        <a href="{% url 'integrations' %}" class="block px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50">Интеграции</a>
+        <a href="{% url 'alerts' %}" class="block px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50">Алерты</a>
+        <a href="{% url 'user_settings' %}#security" class="block px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50">Безопасность</a>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

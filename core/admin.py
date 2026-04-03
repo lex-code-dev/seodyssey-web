@@ -1,21 +1,20 @@
 from django.contrib import admin
-from .models import Site, CheckRun
-
-
-class CheckRunInline(admin.TabularInline):
-    model = CheckRun
-    extra = 0
-    readonly_fields = ("created_at", "is_up", "http_status", "error")
+from .models import Site, SiteMember, CheckRun
 
 
 @admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
-    list_display = ("name", "url", "is_active", "created_at")
-    inlines = [CheckRunInline]
+    list_display = ("id", "name", "domain", "is_active", "created_at")
+    search_fields = ("name", "domain")
+
+
+@admin.register(SiteMember)
+class SiteMemberAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "site", "role")
+    list_filter = ("role",)
 
 
 @admin.register(CheckRun)
 class CheckRunAdmin(admin.ModelAdmin):
-    list_display = ("site", "created_at", "is_up", "http_status")
-    list_filter = ("is_up",)
-    ordering = ("-created_at",)
+    list_display = ("id", "site", "status", "created_at")
+    list_filter = ("status",)

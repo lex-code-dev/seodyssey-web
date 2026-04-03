@@ -1,0 +1,33 @@
+<header class="lg:hidden sticky top-0 z-30 bg-white border-b border-slate-200">
+  <div class="px-4 py-3 flex items-center justify-between gap-3">
+    <a href="{% url 'dashboard' %}" class="flex items-center gap-2">
+      <div class="h-9 w-9 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-semibold">O</div>
+      <div class="font-semibold">SEOdyssey</div>
+    </a>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'site_new' %}" class="px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold">+ Сайт</a>
+      <button id="mnavBtn" type="button" class="px-3 py-2 rounded-xl border border-slate-200 text-sm">Меню</button>
+    </div>
+  </div>
+  <div id="mnav" class="hidden px-4 pb-4">
+    <div class="grid grid-cols-2 gap-2 text-sm">
+      <a href="{% url 'dashboard' %}" class="mnavlink">Обзор</a>
+      <a href="{% url 'sites' %}" class="mnavlink">Сайты</a>
+      <a href="{% url 'alerts' %}" class="mnavlink">Алерты</a>
+      <a href="{% url 'reports' %}" class="mnavlink">Отчёты</a>
+      <a href="{% url 'integrations' %}" class="mnavlink">Интеграции</a>
+      <a href="{% url 'billing' %}" class="mnavlink">Тариф</a>
+      <a href="{% url 'team' %}" class="mnavlink">Команда</a>
+      <a href="{% url 'user_settings' %}" class="mnavlink">Настройки</a>
+      <a href="{% url 'help' %}" class="mnavlink col-span-2">Помощь</a>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const b = document.getElementById('mnavBtn');
+      const m = document.getElementById('mnav');
+      if(!b || !m) return;
+      b.addEventListener('click', () => m.classList.toggle('hidden'));
+    })();
+  </script>
+</header>

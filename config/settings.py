@@ -11,9 +11,27 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Важно: сначала грузим .env из корня проекта
+load_dotenv(BASE_DIR / ".env")
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+WHOISXML_API_KEY = os.getenv("WHOISXML_API_KEY", "")
+YANDEX_CLIENT_ID = os.getenv("YANDEX_CLIENT_ID", "")
+YANDEX_CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET", "")
+YANDEX_REDIRECT_URI = os.getenv("YANDEX_REDIRECT_URI", "")
+YANDEX_SCOPE = os.getenv("YANDEX_SCOPE", "metrika:read webmaster:verify")
+
+
+if not TELEGRAM_BOT_TOKEN:
+    print("⚠️ TELEGRAM_BOT_TOKEN не задан")
+
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,8 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'core',
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -117,3 +134,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
+

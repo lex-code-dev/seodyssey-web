@@ -1,0 +1,159 @@
+{% extends "ui/base.html" %}
+{% block title %}Обзор · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-extrabold">Обзор</h1>
+      <p class="text-slate-600 mt-1">
+        Сегодня: {{ today|date:"d.m.Y" }} ·
+        {% if last_check_at %}Последняя проверка: {{ last_check_at|date:"d.m.Y H:i" }}{% else %}Проверок ещё не было{% endif %}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'site_new' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold">+ Добавить сайт</a>
+      <a href="{% url 'reports' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">Отчёты</a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h2 class="text-lg font-extrabold">Мои сайты</h2>
+      <div class="text-sm text-slate-500 mt-1">Быстрый обзор SEO-состояния по каждому сайту.</div>
+    </div>
+  </div>
+
+  <div class="mt-4 overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="text-xs text-slate-500">
+        <tr class="border-b border-slate-200">
+          <th class="text-center font-semibold py-3 pr-4">Сайт</th>
+          <th class="text-center font-semibold py-3 pr-4">Состояние</th>
+          <th class="text-center font-semibold py-3 pr-4">ИКС</th>
+          <th class="text-center font-semibold py-3 pr-4">Страницы в поиске</th>
+          <th class="text-center font-semibold py-3 pr-4">Трафик (визиты)</th>
+          <th class="text-center font-semibold py-3 pr-2">AI‑видимость</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for row in sites_table %}
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 pr-4 text-left">
+              <div class="font-bold">
+                <a class="hover:underline" href="{% url 'site_checks' site_id=row.site.id %}">{{ row.site.name }}</a>
+              </div>
+              <div class="text-xs text-slate-500">{{ row.site.domain }}</div>
+            </td>
+
+            <td class="py-3 pr-4 text-center">
+              {% if row.last_checkrun_id %}
+                <a href="{% url 'check_detail' check_id=row.last_checkrun_id %}" class="inline-flex items-center gap-2 hover:underline">
+                  {% if row.state == "fail" %}
+                    <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
+                  {% elif row.state == "warn" %}
+                    <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">WARNING</span>
+                  {% else %}
+                    <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">OK</span>
+                  {% endif %}
+                  </a>
+              {% else %}
+                <span class="text-xs text-slate-400">нет проверок</span>
+              {% endif %}
+            </td>
+
+            <td class="py-3 pr-4 text-center">
+              <div class="font-semibold">{{ row.sqi.value|default:"—" }}</div>
+              {% if row.sqi.delta_pct is not None %}
+                <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs border
+                  {% if row.sqi.delta_pct >= 0 %} bg-emerald-50 text-emerald-700 border-emerald-200 {% else %} bg-rose-50 text-rose-700 border-rose-200 {% endif %}">
+                  {{ row.sqi.delta_pct }}%
+                </div>
+              {% endif %}
+            </td>
+
+            <td class="py-3 pr-4 text-center">
+              <div class="font-semibold">{{ row.indexed.value|default:"—" }}</div>
+              {% if row.indexed.delta_pct is not None %}
+                <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs border
+                  {% if row.indexed.delta_pct >= 0 %} bg-emerald-50 text-emerald-700 border-emerald-200 {% else %} bg-rose-50 text-rose-700 border-rose-200 {% endif %}">
+                  {{ row.indexed.delta_pct }}%
+                </div>
+              {% endif %}
+            </td>
+
+            <td class="py-3 pr-4 text-center">
+              <div class="font-semibold">{{ row.traffic.value|default:"—" }}</div>
+              {% if row.traffic.delta_pct is not None %}
+                <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs border
+                  {% if row.traffic.delta_pct >= 0 %} bg-emerald-50 text-emerald-700 border-emerald-200 {% else %} bg-rose-50 text-rose-700 border-rose-200 {% endif %}">
+                  {{ row.traffic.delta_pct }}%
+                </div>
+              {% endif %}
+            </td>
+
+            <td class="py-3 pr-2 text-center">
+              <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">скоро</span>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="py-6 text-sm text-slate-600">
+              У тебя пока нет сайтов. Это грустно, но быстро лечится кнопкой «+ Добавить сайт».
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+    <section class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
+      <h2 class="text-lg font-extrabold">Интеграции</h2>
+      <p class="text-sm text-slate-600 mt-1">Чтобы мониторинг был не «пальцем в небо», подключи источники данных.</p>
+
+      <div class="mt-4 space-y-3">
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold">Яндекс.Вебмастер</div>
+              <div class="text-sm text-slate-600">Индекс, ошибки, статус</div>
+            </div>
+            {% if yandex_ready %}
+              <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">подключена</span>
+            {% else %}
+              <span class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">не подключена</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-bold">Telegram уведомления</div>
+              <div class="text-sm text-slate-600">Алерты в личку/канал</div>
+            </div>
+            {% if telegram_ready %}
+              <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">настроено</span>
+            {% else %}
+              <span class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">не настроено</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+          Безопасность: OAuth · только чтение · доступ можно отозвать в любой момент. Никаких правок robots.txt «по приколу».
+        </div>
+
+        <a href="{% url 'integrations' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold inline-block">Управлять интеграциями</a>
+      </div>
+
+      <div class="mt-5 text-xs text-slate-500">
+        Подсказка: <span class="kbd">/</span> → быстрые действия (в MVP можно притвориться, что работает).
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "ui/base.html" %}
+{% block title %}Интеграции · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-extrabold">Интеграции</h1>
+      <p class="text-slate-600 mt-1">Подключи источники данных. Мы читаем, не редактируем. Клянёмся всеми canonical.</p>
+    </div>
+    <a href="{% url 'user_settings' %}#security" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">Безопасность и доступ</a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <section class="lg:col-span-2 space-y-4">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-extrabold">Яндекс.Вебмастер</h2>
+            <p class="text-sm text-slate-600 mt-1">Индекс, ошибки, статус сайта, популярные запросы.</p>
+          </div>
+          {% if yandex_ready %}
+            <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">подключен</span>
+          {% else %}
+            <span class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">не подключен</span>
+          {% endif %}
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a href="{% url 'yandex_connect' %}"
+             class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold">
+            {% if yandex_ready %}Подключить другой аккаунт{% else %}Подключить{% endif %}
+          </a>
+
+          {% if yandex_ready %}
+            <form method="post" action="{% url 'yandex_disconnect' %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm font-semibold">
+                Отключить
+              </button>
+            </form>
+          {% else %}
+            <button class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm font-semibold opacity-50" disabled>
+              Отключить
+            </button>
+          {% endif %}
+        </div>
+        <div class="mt-3 text-xs text-slate-500">Доступ: OAuth · read-only · scopes минимальные</div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-extrabold">Telegram</h2>
+            <p class="text-sm text-slate-600 mt-1">Уведомления в личку или канал.</p>
+          </div>
+          {% if telegram_ready %}
+            <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">настроено</span>
+          {% else %}
+            <span class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">не настроено</span>
+          {% endif %}
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a href="{% url 'user_settings' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold">Открыть настройки</a>
+          <button class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm font-semibold" disabled>Отправить тест</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+      <h2 class="text-lg font-extrabold">Статус платформы</h2>
+      <div class="mt-4 space-y-3 text-sm">
+        <div class="flex items-center justify-between">
+          <span>Очередь проверок</span><span class="text-emerald-700 font-semibold">OK</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>WHOIS</span><span class="text-emerald-700 font-semibold">OK</span>
+        </div>
+      </div>
+      <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+        <div class="font-bold">Если что-то упало</div>
+        <p class="mt-1 text-slate-600">Сначала мы, потом паника. Или наоборот — зависит от дедлайна.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

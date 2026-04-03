@@ -1,0 +1,46 @@
+{% extends "ui/base.html" %}
+{% block title %}Алерты · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-extrabold">Алерты</h1>
+      <p class="text-slate-600 mt-1">Все «ой» в одном месте. Удобно и немножко страшно.</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'integrations' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">Интеграции</a>
+      <a href="{% url 'sites' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold">К сайтам</a>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div class="flex gap-2">
+        <select class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm" disabled>
+          <option>Период: 30 дней (MVP)</option>
+        </select>
+      </div>
+      <form method="get" class="w-full md:w-80">
+        <input name="q" value="{{ q|default:'' }}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-sm w-full" placeholder="Поиск по сайту/проблеме" />
+      </form>
+    </div>
+
+    <div class="divide-y divide-slate-200">
+      {% for a in alerts %}
+        <a href="{% url 'alert_detail' check_id=a.id %}" class="block p-5 hover:bg-slate-50">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <div class="font-extrabold text-rose-700">🚨 FAIL · {{ a.site.name }}</div>
+              <div class="text-sm text-slate-600 mt-1 truncate">{% if a.result %}{{ a.result|truncatechars:140 }}{% else %}Проверка упала без текста.{% endif %}</div>
+            </div>
+            <div class="text-xs text-slate-500 whitespace-nowrap">{{ a.created_at|date:"d.m H:i" }}</div>
+          </div>
+        </a>
+      {% empty %}
+        <div class="p-6 text-sm text-slate-600">Алертов нет. Или они просто прячутся.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

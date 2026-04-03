@@ -1,0 +1,50 @@
+{% extends "ui/base.html" %}
+{% block title %}Тариф и оплата · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-extrabold">Тариф и оплата</h1>
+      <p class="text-slate-600 mt-1">Пока без платежей: это MVP. Но лимиты и планы — чтобы продукт выглядел как продукт.</p>
+    </div>
+    <button class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold" disabled>Изменить тариф</button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+      <h2 class="text-lg font-extrabold">Текущий тариф</h2>
+      <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-sm text-slate-500">Plan</div>
+            <div class="mt-1 text-xl font-extrabold">MVP · до 5 сайтов</div>
+            <div class="mt-1 text-sm text-slate-600">Оплата появится позже, когда будет за что платить 🙂</div>
+          </div>
+          <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">активен</span>
+        </div>
+      </div>
+
+      <h3 class="mt-6 text-sm font-extrabold">Использование</h3>
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <div class="text-xs text-slate-500">Сайты</div>
+          <div class="mt-1 font-extrabold">{{ sites_count }} / 5</div>
+        </div>
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <div class="text-xs text-slate-500">Алерты / 30 дней</div>
+          <div class="mt-1 font-extrabold">{{ alerts_30d }}</div>
+        </div>
+      </div>
+
+      <h3 class="mt-6 text-sm font-extrabold">История</h3>
+      <div class="mt-3 text-sm text-slate-600">Платежей пока нет.</div>
+    </section>
+
+    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+      <h2 class="text-lg font-extrabold">Заметка</h2>
+      <p class="mt-3 text-sm text-slate-600">Когда подключим оплату — появится и нормальный биллинг. Пока важнее, чтобы мониторинг работал.</p>
+    </aside>
+  </div>
+</div>
+{% endblock %}

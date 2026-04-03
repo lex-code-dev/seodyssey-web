@@ -1,0 +1,23 @@
+{% extends "ui/base.html" %}
+{% block content %}
+  <h1>Привязка Яндекс.Метрики</h1>
+  <p><b>Сайт:</b> {{ site.name }} ({{ site.domain }})</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Выбери счётчик:</label>
+    <select name="counter_id" required>
+      <option value="" disabled selected>— выбрать —</option>
+      {% for c in counters %}
+        <option value="{{ c.id }}">
+          {{ c.name }} ({{ c.site|default:"без сайта" }}) — id={{ c.id }}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit">Сохранить</button>
+  </form>
+
+  <p style="margin-top: 16px;">
+    <a href="{% url 'site_checks' site.id %}">← Назад к сайту</a>
+  </p>
+{% endblock %}

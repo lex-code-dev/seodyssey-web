@@ -1,0 +1,25 @@
+{% extends "ui/base.html" %}
+{% block content %}
+  <h1>Привязка Яндекс.Вебмастера</h1>
+  <p><b>Сайт:</b> {{ site.name }} ({{ site.domain }})</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Выбери сайт в Вебмастере:</label><br>
+    <select name="host_id" required style="margin-top: 8px; padding: 8px; min-width: 520px;">
+      <option value="" disabled selected>— выбрать —</option>
+      {% for h in hosts %}
+        <option value="{{ h.host_id }}">
+          {{ h.ascii_host_url|default:h.unicode_host_url|default:h.host_id }} — id={{ h.host_id }}
+        </option>
+      {% endfor %}
+    </select>
+    <div style="margin-top: 12px;">
+      <button type="submit" style="padding: 8px 12px;">Сохранить</button>
+    </div>
+  </form>
+
+  <p style="margin-top: 16px;">
+    <a href="{% url 'site_checks' site.id %}">← Назад к сайту</a>
+  </p>
+{% endblock %}
