@@ -187,3 +187,75 @@ class Issue(models.Model):
 
     def __str__(self) -> str:
         return f"Issue(site_id={self.site_id}, {self.check_key}, {self.severity}, {self.status})"
+
+class IssueSolution(models.Model):
+    SEVERITY_CHOICES = [
+        ("warn", "Warning"),
+        ("fail", "Fail"),
+    ]
+
+    check_key = models.CharField(
+        max_length=100,
+        help_text="Ключ проверки, например: http, ssl, domain, dns, metrics"
+    )
+    issue_code = models.CharField(
+        max_length=150,
+        blank=True,
+        default="",
+        help_text="Опциональный код/подтип проблемы, например: http_403, ssl_expiring, traffic_drop"
+    )
+    severity = models.CharField(
+        max_length=10,
+        choices=SEVERITY_CHOICES,
+        help_text="Для какого уровня проблемы подходит решение"
+    )
+
+    title = models.CharField(
+        max_length=255,
+        help_text="Название решения"
+    )
+    short_summary = models.TextField(
+        blank=True,
+        default="",
+        help_text="Короткое описание, что произошло и что обычно делать"
+    )
+
+    steps = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Список шагов решения, например: ['Проверить X', 'Сделать Y']"
+    )
+    links = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Список ссылок, например: [{'label': 'Документация', 'url': 'https://...'}]"
+    )
+
+    match_rules = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=(
+            "Доп. условия для матчинга. "
+            "Например: {'http_status': 403} или {'metric_name': 'sqi'}"
+        )
+    )
+
+    priority = models.PositiveIntegerField(
+        default=100,
+        help_text="Чем меньше число, тем выше приоритет"
+    )
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["priority", "id"]
+        indexes = [
+            models.Index(fields=["check_key", "severity", "is_active"]),
+            models.Index(fields=["issue_code", "severity", "is_active"]),
+        ]
+
+    def __str__(self):
+        code = f" / {self.issue_code}" if self.issue_code else ""
+        return f"{self.check_key}{code} [{self.severity}] - {self.title}"
