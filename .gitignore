@@ -6,3 +6,4 @@ db.sqlite3
 run_checks.log
 .env
 .DS_Store
+.idea/
