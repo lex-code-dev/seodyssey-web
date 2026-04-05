@@ -188,6 +188,58 @@ class Issue(models.Model):
     def __str__(self) -> str:
         return f"Issue(site_id={self.site_id}, {self.check_key}, {self.severity}, {self.status})"
 
+    def get_solution_context(self) -> dict:
+        """
+        Собирает минимальный context для подбора решения.
+        Пока опираемся на уже существующие поля title/details без изменения схемы БД.
+        """
+        context = {}
+
+        details = self.details or {}
+
+        if isinstance(details, dict):
+            # HTTP
+            if "http_status" in details:
+                context["http_status"] = details.get("http_status")
+
+            # Metrics
+            if "metric_name" in details:
+                context["metric_name"] = details.get("metric_name")
+
+            # На будущее можно будет добавить сюда и другие поля:
+            # context["days_left"] = details.get("days_left")
+            # context["dns_error_code"] = details.get("dns_error_code")
+
+        return context
+
+    def get_solution(self):
+        """
+        Возвращает подходящее решение из каталога или None.
+        """
+        from core.services.solutions import get_solution_for_issue
+
+        return get_solution_for_issue(
+            check_key=self.fingerprint.split(":", 1)[0] if self.fingerprint else "",
+            severity=self.severity,
+            issue_code=self.details.get("issue_code", "") if isinstance(self.details, dict) else "",
+            context=self.get_solution_context(),
+        )
+
+    @property
+    def solution_title(self):
+        solution = self.get_solution()
+        return solution.title if solution else ""
+
+    @property
+    def solution_steps(self):
+        solution = self.get_solution()
+        return solution.steps if solution else []
+
+    @property
+    def solution_short_summary(self):
+        solution = self.get_solution()
+        return solution.short_summary if solution else ""
+
 class IssueSolution(models.Model):
     SEVERITY_CHOICES = [
         ("warn", "Warning"),
