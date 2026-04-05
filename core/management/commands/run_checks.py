@@ -26,6 +26,41 @@ def _normalize_domain(raw: str) -> str:
     return host.strip().lower()
 
 
+def enrich_issue_details(check_key: str, item: dict) -> dict:
+    """
+    Дополняет details данными для подбора решения из каталога.
+    Ничего не удаляет, только добавляет нужные поля.
+    """
+    details = item.copy() if isinstance(item, dict) else {}
+
+    if check_key == "http":
+        http_status = details.get("http_status")
+        if http_status in (401, 403, 429):
+            details.setdefault("issue_code", "http_access_restricted")
+            details.setdefault("http_status", http_status)
+
+    elif check_key == "ssl":
+        # Пока для MVP используем общий код решения
+        details.setdefault("issue_code", "ssl_expiring_soon")
+
+    elif check_key == "traffic":
+        details.setdefault("issue_code", "traffic_drop")
+        details.setdefault("metric_name", "seo_visits_week")
+
+    elif check_key == "index":
+        details.setdefault("issue_code", "indexed_pages_drop")
+        details.setdefault("metric_name", "indexed_pages")
+
+    elif check_key == "excluded":
+        details.setdefault("issue_code", "excluded_pages_growth")
+        details.setdefault("metric_name", "excluded_pages")
+
+    elif check_key == "sqi":
+        details.setdefault("issue_code", "sqi_drop")
+        details.setdefault("metric_name", "sqi")
+
+    return details
+
 class Command(BaseCommand):
     help = "Process queued CheckRun and perform MVP checks: HTTP, SSL expiry, domain expiry (optional)"
 
@@ -467,6 +502,7 @@ class Command(BaseCommand):
                     active_fps.add(fp)
 
                     title = ((item.get("summary") or {}).get("title")) or f"Проблема: {key}"
+                    details = enrich_issue_details(key, item)
 
                     Issue.objects.update_or_create(
                         site=site,
@@ -476,7 +512,7 @@ class Command(BaseCommand):
                             "severity": sev,
                             "status": Issue.STATUS_OPEN,
                             "title": title,
-                            "details": item,
+                            "details": details,
                             "last_checkrun": check,
                             "resolved_at": None,
                         },
