@@ -28,10 +28,6 @@ YANDEX_REDIRECT_URI = os.getenv("YANDEX_REDIRECT_URI", "")
 YANDEX_SCOPE = os.getenv("YANDEX_SCOPE", "metrika:read webmaster:verify")
 
 
-if not TELEGRAM_BOT_TOKEN:
-    print("⚠️ TELEGRAM_BOT_TOKEN не задан")
-
-
 
 
 # Quick-start development settings - unsuitable for production
@@ -51,6 +47,12 @@ ALLOWED_HOSTS = [
     "www.seodyssey.ru",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://seodyssey.ru",
+    "https://www.seodyssey.ru",
+]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
