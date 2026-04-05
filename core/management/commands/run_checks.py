@@ -32,15 +32,22 @@ def enrich_issue_details(check_key: str, item: dict) -> dict:
     Ничего не удаляет, только добавляет нужные поля.
     """
     details = item.copy() if isinstance(item, dict) else {}
+    status = details.get("status")
 
     if check_key == "http":
         http_status = details.get("http_status")
+
         if http_status in (401, 403, 429):
             details.setdefault("issue_code", "http_access_restricted")
             details.setdefault("http_status", http_status)
+        elif status == "fail":
+            details.setdefault("issue_code", "http_unreachable")
+
+    elif check_key == "dns":
+        if status == "fail":
+            details.setdefault("issue_code", "dns_not_resolving")
 
     elif check_key == "ssl":
-        # Пока для MVP используем общий код решения
         details.setdefault("issue_code", "ssl_expiring_soon")
 
     elif check_key == "traffic":
