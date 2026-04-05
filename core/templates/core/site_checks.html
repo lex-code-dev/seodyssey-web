@@ -51,21 +51,21 @@
       <div class="flex items-center justify-between gap-3">
         <div>
           <h2 class="text-lg font-extrabold">Проверки</h2>
-          <p class="text-sm text-slate-500 mt-1">В области просмотра — 3 последних запуска. Остальные доступны через прокрутку.</p>
+          <p class="text-sm text-slate-500 mt-1">3 последних запуска в области просмотра.</p>
         </div>
       </div>
 
       <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200">
-        <div class="grid grid-cols-[140px_140px_minmax(0,1fr)_110px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-500">
+        <div class="grid grid-cols-[112px_108px_minmax(0,1fr)_92px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-500">
           <div>Дата</div>
           <div>Статус</div>
           <div>Сводка</div>
           <div class="text-right">Действие</div>
         </div>
 
-        <div class="max-h-[318px] overflow-y-auto">
+        <div class="max-h-[246px] overflow-y-auto">
           {% for c in checks %}
-            <div class="grid grid-cols-[140px_140px_minmax(0,1fr)_110px] gap-4 border-b border-slate-200 px-4 py-5 items-start min-h-[106px]">
+            <div class="grid grid-cols-[112px_108px_minmax(0,1fr)_92px] gap-4 border-b border-slate-200 px-4 py-3 items-start min-h-[82px]">
               <div class="text-sm font-medium text-slate-900 whitespace-nowrap">
                 {{ c.created_at|date:"d.m H:i" }}
               </div>
@@ -85,27 +85,27 @@
               <div class="min-w-0">
                 {% with s=c.result.summary %}
                   {% if s %}
-                    <div class="text-sm font-semibold text-slate-900 break-words">{{ s.title }}</div>
+                    <div class="text-sm font-semibold text-slate-900 truncate">{{ s.title }}</div>
                     {% with checks_map=c.result.checks %}
                       {% if checks_map %}
                         {% with http_s=checks_map.http.summary dns_s=checks_map.dns.summary ssl_s=checks_map.ssl.summary domain_s=checks_map.domain.summary metrics_s=checks_map.metrics.summary %}
                           {% if checks_map.http.status != "ok" and http_s and http_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 break-words">Причина: {{ http_s.title }}</div>
+                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ http_s.title }}</div>
                           {% elif checks_map.dns.status != "ok" and dns_s and dns_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 break-words">Причина: {{ dns_s.title }}</div>
+                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ dns_s.title }}</div>
                           {% elif checks_map.ssl.status != "ok" and ssl_s and ssl_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 break-words">Причина: {{ ssl_s.title }}</div>
+                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ ssl_s.title }}</div>
                           {% elif checks_map.domain.status != "ok" and domain_s and domain_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 break-words">Причина: {{ domain_s.title }}</div>
+                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ domain_s.title }}</div>
                           {% elif checks_map.metrics.status != "ok" and metrics_s and metrics_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 break-words">Причина: {{ metrics_s.title }}</div>
+                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ metrics_s.title }}</div>
                           {% endif %}
                         {% endwith %}
                       {% endif %}
                     {% endwith %}
 
                     {% if s.lines %}
-                      <div class="text-xs text-slate-500 mt-1 break-words">• {{ s.lines.0 }}</div>
+                      <div class="text-xs text-slate-500 truncate">• {{ s.lines.0 }}</div>
                     {% endif %}
                   {% else %}
                     <span class="text-slate-400">—</span>
@@ -126,7 +126,7 @@
       </div>
 
       <div class="mt-4 text-xs text-slate-500">
-        Важно: если проверка очереди задвоит пункты — это баг. Мы его добьём, но не сегодня (шутка, добьём).
+        Важно: если проверка очереди задвоит пункты — это баг. Мы его добьём, но не сегодня.
       </div>
     </section>
 
