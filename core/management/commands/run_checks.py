@@ -502,6 +502,11 @@ class Command(BaseCommand):
                     if st not in ("fail", "warn", "warning"):
                         continue
 
+                    # Для webmaster не создаём Issue по общему контейнеру.
+                    # Нужны только конкретные под-проблемы с issue_code.
+                    if key == "webmaster":
+                        continue
+
                     # нормализуем warning -> warn
                     sev = "warn" if st in ("warn", "warning") else "fail"
 
