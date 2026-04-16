@@ -518,11 +518,13 @@ class Command(BaseCommand):
                     fp = f"{key}:{fp_suffix}"
                     active_fps.add(fp)
 
+                    stored_check_key = "webmaster" if (details or {}).get("source") == "yandex_webmaster" else key
+
                     Issue.objects.update_or_create(
                         site=site,
                         fingerprint=fp,
                         defaults={
-                            "check_key": key,
+                            "check_key": stored_check_key,
                             "severity": sev,
                             "status": Issue.STATUS_OPEN,
                             "title": title,
