@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.db.models import Q
+from django.db.models import Q, Count
 from .models import Site, SiteMember, CheckRun, IssueSolution
 
 
@@ -74,6 +74,29 @@ class IssueSolutionAdmin(admin.ModelAdmin):
             )
         }),
     )
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+
+        qs = self.model.objects.all()
+        total_count = qs.count()
+        active_count = qs.filter(is_active=True).count()
+        inactive_count = qs.filter(is_active=False).count()
+
+        grouped = (
+            qs.values("check_key")
+            .annotate(count=Count("id"))
+            .order_by("check_key")
+        )
+
+        extra_context["issue_solution_stats"] = {
+            "total_count": total_count,
+            "active_count": active_count,
+            "inactive_count": inactive_count,
+            "grouped_by_check_key": list(grouped),
+        }
+
+        return super().changelist_view(request, extra_context=extra_context)
 
     def get_search_results(self, request, queryset, search_term):
         """

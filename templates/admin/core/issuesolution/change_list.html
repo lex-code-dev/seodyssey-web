@@ -1,0 +1,32 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+  <h1>Каталог решений</h1>
+{% endblock %}
+
+{% block result_list %}
+  {% if issue_solution_stats %}
+    <div style="margin: 0 0 16px 0; padding: 16px; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
+      <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 12px;">
+        <div><strong>Всего:</strong> {{ issue_solution_stats.total_count }}</div>
+        <div><strong>Активных:</strong> {{ issue_solution_stats.active_count }}</div>
+        <div><strong>Неактивных:</strong> {{ issue_solution_stats.inactive_count }}</div>
+      </div>
+
+      {% if issue_solution_stats.grouped_by_check_key %}
+        <div>
+          <strong>По check_key:</strong>
+          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+            {% for row in issue_solution_stats.grouped_by_check_key %}
+              <span style="display: inline-block; padding: 4px 10px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 999px;">
+                {{ row.check_key }}: {{ row.count }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {{ block.super }}
+{% endblock %}
