@@ -71,6 +71,7 @@ class Command(BaseCommand):
 
             defaults = {
                 "check_key": item["check_key"],
+                "issue_code": item["issue_code"],
                 "severity": item["severity"],
                 "title": item["title"],
                 "short_summary": item.get("short_summary", ""),
