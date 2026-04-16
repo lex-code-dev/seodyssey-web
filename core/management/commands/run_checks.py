@@ -226,9 +226,10 @@ class Command(BaseCommand):
                     elif chk.name == "domain":
                         item = chk.run(domain=domain)
 
-
                     elif chk.name == "metrics":
+                        item = chk.run(site=site, check_id=check.id)
 
+                    elif chk.name == "webmaster":
                         item = chk.run(site=site, check_id=check.id)
 
                     else:
