@@ -504,12 +504,18 @@ class Command(BaseCommand):
                     # нормализуем warning -> warn
                     sev = "warn" if st in ("warn", "warning") else "fail"
 
-                    # fingerprint пока простой (можно улучшить позже)
-                    fp = f"{key}:{sev}"
+                    issue_code = (details or {}).get("issue_code") or (item or {}).get("issue_code")
+                    fp_suffix = issue_code or sev
+                    fp = f"{key}:{fp_suffix}"
                     active_fps.add(fp)
 
                     title = ((item.get("summary") or {}).get("title")) or f"Проблема: {key}"
                     details = enrich_issue_details(key, item)
+
+                    issue_code = (details or {}).get("issue_code") or (item or {}).get("issue_code")
+                    fp_suffix = issue_code or sev
+                    fp = f"{key}:{fp_suffix}"
+                    active_fps.add(fp)
 
                     Issue.objects.update_or_create(
                         site=site,
