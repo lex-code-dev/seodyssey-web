@@ -23,6 +23,7 @@ class CheckRunAdmin(admin.ModelAdmin):
 
 @admin.register(IssueSolution)
 class IssueSolutionAdmin(admin.ModelAdmin):
+    change_list_template = "admin/core/issuesolution/change_list.html"
     list_display = (
         "id",
         "title",
