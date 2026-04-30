@@ -2,86 +2,166 @@
 {% block title %}Добавить сайт · SEOdyssey{% endblock %}
 
 {% block content %}
-<div class="flex flex-col gap-6">
-  <div class="flex items-start justify-between gap-4">
+<div style="display:flex;flex-direction:column;gap:14px;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
     <div>
-      <h1 class="text-2xl font-extrabold">Добавить сайт</h1>
-      <p class="text-slate-600 mt-1">Один домен = один мониторинг. Без магии, просто дисциплина.</p>
+      <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.3px;color:#111;">Добавить сайт</h1>
+      <p style="font-size:13px;color:#aaa;margin-top:4px;">Один домен — один мониторинг.</p>
     </div>
-    <a href="{% url 'sites' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">← Назад</a>
+    <a href="{% url 'dashboard' %}" style="padding:8px 16px;border-radius:10px;border:0.5px solid #e5e5e3;background:#fff;font-size:13px;font-weight:600;color:#111;text-decoration:none;">← Назад</a>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <form method="post" class="space-y-4">
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:12px;">
+
+    <div class="card">
+      <form method="post" id="site-form" style="display:flex;flex-direction:column;gap:20px;">
         {% csrf_token %}
 
+        {{# Шаг 1: Домен #}}
         <div>
-          <label class="text-sm font-bold">Название (как в списке)</label>
-          <input name="name" value="{{ form.name.value|default:'' }}" class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50" placeholder="Например: 1984" />
-          {% if form.name.errors %}
-            <div class="mt-2 text-sm text-rose-700">{{ form.name.errors|join:", " }}</div>
-          {% endif %}
-        </div>
-
-        <div>
-          <label class="text-sm font-bold">Домен или URL</label>
-          <input name="domain" value="{{ form.domain.value|default:'' }}" class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-            placeholder="например: https://19agency84.ru" />
-          <div class="mt-2 text-xs text-slate-500">Мы нормализуем URL и запомним основной домен.</div>
+          <div style="font-size:12px;font-weight:600;color:#111;margin-bottom:6px;">Домен или URL</div>
+          <input id="id_domain" name="domain" value="{{ form.domain.value|default:'' }}"
+                 style="width:100%;padding:10px 14px;border-radius:10px;border:0.5px solid #e5e5e3;background:#f7f7f5;font-size:14px;outline:none;box-sizing:border-box;"
+                 placeholder="https://site.ru/"
+                 onfocus="this.style.borderColor='#6378ff'" onblur="this.style.borderColor='#e5e5e3'"/>
+          <div style="font-size:11px;color:#aaa;margin-top:5px;">Мы нормализуем URL и запомним основной домен.</div>
           {% if form.domain.errors %}
-            <div class="mt-2 text-sm text-rose-700">{{ form.domain.errors|join:", " }}</div>
+            <div style="margin-top:6px;font-size:12px;color:#a32d2d;">{{ form.domain.errors|join:", " }}</div>
           {% endif %}
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div class="font-bold">Доступ к данным</div>
-          <p class="text-sm text-slate-600 mt-1">
-            Без интеграций сайт добавится, но мониторинг будет ограничен (и будет ворчать).
-          </p>
-          <div class="mt-3 flex flex-wrap gap-2 text-xs">
-            {% if yandex_ready %}
-              <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Вебмастер: подключен</span>
-            {% else %}
-              <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">Вебмастер: не подключен</span>
-            {% endif %}
+        {{# Шаг 2: Название #}}
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#111;margin-bottom:6px;">
+            Название
+            <span style="font-weight:400;color:#aaa;"> — подставится автоматически, можно изменить</span>
+          </div>
+          <input id="id_name" name="name" value="{{ form.name.value|default:'' }}"
+                 style="width:100%;padding:10px 14px;border-radius:10px;border:0.5px solid #e5e5e3;background:#f7f7f5;font-size:14px;outline:none;box-sizing:border-box;"
+                 placeholder="Site"
+                 onfocus="this.style.borderColor='#6378ff'" onblur="this.style.borderColor='#e5e5e3'"/>
+          {% if form.name.errors %}
+            <div style="margin-top:6px;font-size:12px;color:#a32d2d;">{{ form.name.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        {{# Шаг 3: OAuth — показываем если не подключён #}}
+        {% if not yandex_ready %}
+        <div id="oauth-block" style="display:none;padding:16px;background:#f0f4ff;border-radius:12px;border:0.5px solid #c7d4f8;">
+          <div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:4px;">Подключите Яндекс</div>
+          <div style="font-size:12px;color:#444;margin-bottom:12px;line-height:1.6;">
+            Нужен для доступа к Вебмастеру и Метрике. Только чтение — мы ничего не меняем на вашем сайте.
+          </div>
+          <a href="{% url 'yandex_connect' %}"
+             style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:10px;background:#111;color:#fff;font-size:13px;font-weight:600;text-decoration:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M13.5 2h-3C6.96 2 4 4.96 4 8.5c0 2.49 1.37 4.65 3.39 5.79L4 22h3l3-7h.5v7h3V2z"/></svg>
+            Подключить Яндекс OAuth →
+          </a>
+        </div>
+        {% endif %}
+
+        {{# Шаг 4: Telegram #}}
+        <div id="telegram-block" style="display:none;padding:16px;border-radius:12px;border:0.5px solid #e5e5e3;background:#f7f7f5;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px;">Уведомления в Telegram</div>
+              <div style="font-size:12px;color:#666;line-height:1.6;max-width:320px;">
+                Получайте алерты сразу в мессенджер. Настройте сейчас — не пропустите первую проблему.
+              </div>
+            </div>
             {% if telegram_ready %}
-              <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Telegram: настроено</span>
+              <span style="font-size:11px;padding:4px 12px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c6e0a4;font-weight:600;white-space:nowrap;align-self:center;">✓ Подключён</span>
             {% else %}
-              <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">Telegram: не настроено</span>
+              <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+                <a href="https://t.me/seodyssey_alert_bot" target="_blank"
+                   style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:10px;background:#2AABEE;color:#fff;font-size:13px;font-weight:600;text-decoration:none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
+                  Подключить Telegram
+                </a>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  {{ form.telegram_chat_id }}
+                  <div style="font-size:11px;color:#aaa;line-height:1.5;">Бот пришлёт ID — вставьте сюда</div>
+                </div>
+              </div>
             {% endif %}
           </div>
-          <div class="mt-3">
-            <a href="{% url 'integrations' %}" class="text-sm text-emerald-700 font-semibold hover:text-emerald-800">Управлять интеграциями →</a>
+        </div>
+
+        <div>
+          <button type="submit"
+                  style="padding:10px 24px;border-radius:10px;background:#111;color:#fff;font-size:13px;font-weight:600;border:none;cursor:pointer;">
+            Сохранить сайт
+          </button>
+          <div style="font-size:11px;color:#aaa;margin-top:8px;">
+            Если домен был ранее удалён — он будет восстановлен автоматически.
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <button type="submit" class="px-5 py-3 rounded-2xl bg-emerald-600 text-white font-semibold text-center">Сохранить сайт</button>
-        </div>
-
-        <div class="text-xs text-slate-500">
-          Если домен был ранее удалён, он будет восстановлен с пометкой «Сайт был ранее удалён и восстановлен».
-        </div>
       </form>
-    </section>
+    </div>
 
-    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <h2 class="text-lg font-extrabold">Что будет проверяться</h2>
-      <ul class="mt-3 space-y-2 text-sm text-slate-700">
-        <li>• Статус сайта (Вебмастер)</li>
-        <li>• Страницы в индексе (Вебмастер)</li>
-        <li>• Ошибки и предупреждения (Вебмастер)</li>
-        <li>• SSL и домен (WHOIS)</li>
-        <li>• Трафик WoW (Метрика — позже)</li>
-      </ul>
-      <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
-        <div class="font-bold">Про безопасность</div>
-        <p class="text-slate-600 mt-1">
-          OAuth. Доступ только на чтение. Никаких «мы сейчас перепишем вам robots.txt и станет лучше».
-        </p>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:12px;">Что будет проверяться</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          {% for item in checks_list %}
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>{{ item }}
+          </div>
+          {% empty %}
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>Статус сайта</div>
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>Страницы в индексе</div>
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>Ошибки Вебмастера</div>
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>SSL и домен</div>
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>HTTP-доступность</div>
+          <div style="font-size:13px;color:#555;display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:#3b6d11;flex-shrink:0;"></div>DNS-записи</div>
+          {% endfor %}
+        </div>
       </div>
-    </aside>
+    </div>
+
   </div>
 </div>
+
+<script>
+(function() {
+  const domainInput = document.getElementById('id_domain');
+  const nameInput = document.getElementById('id_name');
+  const oauthBlock = document.getElementById('oauth-block');
+  const telegramBlock = document.getElementById('telegram-block');
+  let nameEdited = nameInput.value.trim() !== '';
+
+  function extractName(url) {
+    try {
+      let val = url.trim().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].split('?')[0];
+      return val || '';
+    } catch(e) { return ''; }
+  }
+
+  function checkDomain() {
+    const val = domainInput.value.trim();
+    if (val.length > 3) {
+      if (!nameEdited) {
+        const suggested = extractName(val);
+        if (suggested) nameInput.value = suggested;
+      }
+      if (oauthBlock) oauthBlock.style.display = 'block';
+      telegramBlock.style.display = 'block';
+    } else {
+      if (oauthBlock) oauthBlock.style.display = 'none';
+      telegramBlock.style.display = 'none';
+    }
+  }
+
+  nameInput.addEventListener('input', function() {
+    nameEdited = this.value.trim() !== '';
+  });
+
+  domainInput.addEventListener('input', checkDomain);
+
+  // Если форма вернулась с ошибками — показываем блоки сразу
+  if (domainInput.value.trim().length > 3) checkDomain();
+})();
+</script>
 {% endblock %}
