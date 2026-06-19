@@ -1,0 +1,28 @@
+{% extends "ui/base.html" %}
+{% block title %}Страница не найдена · SEOdyssey{% endblock %}
+ 
+{% block content %}
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px;">
+ 
+  <div style="font-size:72px;font-weight:800;color:#f0f0ee;letter-spacing:-4px;line-height:1;">404</div>
+ 
+  <div style="font-size:22px;font-weight:700;color:#111;letter-spacing:-0.3px;">Страница не найдена</div>
+ 
+  <div style="font-size:14px;color:#aaa;max-width:320px;line-height:1.6;">
+    Возможно, ссылка устарела или страница была удалена.
+  </div>
+ 
+  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+    <a href="/"
+       style="padding:10px 20px;border-radius:10px;background:#111;color:#fff;font-size:13px;font-weight:600;text-decoration:none;">
+      На главную
+    </a>
+    <a href="javascript:history.back()"
+       style="padding:10px 20px;border-radius:10px;border:0.5px solid #e5e5e3;background:#fff;color:#111;font-size:13px;font-weight:600;text-decoration:none;">
+      ← Назад
+    </a>
+  </div>
+ 
+</div>
+{% endblock %}
+ 
