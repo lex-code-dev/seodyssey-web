@@ -2,22 +2,35 @@ from __future__ import annotations
 import json
 import requests
 import secrets
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from urllib.parse import urlencode
 from django.conf import settings
+from django.contrib.auth import login
+from django.contrib.auth.models import User
 from core.models import YandexOAuth, Issue
 from datetime import timedelta, date
 from django.contrib import messages
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q, Count, Max
 from django.http import HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from .forms import SignUpForm
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from core.forms import AddSiteForm
+from billing.services import get_active_plan, can_add_integration
 from core.forms_profile import UserProfileForm
-from core.models import Site, SiteMember, CheckRun, UserProfile
+from core.models import Site, SiteMember, CheckRun, UserProfile, IssueSolution, UserActivity
+import logging
+logger = logging.getLogger(__name__)
+import socket
+_orig_getaddrinfo = socket.getaddrinfo
+def _ipv4_getaddrinfo(host, port, family=0, *args, **kwargs):
+    return _orig_getaddrinfo(host, port, socket.AF_INET, *args, **kwargs)
+socket.getaddrinfo = _ipv4_getaddrinfo
 
 
 def _require_site_access(user, site: Site) -> bool:
@@ -225,6 +238,18 @@ def sites(request):
         },
     )
 
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("dashboard")
+    else:
+        form = SignUpForm()
+    return render(request, "registration/register.html", {"form": form})
 
 @login_required
 def site_new(request):
@@ -234,7 +259,39 @@ def site_new(request):
     if request.method == "POST":
         form = AddSiteForm(request.POST)
         if form.is_valid():
-            restored_site = getattr(form, "restored_site", None)
+            domain = form.cleaned_data["domain"]
+
+            # Есть ли у этого пользователя уже активный сайт с таким доменом
+            existing_for_user = Site.objects.filter(
+                members__user=request.user,
+                domain=domain,
+                is_deleted=False,
+            ).first()
+            # Лимит сайтов из активного тарифа пользователя
+            plan = get_active_plan(request.user)
+            max_projects = plan.max_projects if plan else 1
+            sites_count = SiteMember.objects.filter(
+                user=request.user,
+                site__is_deleted=False
+            ).count()
+            if sites_count >= max_projects:
+                messages.error(
+                    request,
+                    f"Достигнут лимит тарифа: {max_projects} "
+                    f"{'сайт' if max_projects == 1 else 'сайтов'}. "
+                    f"Перейдите на тариф выше, чтобы добавить больше."
+                )
+                return redirect("site_new")
+            if existing_for_user:
+                form.add_error("domain", "Ты уже добавил этот домен.")
+                return render(request, "core/site_new.html", {"form": form, **flags})
+
+            # Есть ли у этого пользователя удалённый сайт с таким доменом
+            restored_site = Site.objects.filter(
+                members__user=request.user,
+                domain=domain,
+                is_deleted=True,
+            ).first()
             if restored_site:
                 restored_site.restore()
                 SiteMember.objects.get_or_create(
@@ -247,12 +304,96 @@ def site_new(request):
                 site = form.save()
                 SiteMember.objects.create(user=request.user, site=site, role=SiteMember.ROLE_OWNER)
 
+            counter_id = request.POST.get("counter_id")
+            host_id = request.POST.get("host_id")
+            if counter_id:
+                allowed, limit = can_add_integration(
+                    request.user, site, "yandex_metrica_counter_id"
+                )
+                if allowed:
+                    site.yandex_metrica_counter_id = int(counter_id)
+                    site.save(update_fields=["yandex_metrica_counter_id"])
+                else:
+                    messages.warning(
+                        request,
+                        f"Метрика не подключена: достигнут лимит интеграций ({limit}) для сайта."
+                    )
+            if host_id:
+                allowed, limit = can_add_integration(
+                    request.user, site, "yandex_webmaster_host_id"
+                )
+                if allowed:
+                    site.yandex_webmaster_host_id = host_id
+                    site.save(update_fields=["yandex_webmaster_host_id"])
+                else:
+                    messages.warning(
+                        request,
+                        f"Вебмастер не подключён: достигнут лимит интеграций ({limit}) для сайта."
+                    )
+
+            telegram_chat_id = request.POST.get("telegram_chat_id", "").strip()
+            if telegram_chat_id:
+                profile.telegram_chat_id = telegram_chat_id
+                profile.telegram_enabled = True
+                profile.save(update_fields=["telegram_chat_id", "telegram_enabled"])
+
             messages.success(request, "Сайт добавлен ✅")
             return redirect("site_checks", site_id=site.id)
+        # форма невалидна — падаем вниз, form уже содержит ошибки
     else:
-        form = AddSiteForm()
+        initial = {
+            "domain": request.GET.get("domain", ""),
+            "name": request.GET.get("name", ""),
+        }
+        form = AddSiteForm(initial=initial)
 
-    return render(request, "core/site_new.html", {"form": form, **flags})
+    counters = []
+    hosts = []
+
+    show_onboarding = not profile.onboarding_done
+    return render(request, "core/site_new.html",
+                  {"form": form, "counters": counters, "hosts": hosts, "show_onboarding": show_onboarding, **flags})
+
+@login_required
+def site_edit(request, site_id: int):
+    site = get_object_or_404(Site, id=site_id, is_deleted=False)
+    if not _require_site_access(request.user, site):
+        return HttpResponseForbidden("Нет доступа к сайту")
+
+    profile = _get_profile(request.user)
+    flags = _integration_flags(profile)
+
+    if request.method == "POST":
+        counter_id = request.POST.get("counter_id")
+        host_id = request.POST.get("host_id")
+        if counter_id:
+            allowed, limit = can_add_integration(
+                request.user, site, "yandex_metrica_counter_id"
+            )
+            if allowed:
+                site.yandex_metrica_counter_id = int(counter_id)
+                site.save(update_fields=["yandex_metrica_counter_id"])
+            else:
+                messages.warning(
+                    request,
+                    f"Метрика не подключена: достигнут лимит интеграций ({limit}) для сайта."
+                )
+        if host_id:
+            allowed, limit = can_add_integration(
+                request.user, site, "yandex_webmaster_host_id"
+            )
+            if allowed:
+                site.yandex_webmaster_host_id = host_id
+                site.save(update_fields=["yandex_webmaster_host_id"])
+            else:
+                messages.warning(
+                    request,
+                    f"Вебмастер не подключён: достигнут лимит интеграций ({limit}) для сайта."
+                )
+        messages.success(request, "Настройки сайта сохранены ✅")
+        return redirect("site_checks", site_id=site.id)
+
+    return render(request, "core/site_edit.html", {"site": site, **flags})
 
 
 @login_required
@@ -273,8 +414,54 @@ def run_check(request, site_id: int):
 
     CheckRun.objects.create(site=site, created_by=request.user, status=CheckRun.STATUS_QUEUED)
     messages.success(request, "Проверка добавлена в очередь.")
+
+    import subprocess, sys, os
+    subprocess.Popen(
+        [sys.executable, "manage.py", "run_checks"],
+        cwd="/var/www/seodyssey-web",
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
     return redirect("site_checks", site_id=site.id)
 
+@login_required
+def site_new_integrations(request):
+    profile = _get_profile(request.user)
+    if not profile.yandex_connected:
+        return JsonResponse({"counters": [], "hosts": []})
+
+    oauth = getattr(request.user, "yandex_oauth", None)
+    if not oauth:
+        return JsonResponse({"counters": [], "hosts": []})
+
+    cache_key_counters = f"yandex_counters_{request.user.id}"
+    cache_key_hosts = f"yandex_hosts_{request.user.id}"
+
+    counters = cache.get(cache_key_counters)
+    hosts = cache.get(cache_key_hosts)
+
+    headers = {"Authorization": f"OAuth {oauth.access_token}"}
+
+    if counters is None:
+        try:
+            r = requests.get("https://api-metrika.yandex.net/management/v1/counters", headers=headers, timeout=35)
+            counters = r.json().get("counters", [])
+            cache.set(cache_key_counters, counters, 3600)
+        except Exception:
+            counters = []
+
+    if hosts is None:
+        try:
+            r_user = requests.get("https://api.webmaster.yandex.net/v4/user", headers=headers, timeout=35)
+            user_id = r_user.json().get("user_id")
+            r_hosts = requests.get(f"https://api.webmaster.yandex.net/v4/user/{user_id}/hosts", headers=headers, timeout=35)
+            hosts = r_hosts.json().get("hosts", [])
+            cache.set(cache_key_hosts, hosts, 3600)
+        except Exception:
+            hosts = []
+
+    return JsonResponse({"counters": counters, "hosts": hosts})
 
 @login_required
 def site_checks(request, site_id: int):
@@ -311,14 +498,27 @@ def site_checks(request, site_id: int):
     # баннер восстановления — показываем если сайт был восстановлен недавно
     restored_banner = False
     # если когда-то был deleted_at, а сейчас не удалён — считать восстановленным
-    # в модели deleted_at очищается при restore(), поэтому просто оставим False. (Можно хранить audit later)
+    # в модели deleted_at очищается при restore(), поэтому просто оставим False. (Можно хранить audits later)
 
     last_check_at = last.created_at if last else None
 
-    open_issues = (
-        Issue.objects
-        .filter(site=site, status=Issue.STATUS_OPEN)
-        .order_by("-severity", "-last_seen_at")
+    open_issues_qs = Issue.objects.filter(site=site, status=Issue.STATUS_OPEN)
+
+    # Загружаем приоритеты из IssueSolution
+    issue_codes = [
+        (i.details or {}).get("issue_code") for i in open_issues_qs
+    ]
+    priorities = {
+        s.issue_code: s.priority
+        for s in IssueSolution.objects.filter(issue_code__in=issue_codes)
+    }
+
+    open_issues = sorted(
+        open_issues_qs,
+        key=lambda i: (
+            priorities.get((i.details or {}).get("issue_code"), 999),
+            0 if i.severity == "fail" else 1,
+        )
     )
 
     return render(
@@ -330,6 +530,7 @@ def site_checks(request, site_id: int):
             "excluded_check": excluded_check,
             "open_issues": open_issues,
             "sqi_check": sqi_check,
+            "last_check_id": last.id if last else None,
             "has_active_check": has_active_check,
             "site_last_status": site_last_status,
             "last_check_at": last_check_at,
@@ -376,8 +577,8 @@ def delete_site(request, site_id: int):
         SiteMember, user=request.user, site_id=site_id, role=SiteMember.ROLE_OWNER
     )
     membership.site.soft_delete()
-    messages.success(request, "Сайт удалён (soft delete).")
-    return redirect("sites")
+    messages.success(request, "Сайт удалён.")
+    return redirect("dashboard")
 
 
 @login_required
@@ -504,14 +705,125 @@ def integrations(request):
 def billing(request):
     profile = _get_profile(request.user)
     flags = _integration_flags(profile)
-
     site_ids = list(
         SiteMember.objects.filter(user=request.user, site__is_deleted=False).values_list("site_id", flat=True)
     )
     sites_count = Site.objects.filter(id__in=site_ids, is_deleted=False).count()
     alerts_30d = CheckRun.objects.filter(site_id__in=site_ids, status=CheckRun.STATUS_FAIL, created_at__gte=timezone.now()-timedelta(days=30)).count()
-    return render(request, "core/billing.html", {"sites_count": sites_count, "alerts_30d": alerts_30d, **flags})
 
+    from billing.models import Plan, Subscription
+    from billing.services import get_active_plan
+
+    plans = list(Plan.objects.filter(is_active=True).order_by("sort_order"))
+    current_plan = get_active_plan(request.user)
+    subscription = Subscription.objects.filter(user=request.user).select_related("plan").first()
+
+    return render(request, "core/billing.html", {
+        "sites_count": sites_count,
+        "alerts_30d": alerts_30d,
+        "plans": plans,
+        "current_plan": current_plan,
+        "subscription": subscription,
+        **flags,
+    })
+
+@login_required
+def create_payment(request, plan_id):
+    import uuid
+    from billing.models import Plan, Payment
+    from billing.yookassa_config import configure_yookassa
+    from yookassa import Payment as YooPayment
+
+    plan = get_object_or_404(Plan, id=plan_id, is_active=True)
+
+    # Бесплатный тариф — оплата не нужна
+    if plan.price_monthly <= 0:
+        messages.info(request, "Этот тариф бесплатный — оплата не требуется.")
+        return redirect("billing")
+
+    configure_yookassa()
+    yoo_payment = YooPayment.create({
+        "amount": {"value": f"{plan.price_monthly}.00", "currency": "RUB"},
+        "confirmation": {
+            "type": "redirect",
+            "return_url": request.build_absolute_uri("/billing/"),
+        },
+        "capture": True,
+        "description": f"SEOdyssey — тариф {plan.name}",
+        "metadata": {"plan_id": plan.id, "user_id": request.user.id},
+    }, str(uuid.uuid4()))
+
+    Payment.objects.create(
+        user=request.user,
+        plan=plan,
+        yookassa_id=yoo_payment.id,
+        amount=plan.price_monthly,
+        status=Payment.STATUS_PENDING,
+    )
+
+    return redirect(yoo_payment.confirmation.confirmation_url)
+
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+@csrf_exempt
+@require_POST
+def yookassa_webhook(request):
+    import json
+    from billing.models import Payment
+    from billing.yookassa_config import configure_yookassa
+    from billing.services import apply_successful_payment
+    from yookassa import Payment as YooPayment
+
+    try:
+        event = json.loads(request.body)
+        payment_id = event["object"]["id"]
+    except (ValueError, KeyError):
+        return HttpResponse(status=400)
+
+
+
+    # Не верим телу вебхука — перепроверяем статус у ЮKassa по ID
+    configure_yookassa()
+    try:
+        yoo = YooPayment.find_one(payment_id)
+    except Exception:
+        return HttpResponse(status=400)
+
+    # --- Платёж за GEO-отчёт (гостевой, метим по metadata) ---
+    metadata = getattr(yoo, "metadata", None) or {}
+    geo_token = metadata.get("geo_lead_token")
+    if geo_token:
+        from django.utils import timezone
+        from landing.models import GeoLead
+        try:
+            lead = GeoLead.objects.get(access_token=geo_token)
+        except GeoLead.DoesNotExist:
+            return HttpResponse(status=200)
+        if yoo.status == "succeeded" and lead.pay_status != GeoLead.PAY_PAID:
+            lead.pay_status = GeoLead.PAY_PAID
+            lead.paid_at = timezone.now()
+            lead.save(update_fields=["pay_status", "paid_at"])
+            # Запуск генерации AI-разбора в фоне (Celery)
+            from landing.tasks import generate_geo_ai_report
+            generate_geo_ai_report.delay(lead.pk)
+        elif yoo.status == "canceled":
+            lead.pay_status = GeoLead.PAY_NONE
+            lead.save(update_fields=["pay_status"])
+        return HttpResponse(status=200)
+
+    try:
+        payment = Payment.objects.get(yookassa_id=payment_id)
+    except Payment.DoesNotExist:
+        return HttpResponse(status=200)  # не наш платёж — просто подтверждаем приём
+
+    if yoo.status == "succeeded":
+        apply_successful_payment(payment)
+    elif yoo.status == "canceled":
+        payment.status = Payment.STATUS_CANCELED
+        payment.save(update_fields=["status"])
+
+    return HttpResponse(status=200)
 
 @login_required
 def team(request):
@@ -560,12 +872,13 @@ def yandex_disconnect(request):
         profile.save(update_fields=["yandex_connected"])
 
     messages.success(request, "Яндекс отключён. Теперь можно подключить другой аккаунт.")
-    return redirect("integrations")
+    return redirect("user_settings")
 
 @login_required
 def yandex_connect(request):
     state = secrets.token_urlsafe(24)
     request.session["yandex_oauth_state"] = state
+    request.session["yandex_oauth_next"] = request.GET.get("next", "")
 
     params = {
         "response_type": "code",
@@ -574,8 +887,10 @@ def yandex_connect(request):
         "scope": settings.YANDEX_SCOPE,
         "state": state,
         "force_confirm": "yes",
+        "lang": "ru",
     }
-    url = "https://oauth.yandex.com/authorize?" + urlencode(params)
+
+    url = "https://oauth.yandex.ru/authorize?" + urlencode(params)
     return redirect(url)
 
 
@@ -589,7 +904,7 @@ def yandex_callback(request):
     if state != request.session.get("yandex_oauth_state"):
         return HttpResponseBadRequest("Invalid state")
 
-    token_url = "https://oauth.yandex.com/token"
+    token_url = "https://oauth.yandex.ru/token"
     data = {
         "grant_type": "authorization_code",
         "code": code,
@@ -598,6 +913,7 @@ def yandex_callback(request):
     }
 
     r = requests.post(token_url, data=data, timeout=20)
+
     r.raise_for_status()
     payload = r.json()
 
@@ -619,14 +935,11 @@ def yandex_callback(request):
         },
     )
 
-    try:
-        headers = {"Authorization": f"OAuth {access_token}"}
-        r_user = requests.get("https://api.webmaster.yandex.net/v4/user", headers=headers, timeout=20)
-        r_user.raise_for_status()
-        obj.webmaster_user_id = r_user.json().get("user_id")
-        obj.save(update_fields=["webmaster_user_id"])
-    except Exception:
-        pass
+    profile = _get_profile(request.user)
+    profile.yandex_connected = True
+    profile.save(update_fields=["yandex_connected"])
+
+    # webmaster_user_id будет получен лениво при первом запросе счётчиков
 
     # ВАЖНО: чтобы твой yandex_ready стал ✅
     profile = _get_profile(request.user)
@@ -634,7 +947,8 @@ def yandex_callback(request):
     profile.save(update_fields=["yandex_connected"])
 
     messages.success(request, "Яндекс подключен ✅")
-    return redirect("user_settings")
+    next_url = request.session.pop("yandex_oauth_next", "") or "user_settings"
+    return redirect(next_url)
 
 @login_required
 def yandex_ping(request):
@@ -655,9 +969,21 @@ def user_settings(request):
     flags = _integration_flags(profile)
 
     if request.method == "POST":
+        if request.POST.get("telegram_enabled") == "false":
+            profile.telegram_chat_id = ""
+            profile.telegram_enabled = False
+            profile.save()
+            messages.success(request, "Telegram отключён ✅")
+            return redirect("user_settings")
         form = UserProfileForm(request.POST, instance=profile)
+        print("POST DATA:", request.POST)
+        print("FORM VALID:", form.is_valid())
+        print("FORM ERRORS:", form.errors)
         if form.is_valid():
-            form.save()
+            profile = form.save(commit=False)
+            chat_id = (profile.telegram_chat_id or "").strip()
+            profile.telegram_enabled = bool(chat_id)
+            profile.save()
             messages.success(request, "Настройки сохранены ✅")
             return redirect("user_settings")
     else:
@@ -691,10 +1017,20 @@ def site_metrica(request, site_id: int):
     if request.method == "POST":
         counter_id = request.POST.get("counter_id")
         if counter_id:
+            allowed, limit = can_add_integration(
+                request.user, site, "yandex_metrica_counter_id"
+            )
+            if not allowed:
+                messages.error(
+                    request,
+                    f"Достигнут лимит интеграций для сайта ({limit}). "
+                    f"Перейдите на тариф выше, чтобы подключить больше."
+                )
+                return redirect("site_metrica", site_id=site.id)
             site.yandex_metrica_counter_id = int(counter_id)
             site.save(update_fields=["yandex_metrica_counter_id"])
             messages.success(request, "Счётчик Метрики привязан ✅")
-            return redirect("site_checks", site_id=site.id)
+            return redirect("site_webmaster", site_id=site.id)
 
     return render(
         request,
@@ -740,6 +1076,16 @@ def site_webmaster(request, site_id: int):
     if request.method == "POST":
         host_id = request.POST.get("host_id")
         if host_id:
+            allowed, limit = can_add_integration(
+                request.user, site, "yandex_webmaster_host_id"
+            )
+            if not allowed:
+                messages.error(
+                    request,
+                    f"Достигнут лимит интеграций для сайта ({limit}). "
+                    f"Перейдите на тариф выше, чтобы подключить больше."
+                )
+                return redirect("site_webmaster", site_id=site.id)
             site.yandex_webmaster_host_id = host_id
             site.save(update_fields=["yandex_webmaster_host_id"])
             messages.success(request, "Вебмастер привязан ✅")
@@ -778,3 +1124,313 @@ def issue_resolve(request, issue_id: int):
     issue.save(update_fields=["status", "resolved_at", "last_seen_at"])
     messages.success(request, "Проблема закрыта.")
     return redirect("site_checks", site_id=issue.site_id)
+
+
+@login_required
+@require_POST
+def site_rename(request, site_id: int):
+    site = get_object_or_404(Site, id=site_id, is_deleted=False)
+    if not _require_site_access(request.user, site):
+        return HttpResponseForbidden("Нет доступа к сайту")
+
+    name = (request.POST.get("name") or "").strip()
+    if name:
+        site.name = name
+        site.save(update_fields=["name"])
+        messages.success(request, "Название обновлено ✅")
+    else:
+        messages.error(request, "Название не может быть пустым.")
+
+    return redirect("site_checks", site_id=site.id)
+
+@login_required
+@require_POST
+def onboarding_done(request):
+    profile = _get_profile(request.user)
+    profile.onboarding_done = True
+    profile.save(update_fields=["onboarding_done"])
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+def telegram_webhook(request):
+    if request.method != "POST":
+        return HttpResponse("ok")
+
+    import json
+    try:
+        data = json.loads(request.body or "{}")
+    except (ValueError, TypeError):
+        return HttpResponse("ok")
+
+    # Telegram шлёт разные апдейты (message, edited_message, callback_query...) — берём только обычное сообщение
+    message = data.get("message") or {}
+    chat_id = message.get("chat", {}).get("id")
+    text = message.get("text", "") or ""
+
+    if not (chat_id and text.startswith("/start")):
+        return HttpResponse("ok")
+
+    from notifications.telegram import send_telegram_message
+
+    # /start <token> — заявка из GEO-чекера на лендинге
+    parts = text.split(maxsplit=1)
+    token = parts[1].strip() if len(parts) > 1 else ""
+
+    if token:
+        from landing.models import GeoLead
+        from landing.tasks import build_geo_report
+        try:
+            lead = GeoLead.objects.get(tg_token=token, channel=GeoLead.CHANNEL_TELEGRAM)
+        except GeoLead.DoesNotExist:
+            lead = None
+
+        if lead is not None:
+            # запоминаем chat_id в любом случае
+            if not lead.tg_chat_id:
+                lead.tg_chat_id = str(chat_id)
+                lead.save(update_fields=["tg_chat_id"])
+
+            if lead.status == GeoLead.STATUS_DONE and lead.result_json:
+                # проверка уже готова — шлём отчёт сразу
+                send_telegram_message(str(chat_id), build_geo_report(lead.url, lead.result_json))
+            else:
+                # ещё считается — отправит Celery-задача, когда закончит
+                send_telegram_message(
+                    str(chat_id),
+                    "✅ Принято! Проверяю вашу страницу — отчёт придёт сюда через несколько секунд.",
+                )
+            return HttpResponse("ok")
+
+    # обычный /start без токена — прежнее поведение
+    send_telegram_message(
+        str(chat_id),
+        f"👋 Привет!\n\nТвой Telegram ID: <code>{chat_id}</code>\n\nСкопируй его и вставь в поле на странице Интеграции → https://seodyssey.ru/account/settings/"
+    )
+    return HttpResponse("ok")
+
+@login_required
+def analytics(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden("Нет доступа")
+
+    from django.db.models import Count, Avg
+    from django.db.models.functions import TruncDay, TruncHour, TruncWeek
+    from django.utils import timezone
+    from django.core.cache import cache
+    import datetime
+    import json
+
+    CACHE_KEY = "analytics_data"
+    CACHE_TTL = 300  # 5 минут
+
+    cached = cache.get(CACHE_KEY)
+    if cached:
+        return render(request, "core/analytics.html", cached)
+
+    now = timezone.now()
+    days_30 = now - datetime.timedelta(days=30)
+    days_7 = now - datetime.timedelta(days=7)
+
+    # Пользователи
+    users = User.objects.all().order_by("-last_login")
+
+    # Регистрации по дням (30 дней)
+    registrations = list(
+        User.objects
+        .filter(date_joined__gte=days_30)
+        .annotate(day=TruncDay("date_joined"))
+        .values("day")
+        .annotate(c=Count("id"))
+        .order_by("day")
+    )
+
+    # Активность по дням (30 дней)
+    activity_by_day = list(
+        UserActivity.objects
+        .filter(created_at__gte=days_30)
+        .annotate(day=TruncDay("created_at"))
+        .values("day")
+        .annotate(c=Count("id"))
+        .order_by("day")
+    )
+
+    # Проверки по дням
+    checks_by_day = list(
+        CheckRun.objects
+        .filter(created_at__gte=days_30)
+        .annotate(day=TruncDay("created_at"))
+        .values("day")
+        .annotate(c=Count("id"))
+        .order_by("day")
+    )
+
+    # Активность по часам
+    activity_by_hour = list(
+        UserActivity.objects
+        .filter(created_at__gte=days_7)
+        .annotate(hour=TruncHour("created_at"))
+        .values("hour")
+        .annotate(c=Count("id"))
+        .order_by("hour")
+    )
+
+    # Популярные страницы
+    top_pages = list(
+        UserActivity.objects
+        .filter(created_at__gte=days_30)
+        .values("path")
+        .annotate(c=Count("id"))
+        .order_by("-c")[:15]
+    )
+
+    # DAU/WAU
+    dau = UserActivity.objects.filter(created_at__gte=now - datetime.timedelta(days=1)).values("user").distinct().count()
+    wau = UserActivity.objects.filter(created_at__gte=days_7).values("user").distinct().count()
+
+    # Проверки на пользователя
+    total_users = User.objects.count()
+    total_checks = CheckRun.objects.count()
+    checks_per_user = round(total_checks / total_users, 1) if total_users else 0
+    checks_per_user_30d = round(
+        CheckRun.objects.filter(created_at__gte=days_30).count() / total_users, 1
+    ) if total_users else 0
+
+    # Retention по date_joined (правильный расчёт)
+    cohort_weeks = 8
+    retention_data = []
+    for i in range(cohort_weeks):
+        cohort_start = now - datetime.timedelta(weeks=cohort_weeks - i)
+        cohort_end = cohort_start + datetime.timedelta(weeks=1)
+        cohort_users = set(
+            User.objects
+            .filter(date_joined__gte=cohort_start, date_joined__lt=cohort_end)
+            .values_list("id", flat=True)
+        )
+        if not cohort_users:
+            retention_data.append({"week": cohort_start.strftime("%d.%m"), "size": 0, "weeks": []})
+            continue
+        weeks_ret = []
+        for j in range(cohort_weeks - i):
+            ret_start = cohort_end + datetime.timedelta(weeks=j)
+            ret_end = ret_start + datetime.timedelta(weeks=1)
+            returned = UserActivity.objects.filter(
+                created_at__gte=ret_start,
+                created_at__lt=ret_end,
+                user_id__in=cohort_users
+            ).values("user_id").distinct().count()
+            pct = round(returned / len(cohort_users) * 100) if cohort_users else 0
+            weeks_ret.append(pct)
+        retention_data.append({
+            "week": cohort_start.strftime("%d.%m"),
+            "size": len(cohort_users),
+            "weeks": weeks_ret,
+        })
+
+    # Сортируем по реальным датам (date), а не по строкам "%d.%m".
+    # Иначе "01.06" встаёт раньше "11.05" — строковое сравнение по символам.
+    all_dates = sorted(set(
+        [r["day"] for r in activity_by_day] +
+        [r["day"] for r in checks_by_day] +
+        [r["day"] for r in registrations]
+    ))
+    act_map = {r["day"]: r["c"] for r in activity_by_day}
+    chk_map = {r["day"]: r["c"] for r in checks_by_day}
+    reg_map = {r["day"]: r["c"] for r in registrations}
+    # Подписи формируем только сейчас, уже после сортировки по дате.
+    chart_days = json.dumps([d.strftime("%d.%m") for d in all_dates])
+    chart_activity = json.dumps([act_map.get(d, 0) for d in all_dates])
+    chart_checks = json.dumps([chk_map.get(d, 0) for d in all_dates])
+    chart_registrations = json.dumps([reg_map.get(d, 0) for d in all_dates])
+
+    # Часы суток — заполняем все 24 часа
+    hour_map = {r["hour"].hour: r["c"] for r in activity_by_hour}
+    chart_hours = json.dumps(list(range(24)))
+    chart_hours_data = json.dumps([hour_map.get(h, 0) for h in range(24)])
+
+    ctx = {
+        "users": users,
+        "registrations": registrations,
+        "activity_by_day": activity_by_day,
+        "activity_by_hour": activity_by_hour,
+        "top_pages": top_pages,
+        "dau": dau,
+        "wau": wau,
+        "checks_by_day": checks_by_day,
+        "retention_data": retention_data,
+        "total_users": total_users,
+        "total_sites": Site.objects.filter(is_deleted=False).count(),
+        "total_checks": total_checks,
+        "checks_per_user": checks_per_user,
+        "checks_per_user_30d": checks_per_user_30d,
+        "chart_days": chart_days,
+        "chart_activity": chart_activity,
+        "chart_checks": chart_checks,
+        "chart_registrations": chart_registrations,
+        "chart_hours": chart_hours,
+        "chart_hours_data": chart_hours_data,
+    }
+
+    ctx["metric_cards"] = [
+        ("Пользователей", total_users, "#111"),
+        ("Сайтов", ctx["total_sites"], "#111"),
+        ("Проверок", total_checks, "#111"),
+        ("DAU", dau, "#6378ff"),
+        ("WAU", wau, "#6378ff"),
+        ("Проверок/юзер", checks_per_user, "#3b6d11"),
+        ("Проверок/юзер 30д", checks_per_user_30d, "#3b6d11"),
+    ]
+
+    cache.set(CACHE_KEY, ctx, CACHE_TTL)
+    return render(request, "core/analytics.html", ctx)
+
+@login_required
+def ai_recommendations(request, check_id):
+    check = get_object_or_404(CheckRun, id=check_id, site__members__user=request.user)
+    check_data = check.result or {}
+
+    try:
+        from rag.engine import get_recommendations
+        data = get_recommendations(check_data)
+        return JsonResponse({"status": "ok", "data": data})
+    except Exception as e:
+        import traceback
+        open("/tmp/ai_error.log", "a").write(traceback.format_exc())
+        return JsonResponse({"status": "error", "text": str(e)}, status=500)
+
+@login_required
+@require_POST
+@login_required
+@require_POST
+def site_ai_recommendations(request, site_id):
+    site = get_object_or_404(Site, id=site_id, is_deleted=False)
+    if not _require_site_access(request.user, site):
+        return HttpResponseForbidden("Нет доступа к сайту")
+
+    from core.ai_limits import check_and_spend_ai_limit
+
+    last = site.checks.first()
+    if not last:
+        return JsonResponse({"status": "error", "text": "Нет данных проверки"}, status=400)
+
+    check_data = last.result or {}
+
+    try:
+        from rag.engine import get_recommendations
+        data = get_recommendations(check_data)
+
+        # Списываем лимит только после успешного ответа
+        ok, used, limit = check_and_spend_ai_limit(request.user)
+        if not ok:
+            return JsonResponse({
+                "status": "limit",
+                "text": "Лимит AI-проверок исчерпан. Обновится 1-го числа следующего месяца.",
+                "ai_used": used,
+                "ai_limit": limit,
+            }, status=403)
+
+        return JsonResponse({"status": "ok", "data": data, "ai_used": used, "ai_limit": limit})
+    except Exception as e:
+        import traceback
+        open("/tmp/ai_error.log", "a").write(traceback.format_exc())
+        return JsonResponse({"status": "error", "text": str(e)}, status=500)

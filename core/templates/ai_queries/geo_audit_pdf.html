@@ -1,10 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-left { content: "SEOdyssey · seodyssey.ru"; font-family: "DejaVu Sans", sans-serif; font-size: 8pt; color: #b0b4bd; }
+    @bottom-right { content: "Страница " counter(page); font-family: "DejaVu Sans", sans-serif; font-size: 8pt; color: #b0b4bd; }
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif; color: #1a1d24; font-size: 10pt; line-height: 1.5; margin: 0; }
+
+  .brandbar { background: #4f6ef7; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
+  .brandbar .logo { font-size: 14pt; font-weight: bold; }
+  .brandbar .meta { font-size: 8pt; color: #dbe3ff; text-align: right; line-height: 1.4; }
+  .eyebrow { font-size: 7.5pt; letter-spacing: 2px; color: #9aa0ad; text-transform: uppercase; margin: 22px 0 4px; }
+  .brand { font-size: 20pt; font-weight: bold; }
+  .subtitle { font-size: 9pt; color: #6b7280; margin-top: 3px; }
+
+  .metrics-cols { display: flex; gap: 18px; margin-top: 20px; }
+  .metrics-col { flex: 1; }
+  .col-head { display: flex; align-items: center; gap: 7px; font-size: 10pt; font-weight: bold; margin-bottom: 10px; }
+  .col-head .sq { width: 9px; height: 9px; border-radius: 2px; }
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metric { background: #f6f7f9; border-radius: 6px; padding: 9px 11px; }
+  .metric .lbl { font-size: 7.5pt; color: #9aa0ad; }
+  .metric .val { font-size: 15pt; font-weight: bold; margin-top: 2px; }
+  .metric .val.low { color: #a33129; }
+  .metric .val.mid { color: #9a6612; }
+  .metric.na { opacity: 0.45; }
+  .metric.na .val { font-size: 10pt; color: #9aa0ad; }
+
+  .section-title { font-size: 11pt; font-weight: bold; margin: 24px 0 10px; break-after: avoid; }
+
+  .comp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; break-inside: avoid; }
+  .comp-domain { font-size: 9pt; color: #3a3f4a; width: 150px; }
+  .comp-bar { flex: 1; background: #f0f1f4; border-radius: 3px; height: 13px; overflow: hidden; }
+  .comp-bar-fill { height: 100%; background: #4f6ef7; }
+  .comp-count { font-size: 9pt; color: #6b7280; width: 22px; text-align: right; }
+
+  .tone-box { padding: 10px 13px; border-radius: 6px; font-size: 9pt; margin-top: 14px; break-inside: avoid; }
+  .tone-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .ai-box { background: #f5f6ff; border-left: 3px solid #4f6ef7; border-radius: 0 6px 6px 0; padding: 12px 14px; margin-top: 16px; break-inside: avoid; }
+  .ai-tag { font-size: 7.5pt; letter-spacing: 1px; color: #4f6ef7; text-transform: uppercase; font-weight: bold; margin-bottom: 6px; }
+  .ai-text { font-size: 9pt; line-height: 1.6; color: #3a3f4a; }
+
+  table.q { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8.5pt; margin-top: 6px; }
+  table.q th { font-weight: bold; color: #6b7280; padding: 5px 3px; }
+  table.q .grp-y { color: #9a7a00; font-size: 8pt; }
+  table.q .grp-c { color: #0a7a5e; font-size: 8pt; }
+  table.q .sub { font-size: 7.5pt; color: #9aa0ad; font-weight: normal; }
+  table.q td { padding: 7px 3px; border-top: 0.5px solid #f2f3f5; vertical-align: top; }
+  table.q td.q-text { color: #3a3f4a; line-height: 1.35; }
+  table.q td.mark { text-align: center; }
+  .yes { color: #22a06b; font-weight: bold; }
+  .no { color: #d0d3d8; }
+  .legend { display: flex; gap: 16px; margin-top: 10px; font-size: 8pt; color: #9aa0ad; }
+</style>
 </head>
 <body>
-$END$
+
+  <div class="brandbar">
+    <div class="logo">SEOdyssey</div>
+    <div class="meta">GEO-аудит · AI-видимость<br>{{ audit.created_at|date:"d.m.Y · H:i" }}</div>
+  </div>
+
+  <div class="eyebrow">Видимость бренда в AI-поиске</div>
+  <div class="brand">{{ audit.brand }}</div>
+  <div class="subtitle">{{ geo.brand_domain }} · {{ query_count }} запросов · анализ #{{ audit.id }}</div>
+
+  <div class="metrics-cols">
+    <div class="metrics-col">
+      <div class="col-head"><span class="sq" style="background:#ffcc00;"></span> Яндекс (Нейро)</div>
+      <div class="metric-grid">
+        <div class="metric"><div class="lbl">AI Trigger Rate</div><div class="val">{{ geo.trigger_rate|default:0 }}%</div></div>
+        <div class="metric"><div class="lbl">Brand Mention</div><div class="val {% if geo.mention_rate == 0 %}low{% endif %}">{{ geo.mention_rate|default:0 }}%</div></div>
+        <div class="metric"><div class="lbl">Citation Rate</div><div class="val {% if geo.citation_rate == 0 %}low{% endif %}">{{ geo.citation_rate|default:0 }}%</div></div>
+        <div class="metric"><div class="lbl">Share of Voice</div><div class="val">{{ geo.visibility_score|default:0 }}%</div></div>
+      </div>
+    </div>
+    <div class="metrics-col">
+      <div class="col-head"><span class="sq" style="background:#10a37f;"></span> ChatGPT</div>
+      <div class="metric-grid">
+        <div class="metric"><div class="lbl">Brand Mention</div><div class="val {% if chatgpt.mention_rate == 0 %}low{% endif %}">{{ chatgpt.mention_rate|default:0 }}%</div></div>
+        <div class="metric"><div class="lbl">Citation Rate</div><div class="val {% if chatgpt.citation_rate == 0 %}low{% endif %}">{{ chatgpt.citation_rate|default:0 }}%</div></div>
+        <div class="metric"><div class="lbl">Share of Voice</div><div class="val">{{ chatgpt.visibility_score|default:0 }}%</div></div>
+        <div class="metric na"><div class="lbl">Trigger Rate</div><div class="val">н/д</div></div>
+      </div>
+    </div>
+  </div>
+
+  {% if chatgpt.tone_summary == "positive" %}
+  <div class="tone-box" style="background:#eaf6f0;border:0.5px solid #b6e0cc;color:#1a7f4f;"><span class="tone-dot" style="background:#22a06b;"></span>Тональность упоминаний в ChatGPT: положительная</div>
+  {% elif chatgpt.tone_summary == "negative" %}
+  <div class="tone-box" style="background:#fbeae8;border:0.5px solid #e7b5af;color:#a33129;font-weight:bold;"><span class="tone-dot" style="background:#a33129;"></span>Есть негативные упоминания бренда в ChatGPT</div>
+  {% elif chatgpt.tone_summary == "neutral" %}
+  <div class="tone-box" style="background:#f6f7f9;border:0.5px solid #e6e8ec;color:#1a1d24;"><span class="tone-dot" style="background:#8a8f99;"></span>Тональность упоминаний в ChatGPT: нейтральная</div>
+  {% else %}
+  <div class="tone-box" style="background:#f6f7f9;border:0.5px solid #e6e8ec;color:#1a1d24;"><span class="tone-dot" style="background:#c9a227;"></span>ИИ почти не знает бренд — упоминаний мало для оценки тона</div>
+  {% endif %}
+
+  {% if summary %}
+  <div class="ai-box">
+    <div class="ai-tag">AI-резюме</div>
+    <div class="ai-text">{{ summary }}</div>
+  </div>
+  {% endif %}
+
+  {% if competitors %}
+  <div class="section-title">Кто попадает в ответы вместо вас</div>
+  {% for c in competitors %}
+  <div class="comp-row">
+    <span class="comp-domain">{{ c.domain }}</span>
+    <span class="comp-bar"><span class="comp-bar-fill" style="width:{{ c.width }}%;"></span></span>
+    <span class="comp-count">{{ c.count }}</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% if source_breakdown %}
+  <div class="section-title">Кто вас цитирует</div>
+  {% for s in source_breakdown %}
+  <div class="comp-row">
+    <span class="comp-domain">{{ s.label }}</span>
+    <span class="comp-bar"><span class="comp-bar-fill" style="width:{{ s.width }}%;"></span></span>
+    <span class="comp-count">{{ s.count }}</span>
+  </div>
+  {% endfor %}
+  {% if earned_media_gap %}
+  <div class="tone-box" style="background:#fdf6ec;border:0.5px solid #f0d9a8;color:#8a6d1a;"><span class="tone-dot" style="background:#c9a227;"></span>Нейросеть цитирует ваш сайт, но не ссылается на внешние авторитетные источники (СМИ, справочники) — earned media gap.</div>
+  {% endif %}
+  {% endif %}
+  {% if combined_queries %}
+  <div class="section-title">Детализация по запросам</div>
+  <table class="q">
+    <thead>
+      <tr>
+        <th rowspan="2" style="text-align:left; width:40%;">Запрос</th>
+        <th colspan="3" class="grp-y">Яндекс</th>
+        <th colspan="2" class="grp-c">ChatGPT</th>
+      </tr>
+      <tr>
+        <th class="sub">Триг.</th><th class="sub">Упом.</th><th class="sub">Цит.</th>
+        <th class="sub">Упом.</th><th class="sub">Цит.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in combined_queries %}
+      <tr>
+        <td class="q-text">{{ row.query }}</td>
+        <td class="mark">{% if row.yandex.triggered %}<span class="yes">✓</span>{% else %}<span class="no">✕</span>{% endif %}</td>
+        <td class="mark">{% if row.yandex.brand_mentioned %}<span class="yes">✓</span>{% else %}<span class="no">✕</span>{% endif %}</td>
+        <td class="mark">{% if row.yandex.brand_cited %}<span class="yes">✓</span>{% else %}<span class="no">✕</span>{% endif %}</td>
+        <td class="mark">{% if row.chatgpt.brand_mentioned %}<span class="yes">✓</span>{% else %}<span class="no">✕</span>{% endif %}</td>
+        <td class="mark">{% if row.chatgpt.brand_cited %}<span class="yes">✓</span>{% else %}<span class="no">✕</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="legend">
+    <span><span class="yes">✓</span> есть &nbsp; <span class="no">✕</span> нет</span>
+    <span>Триг. — попал в AI-ответ · Упом. — упомянут бренд · Цит. — есть ссылка</span>
+  </div>
+  {% endif %}
+
 </body>
 </html>

@@ -1,105 +1,102 @@
 {% extends "ui/base.html" %}
-{% block title %}Настройки · SEOdyssey{% endblock %}
+{% block title %}Интеграции · SEOdyssey{% endblock %}
 
 {% block content %}
-<div class="flex flex-col gap-6">
-  <div>
-    <h1 class="text-2xl font-extrabold">Настройки</h1>
-    <p class="text-slate-600 mt-1">Профиль, безопасность, уведомления.</p>
-  </div>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <section class="lg:col-span-2 space-y-4">
-      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-extrabold">Уведомления</h2>
-        <form method="post" class="mt-4 space-y-4">
-          {% csrf_token %}
-
-          <div class="rounded-2xl border border-slate-200 p-4">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <div class="font-extrabold">Telegram</div>
-                <div class="text-sm text-slate-600 mt-1">Алерты приходят туда, где ты реально их увидишь.</div>
-              </div>
-              {% if telegram_ready %}
-                <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">настроено</span>
-              {% else %}
-                <span class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">не настроено</span>
-              {% endif %}
-            </div>
-
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <label class="flex items-start gap-3">
-                {{ form.telegram_enabled }}
-                <div>
-                  <div class="font-semibold">Включить Telegram уведомления</div>
-                  <div class="text-sm text-slate-600">Если выключить — тишина. И спокойствие. И риск.</div>
-                </div>
-              </label>
-
-              <div>
-                <label class="text-sm font-bold">Telegram chat_id</label>
-                {{ form.telegram_chat_id }}
-                <div class="text-xs text-slate-500 mt-2">Нужен chat_id, иначе “включено” будет как лампочка без батарейки.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-slate-200 p-4">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <div class="font-extrabold">Яндекс</div>
-                <div class="text-sm text-slate-600 mt-1">Вебмастер/Метрика через OAuth.</div>
-              </div>
-              {% if yandex_ready %}
-                <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">подключен</span>
-              {% else %}
-                <span class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">не подключен</span>
-              {% endif %}
-            </div>
-
-            <div class="mt-4">
-              <button type="button" disabled class="px-4 py-2.5 rounded-2xl bg-slate-200 text-slate-600 font-semibold">🔌 Подключить Яндекс (скоро)</button>
-              <div class="mt-2 text-xs text-slate-500">Здесь появится OAuth-подключение. Мы к нему идём.</div>
-            </div>
-          </div>
-
-          <div class="flex gap-2">
-            <button class="px-5 py-3 rounded-2xl bg-emerald-600 text-white font-semibold">Сохранить</button>
-            <a href="{% url 'dashboard' %}" class="px-5 py-3 rounded-2xl border border-slate-200 bg-white font-semibold">Отмена</a>
-          </div>
-        </form>
-      </div>
-
-      <div id="security" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-extrabold">Безопасность и доступ</h2>
-        <div class="mt-3 text-sm text-slate-700 space-y-2">
-          <p>• Доступ к Яндекс-сервисам — через OAuth.</p>
-          <p>• Мы используем минимальные права (read-only), чтобы получать данные для мониторинга.</p>
-          <p>• Доступ можно отозвать в аккаунте Яндекса в любой момент.</p>
-        </div>
-        <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
-          <div class="font-extrabold">Храним ли мы пароли?</div>
-          <p class="mt-1 text-slate-600">Нет. И даже если бы хотели — это плохая идея. Мы хотим жить.</p>
-        </div>
-      </div>
-    </section>
-
-    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <h2 class="text-lg font-extrabold">Аккаунт</h2>
-      <div class="mt-4 space-y-3 text-sm">
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div class="text-xs text-slate-500">План</div>
-          <div class="mt-1 font-extrabold">MVP · до 5 сайтов</div>
-          <a href="{% url 'billing' %}" class="mt-3 inline-block text-emerald-700 font-semibold">Управлять →</a>
-        </div>
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <div class="font-extrabold">Удалить аккаунт</div>
-          <p class="mt-1 text-slate-600 text-sm">Опасная кнопка. В MVP не работает — и слава богу.</p>
-          <button class="mt-3 px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold" disabled>Удалить</button>
-        </div>
-      </div>
-    </aside>
-  </div>
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">ПОДКЛЮЧЕНИЯ И УВЕДОМЛЕНИЯ</div>
+  <h1 class="page-title">Интеграции</h1>
+  <p class="page-sub">Подключите внешние сервисы, чтобы получать данные и отправлять алерты. SEOdyssey только читает данные — мы ничего не меняем на вашем сайте.</p>
 </div>
+
+<form method="post" style="display:flex;flex-direction:column;gap:12px;">
+  {% csrf_token %}
+
+  {# Telegram #}
+  <div class="card card-pad-lg">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#e8f4fd;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#2AABEE"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:500;color:var(--ink);letter-spacing:-0.012em;">Telegram</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">Уведомления об ошибках и проблемах</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        {% if telegram_ready %}
+          <span class="badge-ok badge-dot">Активно</span>
+          <button type="submit" name="telegram_enabled" value="false" class="btn-danger btn-sm">Отключить</button>
+        {% else %}
+          <span class="badge-muted badge-dot">Не подключено</span>
+          <a href="https://t.me/seodyssey_alert_bot" target="_blank" class="btn-primary btn-sm" style="background:#2AABEE;">Подключить</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if not telegram_ready %}
+    <hr class="hr" style="margin:18px 0 14px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end;">
+      <div>
+        <label class="field-label">Chat ID</label>
+        {{ form.telegram_chat_id }}
+      </div>
+      <div style="font-size:12px;color:var(--muted-2);line-height:1.55;padding-bottom:4px;">
+        Нажмите «Подключить» — бот пришлёт ваш ID. Вставьте сюда и сохраните. Может потребоваться VPN.
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Yandex #}
+  <div class="card card-pad-lg">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#fff3e0;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:700;color:#e0571b;">Я</div>
+        <div>
+          <div style="font-size:15px;font-weight:500;color:var(--ink);letter-spacing:-0.012em;">Яндекс</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">Метрика и Вебмастер через OAuth</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        {% if yandex_ready %}
+          <span class="badge-ok badge-dot">Активно</span>
+          <button form="yandex-disconnect-form" type="submit" class="btn-danger btn-sm">Отключить</button>
+        {% else %}
+          <span class="badge-muted badge-dot">Не подключено</span>
+          <a href="{% url 'yandex_connect' %}" class="btn-primary btn-sm">Подключить через OAuth</a>
+        {% endif %}
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted-2);margin:14px 0 0;line-height:1.55;">Мы не собираем и не передаём ваши данные. Авторизация нужна только для получения данных Метрики и Вебмастера.</p>
+  </div>
+
+  {# Google — coming soon #}
+  <div class="card card-pad-lg">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:700;color:#4285F4;">G</div>
+        <div>
+          <div style="font-size:15px;font-weight:500;color:var(--ink);letter-spacing:-0.012em;">Google</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;">Search Console и Analytics</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="badge-accent badge-dot">скоро</span>
+        <button disabled class="btn-ghost btn-sm" style="opacity:0.55;cursor:not-allowed;">Появится позже</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:8px;">
+    <button type="submit" class="btn-primary">Сохранить изменения</button>
+  </div>
+
+</form>
+
+{% if yandex_ready %}
+<form id="yandex-disconnect-form" method="post" action="{% url 'yandex_disconnect' %}">
+  {% csrf_token %}
+</form>
+{% endif %}
 {% endblock %}

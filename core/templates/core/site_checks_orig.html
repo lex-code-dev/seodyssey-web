@@ -1,0 +1,363 @@
+{% extends "ui/base.html" %}
+{% block title %}{{ site.name }} · SEOdyssey{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:14px;">
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:6px;">
+        <a href="{% url 'sites' %}" style="color:#aaa;text-decoration:none;">← К сайтам</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        {% if site_last_status == 'fail' %}
+          <span class="badge-fail">Ошибка</span>
+        {% elif site_last_status == 'ok' %}
+          <span class="badge-ok">ОК</span>
+        {% elif site_last_status == 'warn' %}
+          <span class="badge-warn">Внимание</span>
+        {% endif %}
+        <h1 style="font-size:19px;font-weight:600;letter-spacing:-0.3px;color:#111;">{{ site.name }}</h1>
+        <span style="font-size:12px;color:#aaa;">{{ site.domain }}</span>
+      </div>
+      <p style="font-size:12px;color:#aaa;margin-top:4px;">
+        {% if last_check_at %}Последняя проверка: {{ last_check_at|date:"d.m.Y H:i" }}{% else %}Проверок ещё не было{% endif %}
+      </p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="{% url 'sites' %}" class="btn-ghost">← К сайтам</a>
+      <form method="post" action="{% url 'run_check' site_id=site.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary" {% if has_active_check %}disabled style="opacity:0.5;cursor:not-allowed;"{% endif %}>
+          {% if has_active_check %}Проверка в очереди{% else %}Запустить проверку{% endif %}
+        </button>
+      </form>
+      <form method="post" action="{% url 'delete_site' site_id=site.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Удалить</button>
+      </form>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 210px;gap:14px;align-items:start;">
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;color:#111;margin-bottom:3px;">Проверки</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:12px;">последний запуск{% if last_check_at %} — {{ last_check_at|date:"d.m в H:i" }}{% endif %}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+
+          {% with checks_map=checks.0.result.checks %}
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;color:#111;">HTTP</div>
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">
+                {% if checks_map.http.details.status_code %}Статус: {{ checks_map.http.details.status_code }}{% else %}Доступность сайта{% endif %}
+              </div>
+            </div>
+            {% if checks_map.http.status == "fail" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% elif checks_map.http.status == "warn" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;color:#111;">DNS</div>
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">Резолвинг домена</div>
+            </div>
+            {% if checks_map.dns.status == "fail" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% elif checks_map.dns.status == "warn" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;color:#111;">SSL</div>
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">
+                {% if checks_map.ssl.details.days_left %}Осталось {{ checks_map.ssl.details.days_left }} дн.{% else %}Сертификат{% endif %}
+              </div>
+            </div>
+            {% if checks_map.ssl.status == "fail" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% elif checks_map.ssl.status == "warn" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;color:#111;">Домен</div>
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">
+                {% if checks_map.domain.details.days_left %}Осталось {{ checks_map.domain.details.days_left }} дн.{% else %}Срок регистрации{% endif %}
+              </div>
+            </div>
+            {% if checks_map.domain.status == "fail" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% elif checks_map.domain.status == "warn" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;color:#111;">SEO-метрики</div>
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">Трафик, индекс, ИКС</div>
+            </div>
+            {% if checks_map.metrics.status == "fail" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% elif checks_map.metrics.status == "warn" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% endif %}
+          </div>
+
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:500;color:#111;">Вебмастер</div>
+              <div style="font-size:11px;color:#aaa;margin-top:2px;">Диагностика Яндекса</div>
+            </div>
+            {% if checks_map.webmaster.status == "fail" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% elif checks_map.webmaster.status == "warn" %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% else %}
+              <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+            {% endif %}
+          </div>
+          {% endwith %}
+
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;color:#111;margin-bottom:3px;">История проверок</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:12px;">последние запуски</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="font-size:11px;color:#aaa;font-weight:400;text-align:left;padding:0 0 7px;border-bottom:0.5px solid #e5e5e3;">Дата</th>
+              <th style="font-size:11px;color:#aaa;font-weight:400;text-align:center;padding:0 8px 7px;border-bottom:0.5px solid #e5e5e3;">Статус</th>
+              <th style="font-size:11px;color:#aaa;font-weight:400;text-align:left;padding:0 8px 7px;border-bottom:0.5px solid #e5e5e3;">Сводка</th>
+              <th style="font-size:11px;color:#aaa;font-weight:400;text-align:right;padding:0 0 7px;border-bottom:0.5px solid #e5e5e3;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in checks %}
+            <tr>
+              <td style="padding:8px 0;font-size:12.5px;color:#111;border-bottom:0.5px solid #f0f0ee;white-space:nowrap;">{{ c.created_at|date:"d.m H:i" }}</td>
+              <td style="padding:8px 8px;text-align:center;border-bottom:0.5px solid #f0f0ee;">
+                {% if c.status == 'fail' %}
+                  <span class="badge-fail">Ошибка</span>
+                {% elif c.status == 'ok' %}
+                  <span class="badge-ok">ОК</span>
+                {% elif c.status == 'queued' %}
+                  <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f0f0fe;color:#534ab7;">В очереди</span>
+                {% else %}
+                  <span style="font-size:11px;color:#aaa;">{{ c.status }}</span>
+                {% endif %}
+              </td>
+              <td style="padding:8px 8px;font-size:12px;color:#555;border-bottom:0.5px solid #f0f0ee;">
+                {% with s=c.result.summary %}
+                  {% if s %}{{ s.title }}{% else %}—{% endif %}
+                {% endwith %}
+              </td>
+              <td style="padding:8px 0;text-align:right;border-bottom:0.5px solid #f0f0ee;">
+                <a href="{% url 'check_detail' check_id=c.id %}" style="font-size:12px;color:#3d5bf5;text-decoration:none;">Открыть</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" style="padding:16px 0;font-size:12px;color:#aaa;">Проверок ещё нет.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if open_issues %}
+      <div class="card">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#111;">Проблемы и что делать</div>
+            <div style="font-size:11px;color:#aaa;margin-top:2px;">только активные, требующие внимания</div>
+          </div>
+          <div style="font-size:11px;color:#aaa;">Всего: {{ open_issues|length }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          {% for iss in open_issues %}
+          <div style="border:0.5px solid #e5e5e3;border-radius:8px;padding:12px 14px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
+              <div>
+                <div style="font-size:13px;font-weight:500;color:#111;">{{ iss.title|default:iss.check_key }}</div>
+                <div style="font-size:11px;color:#aaa;margin-top:2px;">Последний раз: {{ iss.last_seen_at|date:"d.m.Y H:i" }}</div>
+              </div>
+              {% if iss.severity == "fail" %}
+                <span class="badge-fail" style="flex-shrink:0;">FAIL</span>
+              {% else %}
+                <span class="badge-warn" style="flex-shrink:0;">WARN</span>
+              {% endif %}
+            </div>
+            {% if iss.solution_short_summary or iss.solution_steps %}
+            <div style="background:#f7f8ff;border:0.5px solid #d4dcff;border-radius:7px;padding:10px 12px;">
+              <div style="font-size:11px;font-weight:500;color:#3d5bf5;margin-bottom:5px;">Что делать</div>
+              {% if iss.solution_short_summary %}
+                <p style="font-size:12px;color:#333;line-height:1.6;">{{ iss.solution_short_summary }}</p>
+              {% endif %}
+              {% if iss.solution_steps %}
+                <ol style="margin-top:8px;display:flex;flex-direction:column;gap:5px;">
+                  {% for step in iss.solution_steps %}
+                  <li style="display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#333;line-height:1.5;">
+                    <span style="width:18px;height:18px;border-radius:50%;background:#fff;border:0.5px solid #d4dcff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#3d5bf5;flex-shrink:0;margin-top:1px;">{{ forloop.counter }}</span>
+                    {{ step }}
+                  </li>
+                  {% endfor %}
+                </ol>
+              {% endif %}
+            </div>
+            {% endif %}
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;">
+              {% if iss.last_checkrun %}
+                <a href="{% url 'check_detail' check_id=iss.last_checkrun.id %}" style="font-size:12px;color:#3d5bf5;text-decoration:none;">Открыть прогон →</a>
+              {% else %}<div></div>{% endif %}
+              <div style="display:flex;gap:6px;">
+                <form method="post" action="{% url 'issue_mute' issue_id=iss.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-ghost" style="font-size:12px;padding:5px 10px;">Mute</button>
+                </form>
+                <form method="post" action="{% url 'issue_resolve' issue_id=iss.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-ghost" style="font-size:12px;padding:5px 10px;">Resolve</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:500;color:#111;margin-bottom:10px;">Метрики</div>
+        {% if not metrics_available %}
+          <div style="font-size:12px;color:#aaa;">Нет данных. Запустите проверку.</div>
+        {% else %}
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0f0ee;">
+              <div style="font-size:11px;color:#aaa;">ИКС</div>
+              <div style="font-size:13px;font-weight:500;color:#111;">{{ sqi_check.current|default:"—" }}</div>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0f0ee;">
+              <div style="font-size:11px;color:#aaa;">В поиске</div>
+              <div style="text-align:right;">
+                <div style="font-size:13px;font-weight:500;color:#111;">{% if index_check.current %}{{ index_check.prev|default:"—" }} → {{ index_check.current }}{% else %}—{% endif %}</div>
+                {% if index_check.delta_pct is not None %}<div style="font-size:10px;color:#aaa;">{{ index_check.delta_pct }}%</div>{% endif %}
+              </div>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0f0ee;">
+              <div style="font-size:11px;color:#aaa;">Трафик (7 дн)</div>
+              <div style="text-align:right;">
+                <div style="font-size:13px;font-weight:500;color:#111;">{% if traffic_check.current %}{{ traffic_check.prev|default:"—" }} → {{ traffic_check.current }}{% else %}—{% endif %}</div>
+                {% if traffic_check.delta_pct is not None %}<div style="font-size:10px;color:#aaa;">{{ traffic_check.delta_pct }}%</div>{% endif %}
+              </div>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;">
+              <div style="font-size:11px;color:#aaa;">Исключённых</div>
+              <div style="text-align:right;">
+                <div style="font-size:13px;font-weight:500;color:#111;">{% if excluded_check.current is not None %}{{ excluded_check.prev|default:"—" }} → {{ excluded_check.current }}{% else %}—{% endif %}</div>
+                {% if excluded_check.delta_pct is not None %}<div style="font-size:10px;color:#aaa;">+{{ excluded_check.delta_pct }}%</div>{% endif %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:500;color:#111;margin-bottom:10px;">Интеграции</div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0f0ee;">
+            <div style="font-size:12px;color:#333;">Вебмастер</div>
+            {% if yandex_ready %}
+              <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#eaf3de;color:#3b6d11;">активна</span>
+            {% else %}
+              <a href="{% url 'integrations' %}" style="font-size:10px;padding:2px 7px;border-radius:20px;background:#f0f4ff;color:#3d5bf5;text-decoration:none;">настроить</a>
+            {% endif %}
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0f0ee;">
+            <div style="font-size:12px;color:#333;">Метрика</div>
+            <a href="{% url 'site_metrica' site.id %}" style="font-size:10px;padding:2px 7px;border-radius:20px;background:#f0f4ff;color:#3d5bf5;text-decoration:none;">настроить</a>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+            <div style="font-size:12px;color:#333;">Telegram</div>
+            <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#eaf3de;color:#3b6d11;">активен</span>
+          </div>
+        </div>
+        <a href="{% url 'integrations' %}" style="display:block;text-align:center;margin-top:10px;font-size:12px;color:#3d5bf5;text-decoration:none;">Настроить →</a>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:500;color:#111;margin-bottom:10px;">Экспорт</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="btn-ghost" style="text-align:center;font-size:12px;padding:6px 10px;width:100%;">PDF-отчёт</button>
+          <button class="btn-ghost" style="text-align:center;font-size:12px;padding:6px 10px;width:100%;">CSV</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

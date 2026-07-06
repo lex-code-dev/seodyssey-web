@@ -1,25 +1,48 @@
 {% extends "ui/base.html" %}
+{% block title %}Привязка Вебмастера · SEOdyssey{% endblock %}
+
 {% block content %}
-  <h1>Привязка Яндекс.Вебмастера</h1>
-  <p><b>Сайт:</b> {{ site.name }} ({{ site.domain }})</p>
+<div style="display:flex;flex-direction:column;gap:14px;">
 
-  <form method="post">
-    {% csrf_token %}
-    <label>Выбери сайт в Вебмастере:</label><br>
-    <select name="host_id" required style="margin-top: 8px; padding: 8px; min-width: 520px;">
-      <option value="" disabled selected>— выбрать —</option>
-      {% for h in hosts %}
-        <option value="{{ h.host_id }}">
-          {{ h.ascii_host_url|default:h.unicode_host_url|default:h.host_id }} — id={{ h.host_id }}
-        </option>
-      {% endfor %}
-    </select>
-    <div style="margin-top: 12px;">
-      <button type="submit" style="padding: 8px 12px;">Сохранить</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.3px;color:#111;">Привязка Яндекс Вебмастера</h1>
+      <p style="font-size:13px;color:#aaa;margin-top:4px;">{{ site.name }} · {{ site.domain }}</p>
     </div>
-  </form>
+    <a href="{% url 'site_checks' site.id %}" style="padding:8px 16px;border-radius:10px;border:0.5px solid #e5e5e3;background:#fff;font-size:13px;font-weight:600;color:#111;text-decoration:none;">← Назад</a>
+  </div>
 
-  <p style="margin-top: 16px;">
-    <a href="{% url 'site_checks' site.id %}">← Назад к сайту</a>
-  </p>
+  <div class="card" style="max-width:520px;">
+    <form method="post" style="display:flex;flex-direction:column;gap:16px;">
+      {% csrf_token %}
+
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#111;margin-bottom:6px;">Выбери сайт в Вебмастере</div>
+        <select name="host_id" required
+                style="width:100%;padding:10px 14px;border-radius:10px;border:0.5px solid #e5e5e3;background:#f7f7f5;font-size:14px;outline:none;box-sizing:border-box;">
+          <option value="" disabled selected>— выбрать —</option>
+          {% for h in hosts %}
+            <option value="{{ h.host_id }}">{{ h.ascii_host_url|default:h.unicode_host_url|default:h.host_id }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <button type="submit"
+                style="padding:10px 24px;border-radius:10px;background:#111;color:#fff;font-size:13px;font-weight:600;border:none;cursor:pointer;">
+          Сохранить
+        </button>
+      </div>
+      <div id="loading" style="display:none;font-size:13px;color:#aaa;margin-top:8px;">
+        Загружаем список сайтов из Вебмастера...
+      </div>
+      <script>
+        document.querySelector('form').addEventListener('submit', function() {
+          document.getElementById('loading').style.display = 'block';
+        });
+      </script>
+    </form>
+  </div>
+
+</div>
 {% endblock %}

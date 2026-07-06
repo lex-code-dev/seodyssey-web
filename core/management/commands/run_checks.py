@@ -50,21 +50,27 @@ def enrich_issue_details(check_key: str, item: dict) -> dict:
     elif check_key == "ssl":
         details.setdefault("issue_code", "ssl_expiring_soon")
 
+
     elif check_key == "traffic":
         details.setdefault("issue_code", "traffic_drop")
         details.setdefault("metric_name", "seo_visits_week")
+        details.setdefault("title", "Снижение поискового трафика")
+
 
     elif check_key == "index":
         details.setdefault("issue_code", "indexed_pages_drop")
         details.setdefault("metric_name", "indexed_pages")
+        details.setdefault("title", "Снижение страниц в поиске")
 
     elif check_key == "excluded":
         details.setdefault("issue_code", "excluded_pages_growth")
         details.setdefault("metric_name", "excluded_pages")
+        details.setdefault("title", "Рост исключённых страниц")
 
     elif check_key == "sqi":
         details.setdefault("issue_code", "sqi_drop")
         details.setdefault("metric_name", "sqi")
+        details.setdefault("title", "Снижение ИКС")
 
     return details
 
@@ -90,16 +96,16 @@ class Command(BaseCommand):
 
         return recipients
 
-    def _send_alert(self, site, check_id: int, title: str, lines: List[str]) -> None:
+    def _send_alert(self, site, check_id: int, title: str, lines: List[str], reply_markup: dict = None) -> None:
         recipients = self._get_recipients(site)
         self.stdout.write(
             f"[ALERT] {title} site_id={site.id}, check_id={check_id}. Recipients: {len(recipients)}"
         )
 
-        text = title + "\n" + ("\n".join(lines) if lines else "")
+        text = title  # title уже содержит готовый HTML
 
         for chat_id in recipients:
-            send_telegram_message(chat_id, text)
+            send_telegram_message(chat_id, text, reply_markup=reply_markup)
 
     def _get_prev_alert_fingerprints(self, site, current_check_id: int) -> set[str]:
         """
@@ -119,7 +125,23 @@ class Command(BaseCommand):
         sent = alerts.get("sent_fingerprints") or []
         return set(sent)
 
-    DEDUP_TTL_HOURS = 1  # повторять не чаще 1 раза в час
+    DEDUP_TTL_BY_FP = {
+        "http:down": 24,
+        "ssl:fail": 24,
+        "ssl:expiring": 24,
+        "domain:expired": 24,
+        "domain:expiring": 24,
+        "dns:fail": 24,
+        "traffic:drop": 168,  # 7 дней
+        "traffic:drop:warn": 168,
+        "index:drop": 168,
+        "index:drop:warn": 168,
+        "excluded:spike": 168,
+        "excluded:spike:warn": 168,
+        "sqi:drop": 168,
+        "sqi:drop:warn": 168,
+    }
+    DEDUP_TTL_DEFAULT = 168  # всё остальное (вебмастер и т.д.) — 7 дней
 
     def _should_send(self, fingerprint: str, prev_sent: Set[str], site=None) -> bool:
         if not ALERT_DEDUP_ENABLED:
@@ -128,22 +150,89 @@ class Command(BaseCommand):
         if fingerprint not in prev_sent:
             return True
 
-        # если был, но прошло больше TTL — можно повторить
         if site:
+            ttl_hours = self.DEDUP_TTL_BY_FP.get(fingerprint, self.DEDUP_TTL_DEFAULT)
             last_check = (
                 CheckRun.objects
                 .filter(site=site, status__in=[CheckRun.STATUS_OK, CheckRun.STATUS_FAIL])
                 .order_by("-finished_at")
                 .first()
             )
-
             if last_check and last_check.finished_at:
-                if timezone.now() - last_check.finished_at > timedelta(hours=self.DEDUP_TTL_HOURS):
+                if timezone.now() - last_check.finished_at > timedelta(hours=ttl_hours):
                     return True
 
         return False
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--auto",
+            action="store_true",
+            help="Автозапуск: создать CheckRun для всех активных сайтов",
+        )
+
     def handle(self, *args, **options):
+        if options.get("auto"):
+            from core.models import Site
+            sites = Site.objects.filter(is_deleted=False)
+            created = 0
+            for site in sites:
+                already_queued = CheckRun.objects.filter(
+                    site=site,
+                    status__in=[CheckRun.STATUS_QUEUED, CheckRun.STATUS_RUNNING]
+                ).exists()
+                if not already_queued:
+                    CheckRun.objects.create(
+                        site=site,
+                        status=CheckRun.STATUS_QUEUED,
+                        result={"is_auto": True},
+                    )
+                    created += 1
+            self.stdout.write(f"Auto: created {created} queued checks.")
+            # Еженедельный дайджест "всё ОК" — только по понедельникам
+            from datetime import date
+            from core.models import Site, UserProfile
+            from notifications.telegram import _format_ok, send_telegram_message
+
+            if date.today().weekday() == 0:  # 0 = понедельник
+                for site in sites:
+                    # есть ли открытые проблемы
+                    has_issues = site.issues.filter(status="open").exists()
+                    if has_issues:
+                        continue
+
+                    # последний завершённый чек должен быть OK
+                    last = CheckRun.objects.filter(
+                        site=site,
+                        status=CheckRun.STATUS_OK,
+                        finished_at__isnull=False,
+                    ).order_by("-finished_at").first()
+                    if not last:
+                        continue
+
+                    # берём chat_id владельца сайта
+                    member = site.members.select_related("user").filter(
+                        role="owner"
+                    ).first()
+                    if not member:
+                        continue
+
+                    try:
+                        profile = member.user.userprofile
+                    except Exception:
+                        continue
+
+                    chat_id = (profile.telegram_chat_id or "").strip()
+                    if not chat_id or not profile.telegram_enabled:
+                        continue
+
+                    try:
+                        ok_text, ok_markup = _format_ok(site)
+                        send_telegram_message(chat_id, ok_text, reply_markup=ok_markup)
+                        self.stdout.write(f"Digest OK sent: {site.domain} → {chat_id}")
+                    except Exception as e:
+                        self.stdout.write(f"Digest error: {site.domain} {e}")
+
         queued_checks = (
             CheckRun.objects
             .filter(status=CheckRun.STATUS_QUEUED, site__is_deleted=False)
@@ -212,7 +301,7 @@ class Command(BaseCommand):
                             "status": "ok" if ok else "fail",
                             "error": err,
                             "summary": {
-                                "title": "DNS: резолвится" if ok else "DNS: не резолвится",
+                                "title": "DNS: домен работает" if ok else "DNS: домен не найден",
                                 "lines": [] if ok else [f"Ошибка: {err}"],
                             },
                         }
@@ -384,6 +473,33 @@ class Command(BaseCommand):
                             f"• ИКС снизился (warning): {d.get('prev')} → {d.get('current')} ({d.get('delta')})"
                         )
 
+            # Webmaster alerts
+                for key, val in checks.items():
+                    if not key.startswith("webmaster_"):
+                        continue
+                    # Уведомление мне если проблема неизвестна
+                    if key == "webmaster_unknown_issue":
+                        try:
+                            from notifications.telegram import send_telegram_message
+                            send_telegram_message(
+                                "288879225",
+                                f"⚠️ <b>Неизвестная проблема Вебмастера</b>\n\n"
+                                f"Сайт: {site.name} ({site.domain})\n"
+                                f"Код: {val.get('external_code', '—')}\n"
+                                f"Название: {val.get('external_title', '—')}\n\n"
+                                f"Добавь в webmaster_mapper.py и issue_solutions_webmaster.json"
+                            )
+                        except Exception:
+                            pass
+                    st = val.get("status")
+                    if st not in ("fail", "warn"):
+                        continue
+                    fp = f"{key}:{st}"
+                    if self._should_send(fp, prev_sent, site=site):
+                        sent_fingerprints.append(fp)
+                        title_wb = (val.get("summary") or {}).get("title") or key
+                        alert_lines.append(f"• Вебмастер: {title_wb}")
+
                 # 5.5) Send Telegram alert (если есть что отправлять)
                 if sent_fingerprints and alert_lines:
                     status_text = "FAIL" if overall_fail else ("WARNING" if overall_warn else "OK")
@@ -394,7 +510,9 @@ class Command(BaseCommand):
                         f"CheckRun: #{check.id}"
                     )
 
-                    self._send_alert(site, check.id, title, alert_lines)
+                    from notifications.telegram import _format_alert
+                    formatted_title, markup = _format_alert(site, url, alert_lines, overall_fail)
+                    self._send_alert(site, check.id, formatted_title, [], reply_markup=markup)
 
 
                 if not metrics:
@@ -510,7 +628,17 @@ class Command(BaseCommand):
                     # нормализуем warning -> warn
                     sev = "warn" if st in ("warn", "warning") else "fail"
 
-                    title = ((item.get("summary") or {}).get("title")) or f"Проблема: {key}"
+                    _titles = {
+                        "traffic": "Снижение поискового трафика",
+                        "index": "Снижение страниц в поиске",
+                        "excluded": "Рост исключённых страниц",
+                        "sqi": "Снижение ИКС",
+                        "http": "Сайт недоступен",
+                        "ssl": "Проблема с SSL-сертификатом",
+                        "dns": "Проблема с DNS",
+                        "domain": "Проблема с доменом",
+                    }
+                    title = ((item.get("summary") or {}).get("title")) or _titles.get(key) or f"Проблема: {key}"
                     details = enrich_issue_details(key, item)
 
                     issue_code = (details or {}).get("issue_code") or (item or {}).get("issue_code")

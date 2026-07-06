@@ -1,10 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-left {
+      content: "SEOdyssey · seodyssey.ru";
+      font-family: "DejaVu Sans", sans-serif;
+      font-size: 8pt; color: #b0b4bd;
+    }
+    @bottom-right {
+      content: "Страница " counter(page);
+      font-family: "DejaVu Sans", sans-serif;
+      font-size: 8pt; color: #b0b4bd;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif;
+    color: #1a1d24; font-size: 10pt; line-height: 1.5; margin: 0;
+  }
+
+  .cover { break-after: page; }
+  .brandbar {
+    background: #4f6ef7; color: #fff; padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-radius: 6px;
+  }
+  .brandbar .logo { font-size: 14pt; font-weight: bold; }
+  .brandbar .meta { font-size: 8pt; color: #dbe3ff; text-align: right; line-height: 1.4; }
+  .eyebrow { font-size: 7.5pt; letter-spacing: 2px; color: #9aa0ad; text-transform: uppercase; margin: 22px 0 4px; }
+  .domain { font-size: 20pt; font-weight: bold; color: #1a1d24; }
+  .subtitle { font-size: 9pt; color: #6b7280; margin-top: 3px; }
+
+  .summary-cols { display: flex; gap: 18px; align-items: center; margin-top: 18px; }
+  .donut-wrap { width: 130px; height: 130px; position: relative; flex-shrink: 0; }
+  .donut-center {
+    position: absolute; top: 0; left: 0; width: 130px; height: 130px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .donut-pct { font-size: 19pt; font-weight: bold; }
+  .donut-label { font-size: 7pt; color: #9aa0ad; letter-spacing: 0.5px; }
+
+  .stat { display: flex; align-items: center; gap: 9px; padding: 8px 12px; border-radius: 6px; margin-bottom: 7px; font-size: 10pt; }
+  .stat .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .stat .lbl { flex: 1; }
+  .stat .num { font-weight: bold; }
+  .stat.ok { background: #f0f9f4; color: #1f6b48; }   .stat.ok .dot { background: #22a06b; }
+  .stat.warn { background: #fdf6ec; color: #9a6612; } .stat.warn .dot { background: #e8a23d; }
+  .stat.fail { background: #fcefee; color: #a33129; } .stat.fail .dot { background: #e2574c; }
+
+  .ai-box { background: #f5f6ff; border-left: 3px solid #4f6ef7; border-radius: 0 6px 6px 0; padding: 12px 14px; margin-top: 16px; break-inside: avoid; }
+  .ai-tag { font-size: 7.5pt; letter-spacing: 1px; color: #4f6ef7; text-transform: uppercase; font-weight: bold; margin-bottom: 6px; }
+  .ai-text { font-size: 9pt; line-height: 1.6; color: #3a3f4a; }
+
+  .block { margin-top: 18px; }
+  .block-head { display: flex; align-items: center; gap: 11px; break-after: avoid; padding-bottom: 8px; }
+  .block-num { width: 28px; height: 28px; border-radius: 7px; background: #eef1ff; color: #4f6ef7; font-weight: bold; font-size: 11pt; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .block-title { font-size: 12pt; font-weight: bold; }
+  .block-sub { font-size: 8pt; color: #9aa0ad; }
+  .pills { margin-left: auto; display: flex; gap: 5px; flex-shrink: 0; }
+  .pill { font-size: 8pt; padding: 2px 8px; border-radius: 20px; }
+  .pill.ok { background: #f0f9f4; color: #1f6b48; }
+  .pill.warn { background: #fdf6ec; color: #9a6612; }
+  .pill.fail { background: #fcefee; color: #a33129; }
+
+  .check-row { display: flex; align-items: flex-start; gap: 11px; padding: 9px 0; border-top: 0.5px solid #f2f3f5; break-inside: avoid; }
+  .check-row .cdot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .check-row.ok .cdot { background: #22a06b; }
+  .check-row.warn .cdot { background: #e8a23d; }
+  .check-row.fail .cdot { background: #e2574c; }
+  .check-row .msg { flex: 1; font-size: 9.5pt; color: #3a3f4a; line-height: 1.45; }
+  .check-row .badge { font-size: 7.5pt; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
+  .check-row.ok .badge { background: #f0f9f4; color: #1f6b48; }
+  .check-row.warn .badge { background: #fdf6ec; color: #9a6612; }
+  .check-row.fail .badge { background: #fcefee; color: #a33129; }
+</style>
 </head>
 <body>
-$END$
+
+  <div class="cover">
+    <div class="brandbar">
+      <div class="logo">SEOdyssey</div>
+      <div class="meta">Первичный анализ<br>{{ audit.created_at|date:"d.m.Y · H:i" }}</div>
+    </div>
+
+    <div class="eyebrow">Аудит сайта</div>
+    <div class="domain">{{ site.domain }}</div>
+    <div class="subtitle">Проверка структуры, индексируемости и AI-готовности · анализ #{{ audit.id }}</div>
+
+    <div class="summary-cols">
+      <div class="donut-wrap">
+        <svg viewBox="0 0 120 120" width="130" height="130">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#eef0f4" stroke-width="13"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#22a06b" stroke-width="13"
+                  stroke-dasharray="{{ donut_ok }} 314.16" stroke-dashoffset="0"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#e8a23d" stroke-width="13"
+                  stroke-dasharray="{{ donut_warn }} 314.16" stroke-dashoffset="{{ donut_warn_offset }}"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#e2574c" stroke-width="13"
+                  stroke-dasharray="{{ donut_fail }} 314.16" stroke-dashoffset="{{ donut_fail_offset }}"
+                  transform="rotate(-90 60 60)"/>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-pct">{{ health_percent }}%</div>
+          <div class="donut-label">здоровье</div>
+        </div>
+      </div>
+
+      <div style="flex:1;">
+        <div class="stat ok"><span class="dot"></span><span class="lbl">Успешно пройдено</span><span class="num">{{ total_ok }}</span></div>
+        <div class="stat warn"><span class="dot"></span><span class="lbl">Требует внимания</span><span class="num">{{ total_warn }}</span></div>
+        <div class="stat fail"><span class="dot"></span><span class="lbl">Ошибки</span><span class="num">{{ total_fail }}</span></div>
+      </div>
+    </div>
+
+    {% if audit.summary %}
+    <div class="ai-box">
+      <div class="ai-tag">AI-резюме</div>
+      <div class="ai-text">{{ audit.summary }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for block in blocks %}
+  <div class="block">
+    <div class="block-head">
+      <div class="block-num">{{ forloop.counter|stringformat:"02d" }}</div>
+      <div>
+        <div class="block-title">{{ block.title }}</div>
+        <div class="block-sub">{{ block.subtitle }}</div>
+      </div>
+      <div class="pills">
+        {% if block.ok %}<span class="pill ok">{{ block.ok }} OK</span>{% endif %}
+        {% if block.warn %}<span class="pill warn">{{ block.warn }} внимание</span>{% endif %}
+        {% if block.fail %}<span class="pill fail">{{ block.fail }} ошибка</span>{% endif %}
+      </div>
+    </div>
+
+    {% for item in block.checks %}
+    <div class="check-row {% if item.status == 'ok' %}ok{% elif item.status == 'warning' %}warn{% else %}fail{% endif %}">
+      <span class="cdot"></span>
+      <span class="msg">{{ item.message }}</span>
+      <span class="badge">{% if item.status == 'ok' %}OK{% elif item.status == 'warning' %}Внимание{% else %}Ошибка{% endif %}</span>
+    </div>
+    {% endfor %}
+
+    {% if block.summary %}
+    <div class="ai-box">
+      <div class="ai-tag">AI-вывод</div>
+      <div class="ai-text">{{ block.summary }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
 </body>
 </html>

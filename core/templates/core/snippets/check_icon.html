@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% if status == "fail" %}
+  <div style="width:20px;height:20px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="#a32d2d" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+{% elif status == "warn" %}
+  <div style="width:20px;height:20px;border-radius:50%;background:#faeeda;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 3v3M5 7.5v.5" stroke="#854f0b" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+{% elif status == "ok" %}
+  <div style="width:20px;height:20px;border-radius:50%;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#3b6d11" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+{% else %}
+  <div style="width:20px;height:20px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 5h4" stroke="#aaa" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+{% endif %}

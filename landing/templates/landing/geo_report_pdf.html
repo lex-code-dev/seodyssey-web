@@ -1,10 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-left {
+      content: "SEOdyssey · seodyssey.ru";
+      font-family: "DejaVu Sans", sans-serif;
+      font-size: 8pt; color: #b0b4bd;
+    }
+    @bottom-right {
+      content: "Страница " counter(page);
+      font-family: "DejaVu Sans", sans-serif;
+      font-size: 8pt; color: #b0b4bd;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif;
+    color: #1a1d24; font-size: 10pt; line-height: 1.5; margin: 0;
+  }
+
+  .cover { break-after: page; }
+  .brandbar {
+    background: #6378ff; color: #fff; padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-radius: 6px;
+  }
+  .brandbar .logo { font-size: 14pt; font-weight: bold; }
+  .brandbar .meta { font-size: 8pt; color: #dbe3ff; text-align: right; line-height: 1.4; }
+  .eyebrow { font-size: 7.5pt; letter-spacing: 2px; color: #9aa0ad; text-transform: uppercase; margin: 22px 0 4px; }
+  .domain { font-size: 20pt; font-weight: bold; color: #1a1d24; word-break: break-all; }
+  .subtitle { font-size: 9pt; color: #6b7280; margin-top: 3px; }
+
+  .summary-cols { display: flex; gap: 18px; align-items: center; margin-top: 18px; }
+  .donut-wrap { width: 130px; height: 130px; position: relative; flex-shrink: 0; }
+  .donut-center {
+    position: absolute; top: 0; left: 0; width: 130px; height: 130px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .donut-pct { font-size: 19pt; font-weight: bold; }
+  .donut-label { font-size: 7pt; color: #9aa0ad; letter-spacing: 0.5px; }
+
+  .stat { display: flex; align-items: center; gap: 9px; padding: 8px 12px; border-radius: 6px; margin-bottom: 7px; font-size: 10pt; }
+  .stat .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .stat .lbl { flex: 1; }
+  .stat .num { font-weight: bold; }
+  .stat.ok { background: #f0f9f4; color: #1f6b48; }   .stat.ok .dot { background: #22a06b; }
+  .stat.warn { background: #fdf6ec; color: #9a6612; } .stat.warn .dot { background: #e8a23d; }
+  .stat.fail { background: #fcefee; color: #a33129; } .stat.fail .dot { background: #e2574c; }
+
+  .section-title { font-size: 12pt; font-weight: bold; margin: 22px 0 10px; break-after: avoid; }
+
+  .check-row { display: flex; align-items: flex-start; gap: 11px; padding: 9px 0; border-top: 0.5px solid #f2f3f5; break-inside: avoid; }
+  .check-row .cdot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .check-row.ok .cdot { background: #22a06b; }
+  .check-row.warn .cdot { background: #e8a23d; }
+  .check-row.fail .cdot { background: #e2574c; }
+  .check-row .msg { flex: 1; font-size: 9.5pt; color: #3a3f4a; line-height: 1.45; }
+  .check-row .badge { font-size: 7.5pt; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
+  .check-row.ok .badge { background: #f0f9f4; color: #1f6b48; }
+  .check-row.warn .badge { background: #fdf6ec; color: #9a6612; }
+  .check-row.fail .badge { background: #fcefee; color: #a33129; }
+
+  /* AI-разбор (платный) */
+  .ai-card { border: 0.5px solid #e6e8ec; border-radius: 8px; padding: 13px 15px; margin-bottom: 12px; break-inside: avoid; }
+  .ai-card-title { font-size: 10.5pt; font-weight: bold; color: #1a1d24; margin-bottom: 5px; }
+  .ai-card-text { font-size: 9pt; color: #3a3f4a; line-height: 1.55; margin-bottom: 8px; }
+  .ai-rewrite { background: #f1f3ff; border-left: 2pt solid #6378ff; border-radius: 6px; padding: 8px 11px; margin: 4px 0 9px; }
+  .ai-rewrite-label { font-size: 7.5pt; font-weight: bold; color: #4f5be0; text-transform: uppercase; letter-spacing: 0.3pt; margin-bottom: 3px; }
+  .ai-rewrite-text { font-size: 9pt; color: #1a1d24; line-height: 1.55; }
+  .ai-steps { font-size: 9pt; color: #3a3f4a; margin: 0 0 9px 16px; padding: 0; }
+  .ai-steps li { margin-bottom: 3px; }
+  .ai-code {
+    background: #1a1d24; color: #e6e8ec; border-radius: 6px; padding: 11px 13px;
+    font-family: "DejaVu Sans Mono", monospace; font-size: 8pt; line-height: 1.5;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .locked-box { background: #f5f6ff; border-left: 3px solid #6378ff; border-radius: 0 6px 6px 0; padding: 12px 14px; margin-top: 8px; }
+  .locked-box .ai-tag { font-size: 7.5pt; letter-spacing: 1px; color: #6378ff; text-transform: uppercase; font-weight: bold; margin-bottom: 6px; }
+  .locked-box .ai-text { font-size: 9pt; line-height: 1.6; color: #3a3f4a; }
+</style>
 </head>
 <body>
-$END$
+
+  <div class="cover">
+    <div class="brandbar">
+      <div class="logo">SEOdyssey</div>
+      <div class="meta">GEO-проверка страницы<br>{{ now|date:"d.m.Y · H:i" }}</div>
+    </div>
+
+    <div class="eyebrow">Готовность к AI-ответам</div>
+    <div class="domain">{{ lead.url }}</div>
+    <div class="subtitle">Проверка доступа AI-ботов, микроразметки и структуры под цитирование в нейросетях</div>
+
+    <div class="summary-cols">
+      <div class="donut-wrap">
+        <svg viewBox="0 0 120 120" width="130" height="130">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#eef0f4" stroke-width="13"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#22a06b" stroke-width="13"
+                  stroke-dasharray="{{ donut_ok }} 314.16" stroke-dashoffset="0"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#e8a23d" stroke-width="13"
+                  stroke-dasharray="{{ donut_warn }} 314.16" stroke-dashoffset="{{ donut_warn_offset }}"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#e2574c" stroke-width="13"
+                  stroke-dasharray="{{ donut_fail }} 314.16" stroke-dashoffset="{{ donut_fail_offset }}"
+                  transform="rotate(-90 60 60)"/>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-pct">{{ percent }}%</div>
+          <div class="donut-label">готовность</div>
+        </div>
+      </div>
+
+      <div style="flex:1;">
+        <div class="stat ok"><span class="dot"></span><span class="lbl">Пройдено</span><span class="num">{{ ok }}</span></div>
+        <div class="stat warn"><span class="dot"></span><span class="lbl">Стоит улучшить</span><span class="num">{{ warn }}</span></div>
+        <div class="stat fail"><span class="dot"></span><span class="lbl">Проблемы</span><span class="num">{{ fail }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  {% if fails %}
+  <div class="section-title">Критичные проблемы</div>
+  {% for item in fails %}
+  <div class="check-row fail">
+    <span class="cdot"></span>
+    <span class="msg">{{ item.message }}</span>
+    <span class="badge">Ошибка</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if warns %}
+  <div class="section-title">Стоит улучшить</div>
+  {% for item in warns %}
+  <div class="check-row warn">
+    <span class="cdot"></span>
+    <span class="msg">{{ item.message }}</span>
+    <span class="badge">Внимание</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if oks %}
+  <div class="section-title">В порядке</div>
+  {% for item in oks %}
+  <div class="check-row ok">
+    <span class="cdot"></span>
+    <span class="msg">{{ item.message }}</span>
+    <span class="badge">OK</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if ai_ready %}
+  <div class="section-title" style="break-before: page;">Разбор: что исправить и как</div>
+  {% for item in ai_items %}
+  <div class="ai-card">
+    <div class="ai-card-title">{{ item.title }}</div>
+    <div class="ai-card-text">{{ item.explanation }}</div>
+    {% if item.steps %}
+    <ol class="ai-steps">
+      {% for step in item.steps %}<li>{{ step }}</li>{% endfor %}
+    </ol>
+    {% endif %}
+    {% if item.rewrite %}
+    <div class="ai-rewrite">
+      <div class="ai-rewrite-label">Готовый вариант</div>
+      <div class="ai-rewrite-text">{{ item.rewrite }}</div>
+    </div>
+    {% endif %}
+    {% if item.code %}<div class="ai-code">{{ item.code }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="locked-box">
+    <div class="ai-tag">Платный разбор</div>
+    <div class="ai-text">Этот отчёт показывает, <b>что</b> не так. Платный разбор объясняет <b>как починить каждую проблему</b> — с пошаговыми инструкциями и готовым кодом для вставки. Оформить можно на странице отчёта.</div>
+  </div>
+  {% endif %}
+
 </body>
 </html>

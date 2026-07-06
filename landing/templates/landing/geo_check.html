@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бесплатный GEO-аудит страницы · SEOdyssey</title>
+<meta name="description" content="Проверьте, готова ли ваша страница к цитированию в нейросетях: доступ AI-ботов, микроразметка, структура. Бесплатно и без регистрации.">
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<link rel="icon" href="/static/img/spiral-icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: #15140F; background: #F7F4EE; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  ::selection { background: #6378FF; color: #fff; }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .gc-page { position: relative; overflow: hidden; padding: clamp(48px,6vw,84px) 24px clamp(56px,7vw,96px); }
+  .gc-page::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(900px 480px at 82% -10%, rgba(99,120,255,0.14), transparent 60%);
+    pointer-events: none;
+  }
+  .gc-inner { position: relative; max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px,5vw,64px); align-items: start; }
+  .gc-lead { max-width: 480px; padding-top: 6px; }
+  h1.gc-h1 { font-size: clamp(34px,4.6vw,52px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 700; margin: 0; }
+  h1.gc-h1 span { color: #6378FF; }
+  .gc-sub { font-size: clamp(16px,1.5vw,18px); line-height: 1.55; color: #5C584F; margin: 20px 0 0; }
+  .gc-checks-title { font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #9A958B; margin: 34px 0 14px; }
+  .gc-check { display: flex; gap: 13px; align-items: flex-start; padding: 13px 0; font-size: 14.5px; color: #4A463E; line-height: 1.5; border-bottom: 1px solid rgba(21,20,15,0.08); }
+  .gc-check:last-child { border-bottom: none; }
+  .gc-check-ic { flex-shrink: 0; width: 22px; height: 22px; border-radius: 7px; background: #EEF0FF; border: 1px solid rgba(99,120,255,0.22); display: flex; align-items: center; justify-content: center; margin-top: 1px; color: #4F5BE0; }
+
+  .gc-card { background: #fff; border: 1px solid rgba(21,20,15,0.09); border-radius: 20px; padding: 28px; box-shadow: 0 30px 70px -38px rgba(21,20,15,0.4); position: sticky; top: 96px; }
+  .gc-card-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9A958B; margin-bottom: 6px; }
+  .gc-card-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 22px; }
+  .gc-label { display: block; font-size: 13.5px; font-weight: 600; color: #4A463E; margin-bottom: 8px; }
+  .gc-input { width: 100%; background: #FAF8F4; border: 1px solid rgba(21,20,15,0.16); border-radius: 13px; padding: 15px 16px; font-size: 16px; font-family: 'Inter', sans-serif; color: #15140F; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .gc-input::placeholder { color: #9A958B; }
+  .gc-input:focus { border-color: #6378FF; box-shadow: 0 0 0 4px rgba(99,120,255,0.16); background: #fff; }
+  .gc-hint { font-size: 13px; color: #8A857A; line-height: 1.5; margin: 10px 2px 0; }
+  .gc-badge { display: flex; align-items: center; gap: 9px; margin-top: 18px; padding: 11px 14px; background: #EEF0FF; border: 1px solid rgba(99,120,255,0.22); border-radius: 12px; font-size: 13px; color: #4A463E; font-weight: 500; line-height: 1.4; }
+  .gc-badge svg { flex-shrink: 0; color: #4F5BE0; }
+  .gc-submit { width: 100%; margin-top: 22px; background: #6378FF; color: #fff; border: none; padding: 15px; border-radius: 13px; font-weight: 600; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 12px 28px -12px rgba(99,120,255,0.75); transition: transform .15s, background .15s; }
+  .gc-submit:hover { transform: translateY(-2px); background: #4F63E8; }
+  .gc-foot { margin-top: 16px; padding-top: 16px; border-top: 1px dashed rgba(21,20,15,0.12); display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9A958B; line-height: 1.45; }
+  .gc-foot svg { flex-shrink: 0; color: #1F9D55; }
+  .gc-err { margin-bottom: 18px; padding: 12px 14px; border: 1px solid #F3D4D0; border-radius: 10px; background: #FCEFEE; font-size: 13px; color: #A33129; line-height: 1.5; }
+  .gc-hp { position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  @media (max-width: 880px) {
+    .gc-inner { grid-template-columns: 1fr; }
+    .gc-lead { max-width: 100%; }
+    .gc-card { position: static; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== NAV ===== -->
+<nav style="position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(14px);background:rgba(247,244,238,0.72);border-bottom:1px solid rgba(21,20,15,0.07);">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+    <a href="/" style="display:flex;align-items:center;gap:11px;margin-right:auto;">
+      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+      <span style="display:flex;flex-direction:column;line-height:1.05;">
+        <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span>
+        <span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span>
+      </span>
+    </a>
+    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:14.5px;color:#4A463E;font-weight:500;">
+      <a href="/#audit" style="transition:color .15s;">Возможности</a>
+      <a href="/#audit" style="transition:color .15s;">Аудит</a>
+      <a href="/geo-check/" style="color:#6378FF;font-weight:600;transition:color .15s;">GEO-проверка</a>
+      <a href="/#pricing" style="transition:color .15s;">Тарифы</a>
+      <a href="/blog/" style="transition:color .15s;">Блог</a>
+    </div>
+    <a href="https://app.seodyssey.ru/" style="background:#15140F;color:#F7F4EE;padding:10px 18px;border-radius:11px;font-weight:600;font-size:14.5px;transition:transform .15s,background .15s;">Перейти в сервис</a>
+  </div>
+</nav>
+
+<!-- ===== HERO + FORM ===== -->
+<main class="gc-page">
+  <div class="gc-inner">
+
+    <div class="gc-lead">
+      <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px;border-radius:999px;background:#EEF0FF;border:1px solid rgba(99,120,255,0.22);font-size:13px;font-weight:600;color:#4F5BE0;margin-bottom:22px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#6378FF;display:inline-block;"></span>
+        Бесплатно · GEO-аудит
+      </div>
+      <h1 class="gc-h1">Готова ли страница попасть в <span>ответы нейросетей</span>?</h1>
+      <p class="gc-sub">Проверим, может ли ваша страница появляться в ответах ChatGPT, Яндекс Нейро и Google AI. Отчёт откроется сразу — бесплатно и без регистрации.</p>
+
+      <div class="gc-checks-title">Что проверяем</div>
+      <div class="gc-check">
+        <span class="gc-check-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></span>
+        Доступ AI-ботов в robots.txt — GPTBot, ClaudeBot, PerplexityBot, YandexBot
+      </div>
+      <div class="gc-check">
+        <span class="gc-check-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></span>
+        Микроразметка Schema.org и привязка бренда
+      </div>
+      <div class="gc-check">
+        <span class="gc-check-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></span>
+        Структура заголовков и контента под машинное извлечение
+      </div>
+      <div class="gc-check">
+        <span class="gc-check-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></span>
+        Фактологическая плотность и сигналы для быстрых ответов
+      </div>
+    </div>
+
+    <div class="gc-card">
+      <div class="gc-card-eyebrow">Проверка страницы</div>
+      <div class="gc-card-title">Укажите адрес — покажем отчёт</div>
+
+      {% if form.errors %}
+        <div class="gc-err">
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}{{ error }}<br>{% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="/geo-check/">
+        {% csrf_token %}
+        <label class="gc-label" for="id_url">Адрес страницы</label>
+        <input class="gc-input mono" id="id_url" name="url" type="text"
+               placeholder="https://ваш-сайт.ру/stranica"
+               value="{{ form.url.value|default:'' }}" required>
+        <p class="gc-hint">Укажите конкретную страницу, которую хотите проверить — например, статью или посадочную.</p>
+
+        <div class="gc-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg>
+          Результат откроется на странице сразу после проверки
+        </div>
+
+        <!-- honeypot: не трогать, поле-ловушка для ботов -->
+        <div class="gc-hp" aria-hidden="true">
+          <input id="id_website" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+        <button class="gc-submit" type="submit">Проверить страницу
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"></path></svg>
+        </button>
+      </form>
+
+      <div class="gc-foot">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+        Бесплатно и без регистрации. Проверка занимает несколько секунд.
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer style="border-top:1px solid rgba(21,20,15,0.08);">
+  <div style="max-width:1200px;margin:0 auto;padding:54px 24px 40px;display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;">
+    <div style="flex:1 1 280px;min-width:240px;">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
+        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+        <div style="display:flex;flex-direction:column;line-height:1.05;"><span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span><span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span></div>
+      </div>
+      <p style="font-size:14px;color:#8A857A;line-height:1.55;margin:0;max-width:300px;">Инженерный GEO/AI-аудит с готовым кодом. Не оценка, а конкретные строки, которые копируете и вставляете.</p>
+    </div>
+    <div style="display:flex;gap:54px;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Продукт</span>
+        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Возможности</a>
+        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Аудит</a>
+        <a href="/#pricing" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Тарифы</a>
+        <a href="/blog/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Блог</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Документы</span>
+        <a href="/requisites/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Реквизиты</a>
+        <a href="/offer/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Оферта</a>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Поддержка</a>
+      </div>
+    </div>
+  </div>
+  <div style="border-top:1px solid rgba(21,20,15,0.08);">
+    <div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9A958B;">
+      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
+      <span>Сделано для рунета · Яндекс Нейро + ChatGPT</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

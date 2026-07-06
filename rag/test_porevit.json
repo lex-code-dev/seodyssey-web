@@ -1,0 +1,414 @@
+{
+  "url": "https://porevit.ru",
+  "checks": {
+    "http": {
+      "status": "ok",
+      "url": "https://porevit.ru",
+      "is_up": true,
+      "successes": 3,
+      "attempts": [
+        {
+          "ok": true,
+          "http_status": 200
+        },
+        {
+          "ok": true,
+          "http_status": 200
+        },
+        {
+          "ok": true,
+          "http_status": 200
+        }
+      ],
+      "last_http_status": 200,
+      "summary": {
+        "title": "HTTP: сайт доступен",
+        "lines": [
+          "Последний статус: 200"
+        ]
+      }
+    },
+    "dns": {
+      "status": "ok",
+      "error": null,
+      "summary": {
+        "title": "DNS: резолвится",
+        "lines": []
+      }
+    },
+    "ssl": {
+      "status": "ok",
+      "expires_in_days": 41,
+      "warn_days": 14,
+      "summary": {
+        "title": "SSL: всё ок",
+        "lines": [
+          "Осталось дней: 41"
+        ]
+      }
+    },
+    "domain": {
+      "status": "ok",
+      "expires_in_days": 36,
+      "warn_days": 30,
+      "expires_raw": "2026-06-15T21:00:00Z",
+      "summary": {
+        "title": "Домен: всё ок",
+        "lines": [
+          "Осталось дней: 36"
+        ]
+      }
+    },
+    "traffic": {
+      "status": "warn",
+      "prev": 6135,
+      "current": 5188,
+      "delta_pct": -15.44,
+      "threshold_pct": 20,
+      "metric": "seo_visits_week",
+      "label": "Поисковый трафик (визиты) WoW"
+    },
+    "index": {
+      "status": "ok",
+      "prev": 1007,
+      "current": 1008,
+      "delta_pct": 0.1,
+      "threshold_pct": 10
+    },
+    "excluded": {
+      "status": "ok",
+      "prev": 57,
+      "current": 54,
+      "delta_pct": -5.26,
+      "metric": "excluded_pages",
+      "label": "Исключённые страницы WoW",
+      "threshold_pct": 10,
+      "direction": "increase"
+    },
+    "sqi": {
+      "status": "ok",
+      "prev": 510,
+      "current": 510,
+      "delta": 0,
+      "metric": "sqi",
+      "label": "ИКС WoW",
+      "threshold_points": 10
+    },
+    "metrics": {
+      "status": "warn",
+      "metrics": {
+        "seo_visits_week": 5188,
+        "indexed_pages": 1008,
+        "excluded_pages": 54,
+        "sqi": 510,
+        "traffic_source": "metrika:trafficSource=organic",
+        "traffic_window": "2026-04-27 — 2026-05-03",
+        "traffic_prev_window": "2026-04-20 — 2026-04-26",
+        "traffic_prev_week": 6135,
+        "indexed_source": "webmaster:summary"
+      },
+      "summary": {
+        "status": "warn",
+        "badge": "WARNING",
+        "title": "Есть изменения в SEO-метриках",
+        "lines": [
+          "Поисковый трафик: 6135 → 5188 (-15.44%)"
+        ]
+      },
+      "checks": {
+        "traffic": {
+          "status": "warn",
+          "prev": 6135,
+          "current": 5188,
+          "delta_pct": -15.44,
+          "threshold_pct": 20,
+          "metric": "seo_visits_week",
+          "label": "Поисковый трафик (визиты) WoW"
+        },
+        "index": {
+          "status": "ok",
+          "prev": 1007,
+          "current": 1008,
+          "delta_pct": 0.1,
+          "threshold_pct": 10
+        },
+        "excluded": {
+          "status": "ok",
+          "prev": 57,
+          "current": 54,
+          "delta_pct": -5.26,
+          "metric": "excluded_pages",
+          "label": "Исключённые страницы WoW",
+          "threshold_pct": 10,
+          "direction": "increase"
+        },
+        "sqi": {
+          "status": "ok",
+          "prev": 510,
+          "current": 510,
+          "delta": 0,
+          "metric": "sqi",
+          "label": "ИКС WoW",
+          "threshold_points": 10
+        }
+      }
+    },
+    "webmaster_missing_description": {
+      "status": "warn",
+      "issue_code": "webmaster_missing_description",
+      "source": "yandex_webmaster",
+      "external_code": "DOCUMENTS_MISSING_DESCRIPTION",
+      "external_title": "DOCUMENTS_MISSING_DESCRIPTION",
+      "external_description": "",
+      "external_severity": "POSSIBLE_PROBLEM",
+      "external_state": "PRESENT",
+      "summary": {
+        "title": "На части страниц отсутствует meta description",
+        "lines": [
+          "DOCUMENTS_MISSING_DESCRIPTION"
+        ]
+      },
+      "external_status": "",
+      "category": "meta",
+      "raw_payload": {
+        "code": "DOCUMENTS_MISSING_DESCRIPTION",
+        "severity": "POSSIBLE_PROBLEM",
+        "state": "PRESENT",
+        "last_state_update": "2026-04-08T05:26:08.850+03:00"
+      }
+    },
+    "webmaster_big_favicon_absent": {
+      "status": "warn",
+      "issue_code": "webmaster_big_favicon_absent",
+      "source": "yandex_webmaster",
+      "external_code": "BIG_FAVICON_ABSENT",
+      "external_title": "BIG_FAVICON_ABSENT",
+      "external_description": "",
+      "external_severity": "RECOMMENDATION",
+      "external_state": "PRESENT",
+      "summary": {
+        "title": "Отсутствует favicon высокого разрешения",
+        "lines": [
+          "BIG_FAVICON_ABSENT"
+        ]
+      },
+      "external_status": "",
+      "category": "meta",
+      "raw_payload": {
+        "code": "BIG_FAVICON_ABSENT",
+        "severity": "RECOMMENDATION",
+        "state": "PRESENT",
+        "last_state_update": "2026-05-09T20:38:48.094+03:00"
+      }
+    },
+    "webmaster_mobile_usability_issue": {
+      "status": "warn",
+      "issue_code": "webmaster_mobile_usability_issue",
+      "source": "yandex_webmaster",
+      "external_code": "NOT_MOBILE_FRIENDLY",
+      "external_title": "NOT_MOBILE_FRIENDLY",
+      "external_description": "",
+      "external_severity": "RECOMMENDATION",
+      "external_state": "PRESENT",
+      "summary": {
+        "title": "Есть проблемы с оптимизацией для мобильных устройств",
+        "lines": [
+          "NOT_MOBILE_FRIENDLY"
+        ]
+      },
+      "external_status": "",
+      "category": "mobile",
+      "raw_payload": {
+        "code": "NOT_MOBILE_FRIENDLY",
+        "severity": "RECOMMENDATION",
+        "state": "PRESENT",
+        "last_state_update": "2026-05-09T23:53:09.000+03:00"
+      }
+    },
+    "webmaster_ssl_invalid": {
+      "status": "fail",
+      "issue_code": "webmaster_ssl_invalid",
+      "source": "yandex_webmaster",
+      "external_code": "SSL_CERTIFICATE_ERROR",
+      "external_title": "SSL_CERTIFICATE_ERROR",
+      "external_description": "",
+      "external_severity": "CRITICAL",
+      "external_state": "PRESENT",
+      "summary": {
+        "title": "Некорректная настройка SSL-сертификата",
+        "lines": [
+          "SSL_CERTIFICATE_ERROR"
+        ]
+      },
+      "external_status": "",
+      "category": "security_ssl",
+      "raw_payload": {
+        "code": "SSL_CERTIFICATE_ERROR",
+        "severity": "CRITICAL",
+        "state": "PRESENT",
+        "last_state_update": "2026-04-08T05:26:08.850+03:00"
+      }
+    },
+    "webmaster": {
+      "status": "fail",
+      "count_present": 4,
+      "summary": {
+        "status": "fail",
+        "badge": "FAIL",
+        "title": "Есть критичные проблемы из Яндекс.Вебмастера",
+        "lines": [
+          "На части страниц отсутствует meta description",
+          "Отсутствует favicon высокого разрешения",
+          "Есть проблемы с оптимизацией для мобильных устройств"
+        ]
+      },
+      "checks": {
+        "webmaster_missing_description": {
+          "status": "warn",
+          "issue_code": "webmaster_missing_description",
+          "source": "yandex_webmaster",
+          "external_code": "DOCUMENTS_MISSING_DESCRIPTION",
+          "external_title": "DOCUMENTS_MISSING_DESCRIPTION",
+          "external_description": "",
+          "external_severity": "POSSIBLE_PROBLEM",
+          "external_state": "PRESENT",
+          "summary": {
+            "title": "На части страниц отсутствует meta description",
+            "lines": [
+              "DOCUMENTS_MISSING_DESCRIPTION"
+            ]
+          },
+          "external_status": "",
+          "category": "meta",
+          "raw_payload": {
+            "code": "DOCUMENTS_MISSING_DESCRIPTION",
+            "severity": "POSSIBLE_PROBLEM",
+            "state": "PRESENT",
+            "last_state_update": "2026-04-08T05:26:08.850+03:00"
+          }
+        },
+        "webmaster_big_favicon_absent": {
+          "status": "warn",
+          "issue_code": "webmaster_big_favicon_absent",
+          "source": "yandex_webmaster",
+          "external_code": "BIG_FAVICON_ABSENT",
+          "external_title": "BIG_FAVICON_ABSENT",
+          "external_description": "",
+          "external_severity": "RECOMMENDATION",
+          "external_state": "PRESENT",
+          "summary": {
+            "title": "Отсутствует favicon высокого разрешения",
+            "lines": [
+              "BIG_FAVICON_ABSENT"
+            ]
+          },
+          "external_status": "",
+          "category": "meta",
+          "raw_payload": {
+            "code": "BIG_FAVICON_ABSENT",
+            "severity": "RECOMMENDATION",
+            "state": "PRESENT",
+            "last_state_update": "2026-05-09T20:38:48.094+03:00"
+          }
+        },
+        "webmaster_mobile_usability_issue": {
+          "status": "warn",
+          "issue_code": "webmaster_mobile_usability_issue",
+          "source": "yandex_webmaster",
+          "external_code": "NOT_MOBILE_FRIENDLY",
+          "external_title": "NOT_MOBILE_FRIENDLY",
+          "external_description": "",
+          "external_severity": "RECOMMENDATION",
+          "external_state": "PRESENT",
+          "summary": {
+            "title": "Есть проблемы с оптимизацией для мобильных устройств",
+            "lines": [
+              "NOT_MOBILE_FRIENDLY"
+            ]
+          },
+          "external_status": "",
+          "category": "mobile",
+          "raw_payload": {
+            "code": "NOT_MOBILE_FRIENDLY",
+            "severity": "RECOMMENDATION",
+            "state": "PRESENT",
+            "last_state_update": "2026-05-09T23:53:09.000+03:00"
+          }
+        },
+        "webmaster_ssl_invalid": {
+          "status": "fail",
+          "issue_code": "webmaster_ssl_invalid",
+          "source": "yandex_webmaster",
+          "external_code": "SSL_CERTIFICATE_ERROR",
+          "external_title": "SSL_CERTIFICATE_ERROR",
+          "external_description": "",
+          "external_severity": "CRITICAL",
+          "external_state": "PRESENT",
+          "summary": {
+            "title": "Некорректная настройка SSL-сертификата",
+            "lines": [
+              "SSL_CERTIFICATE_ERROR"
+            ]
+          },
+          "external_status": "",
+          "category": "security_ssl",
+          "raw_payload": {
+            "code": "SSL_CERTIFICATE_ERROR",
+            "severity": "CRITICAL",
+            "state": "PRESENT",
+            "last_state_update": "2026-04-08T05:26:08.850+03:00"
+          }
+        }
+      },
+      "raw_present_problems": [
+        {
+          "code": "DOCUMENTS_MISSING_DESCRIPTION",
+          "severity": "POSSIBLE_PROBLEM",
+          "state": "PRESENT",
+          "last_state_update": "2026-04-08T05:26:08.850+03:00"
+        },
+        {
+          "code": "BIG_FAVICON_ABSENT",
+          "severity": "RECOMMENDATION",
+          "state": "PRESENT",
+          "last_state_update": "2026-05-09T20:38:48.094+03:00"
+        },
+        {
+          "code": "NOT_MOBILE_FRIENDLY",
+          "severity": "RECOMMENDATION",
+          "state": "PRESENT",
+          "last_state_update": "2026-05-09T23:53:09.000+03:00"
+        },
+        {
+          "code": "SSL_CERTIFICATE_ERROR",
+          "severity": "CRITICAL",
+          "state": "PRESENT",
+          "last_state_update": "2026-04-08T05:26:08.850+03:00"
+        }
+      ]
+    }
+  },
+  "metrics": {
+    "seo_visits_week": 5188,
+    "indexed_pages": 1008,
+    "excluded_pages": 54,
+    "sqi": 510,
+    "traffic_source": "metrika:trafficSource=organic",
+    "traffic_window": "2026-04-27 — 2026-05-03",
+    "traffic_prev_window": "2026-04-20 — 2026-04-26",
+    "traffic_prev_week": 6135,
+    "indexed_source": "webmaster:summary"
+  },
+  "summary": {
+    "status": "fail",
+    "badge": "FAIL",
+    "title": "Есть проблемы",
+    "lines": []
+  },
+  "alerts": {
+    "sent_fingerprints": [
+      "traffic:drop:warn"
+    ],
+    "dedup_enabled": true
+  }
+}

@@ -1,10 +1,165 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "ui/base.html" %}
+{% block title %}{{ item.brand }} · История запросов{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:20px;">
+  <a href="{% url 'ai_queries:history' %}" class="btn-ghost btn-sm">← К истории</a>
+</div>
+
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">АНАЛИЗ ОТ {{ item.created_at|date:"d.m.Y H:i" }}</div>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <h1 class="page-title">{{ item.brand }}</h1>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button id="visibility-btn" onclick="runVisibilityCheck()" class="btn-ghost">Проверить в ChatGPT</button>
+      <button id="copy-btn" onclick="copyQueries()" class="btn-ghost">Скопировать список</button>
+    </div>
+  </div>
+  <p class="page-sub">
+    {{ item.theme|join:", " }}
+    {% if item.geo.city or item.geo.country %} · {{ item.geo.city }}{% if item.geo.city and item.geo.country %}, {% endif %}{{ item.geo.country }}{% endif %}
+    · {{ item.input_url }}
+  </p>
+</div>
+
+<div class="card card-pad-lg">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th style="width:32px;">#</th>
+        <th>Запрос</th>
+        <th style="width:110px;">Интент</th>
+        <th class="r" style="width:100px;">Спрос</th>
+        <th class="c" style="width:70px;">Яндекс</th>
+        <th class="c" style="width:70px;">Google</th>
+        <th class="c" style="width:80px;">ChatGPT</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="numeric text-muted-2">{{ forloop.counter }}</td>
+        <td style="font-size:13.5px;color:var(--ink);line-height:1.4;">{{ row.query }}</td>
+        <td>
+          {% if row.intent %}
+          <span class="tag">
+            {% if row.intent == 'информационный' %}Инфо
+            {% elif row.intent == 'коммерческий' %}Коммерция
+            {% elif row.intent == 'сравнение' %}Сравнение
+            {% elif row.intent == 'локальный' %}Локальный
+            {% elif row.intent == 'репутация' %}Репутация
+            {% else %}Прочее{% endif %}
+          </span>
+          {% else %}<span class="text-muted-2">—</span>{% endif %}
+        </td>
+        <td class="r numeric" style="font-size:13px;
+          {% if row.count >= 10000 %}color:var(--warn-fg);
+          {% elif row.count >= 1000 %}color:var(--ink);
+          {% elif row.count %}color:var(--muted);
+          {% else %}color:var(--tertiary);{% endif %}">
+          {% if row.count %}{{ row.count|stringformat:"d" }}{% else %}—{% endif %}
+        </td>
+        <td class="c text-muted-2">—</td>
+        <td class="c text-muted-2">—</td>
+        <td class="c chatgpt-cell" id="gpt-{{ forloop.counter0 }}" data-query="{{ row.query }}">
+          {% if item.visibility and row.query in item.visibility %}
+            {% if item.visibility|dictsort:row.query %}
+              <span style="color:var(--green,#16a34a);font-weight:600;">✓</span>
+            {% else %}
+              <span class="text-muted-2">—</span>
+            {% endif %}
+          {% else %}
+            <span class="text-muted-2">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p style="font-size:12px;color:var(--muted-2);margin-top:14px;line-height:1.6;">
+  Запросы без данных по спросу могут активно использоваться в AI-поиске — там паттерны поиска отличаются от Яндекса.
+</p>
+
+{{ item.visibility|json_script:"visibility-data" }}
+<script>
+window._lastQueries = {{ item.ai_queries|safe }};
+var _visData = document.getElementById('visibility-data');
+window._savedVisibility = _visData ? JSON.parse(_visData.textContent) : {};
+
+// Восстанавливаем сохранённые результаты при загрузке
+document.querySelectorAll('.chatgpt-cell').forEach(function(cell) {
+  var query = cell.getAttribute('data-query');
+  if (window._savedVisibility && query in window._savedVisibility) {
+    var val = window._savedVisibility[query];
+    if (val && val.chatgpt === true) {
+      cell.innerHTML = '<span style="color:var(--green,#16a34a);font-weight:600;">✓</span>';
+    } else if (val && val.chatgpt === false) {
+      cell.innerHTML = '<span class="text-muted-2">—</span>';
+    }
+  }
+});
+
+// Всегда разблокируем кнопку после загрузки
+document.getElementById('visibility-btn').disabled = false;
+
+function runVisibilityCheck() {
+  var btn = document.getElementById('visibility-btn');
+  btn.textContent = 'Проверяю…';
+  btn.disabled = true;
+
+  var cells = document.querySelectorAll('.chatgpt-cell');
+  var csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  var total = cells.length;
+  var done = 0;
+
+  cells.forEach(function(cell) {
+    var query = cell.getAttribute('data-query');
+    cell.innerHTML = '<span style="color:var(--muted-2);font-size:11px;">...</span>';
+
+    fetch('{% url "ai_queries:check_single_visibility" item.pk %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrf,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({query: query}),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.chatgpt === true) {
+        cell.innerHTML = '<span style="color:var(--green,#16a34a);font-weight:600;">✓</span>';
+      } else {
+        cell.innerHTML = '<span class="text-muted-2">—</span>';
+      }
+    })
+    .catch(function() {
+      cell.innerHTML = '<span class="text-muted-2">—</span>';
+    })
+    .finally(function() {
+      done++;
+      btn.textContent = 'Проверяю… ' + done + '/' + total;
+      if (done === total) {
+        btn.textContent = '✓ Проверено';
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+function copyQueries() {
+  var queries = (window._lastQueries || []).join('\n');
+  navigator.clipboard.writeText(queries).then(function() {
+    var btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Скопировано';
+    setTimeout(function() { btn.textContent = 'Скопировать список'; }, 2000);
+  });
+}
+
+function getCookie(name) {
+  var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+</script>
+{% endblock %}

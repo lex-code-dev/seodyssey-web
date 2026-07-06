@@ -58,317 +58,202 @@
           { "@type": "ListItem", "position": 2, "name": "Блог", "item": "https://seodyssey.ru/blog/" },
           { "@type": "ListItem", "position": 3, "name": "{{ post.title|escapejs }}", "item": "https://seodyssey.ru/blog/{{ post.slug }}/" }
         ]
-      }
+      }{% if post.faq_items.all %},
+      {
+        "@type": "FAQPage",
+        "@id": "https://seodyssey.ru/blog/{{ post.slug }}/#faq",
+        "mainEntity": [
+          {% for item in post.faq_items.all %}{
+            "@type": "Question",
+            "name": "{{ item.question|escapejs }}",
+            "acceptedAnswer": { "@type": "Answer", "text": "{{ item.answer|escapejs }}" }
+          }{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ]
+      }{% endif %}
     ]
   }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 16px; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: #15140F; background: #F7F4EE; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    ::selection { background: #6378FF; color: #fff; }
+    a { color: inherit; text-decoration: none; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
-    :root {
-      --bg: #f4f3ee;
-      --bg-card: #ffffff;
-      --bg-dark: #0c0c0d;
-      --ink: #0c0c0d;
-      --ink-2: #3a3a3d;
-      --ink-3: #6f6f74;
-      --ink-4: #9a9a9f;
-      --line: #e6e4dd;
-      --line-2: #ebe9e2;
-      --brand: #6378ff;
-      --brand-2: #4a5cdb;
-      --brand-soft: #e9ecff;
-      --brand-tint: #f1f3ff;
-    }
-
-    body {
-      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      font-feature-settings: "ss01", "cv11";
-      display: flex; flex-direction: column; min-height: 100vh;
-    }
-    a { text-decoration: none; color: inherit; }
-    .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-feature-settings: "ss01"; }
-
-    /* NAV */
-    .nav {
-      background: rgba(244, 243, 238, 0.85);
-      backdrop-filter: saturate(180%) blur(10px);
-      -webkit-backdrop-filter: saturate(180%) blur(10px);
-      border-bottom: 1px solid var(--line);
-      padding: 0 32px;
-      height: 60px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-logo { display: flex; align-items: center; gap: 10px; }
-    .nav-logo-mark {
-      width: 28px; height: 28px; border-radius: 8px;
-      background: linear-gradient(135deg, #7d8eff 0%, #5567e6 100%);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 1px 0 0 rgba(255,255,255,0.7) inset, 0 6px 14px -4px rgba(99,120,255,0.45);
-    }
-    .nav-logo-text { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; line-height: 1.15; }
-    .nav-logo-sub { font-size: 10px; color: var(--ink-4); margin-top: 1px; letter-spacing: 0.3px; }
-    .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 9px 18px; border-radius: 10px;
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      cursor: pointer; border: none;
-      transition: transform 0.15s, box-shadow 0.15s;
-      letter-spacing: -0.1px;
-    }
-    .btn-dark { background: var(--ink); color: #fff; box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 4px 14px -4px rgba(0,0,0,0.25); }
-    .btn-dark:hover { transform: translateY(-1px); box-shadow: 0 1px 0 0 rgba(255,255,255,0.08) inset, 0 8px 18px -6px rgba(0,0,0,0.3); }
-
-    /* PAGE */
-    .page {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      padding: 40px 32px 88px;
-      background:
-        radial-gradient(800px 420px at 84% -12%, rgba(99,120,255,0.13), transparent 60%),
-        var(--bg);
-    }
-    .page::before {
-      content: "";
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(to right, rgba(12,12,13,0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(12,12,13,0.03) 1px, transparent 1px);
-      background-size: 56px 56px;
-      mask-image: radial-gradient(ellipse 80% 40% at 50% 4%, #000 10%, transparent 66%);
-      -webkit-mask-image: radial-gradient(ellipse 80% 40% at 50% 4%, #000 10%, transparent 66%);
-      pointer-events: none;
-    }
-    .wrap { position: relative; max-width: 720px; margin: 0 auto; }
-
-    /* BACK */
-    .back {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-size: 13px; font-weight: 600; color: var(--ink-3);
-      padding: 8px 14px 8px 11px; border-radius: 10px;
-      border: 1px solid var(--line); background: rgba(255,255,255,0.6);
-      transition: color 0.15s, border-color 0.15s, transform 0.15s;
-      margin-bottom: 30px;
-    }
-    .back:hover { color: var(--ink); border-color: var(--brand-soft); transform: translateX(-2px); }
-    .back svg { transition: transform 0.15s; }
-    .back:hover svg { transform: translateX(-2px); }
-
-    /* ARTICLE HEAD */
-    .art-head { margin-bottom: 32px; }
-    .art-cover {
-      margin-bottom: 28px; border-radius: 18px; overflow: hidden;
-      aspect-ratio: 16 / 9; background: var(--line-2); border: 1px solid var(--line);
-    }
+    .art { max-width: 760px; margin: 0 auto; padding: clamp(32px,4vw,52px) 24px clamp(60px,7vw,90px); }
+    .art-back { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: #6378FF; margin-bottom: 28px; }
+    .art-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #9A958B; margin-bottom: 16px; }
+    .art-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #9A958B; }
+    .art h1 { font-size: clamp(30px,4.2vw,48px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 700; margin: 0 0 26px; }
+    .art-cover { height: clamp(180px,26vw,300px); border-radius: 20px; background: linear-gradient(135deg,#15140F 0%,#2A2F5C 55%,#6378FF 130%); margin-bottom: 38px; overflow: hidden; }
     .art-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 500; color: var(--brand-2);
-      text-transform: uppercase; letter-spacing: 1.2px;
-      margin-bottom: 16px;
-    }
-    .eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--brand); }
-    article h1 {
-      font-size: 40px; font-weight: 800;
-      letter-spacing: -1.4px; line-height: 1.08;
-      text-wrap: balance;
-    }
-    .art-lead {
-      font-size: 18.5px; color: var(--ink-3); line-height: 1.6;
-      margin-top: 18px; text-wrap: pretty;
-    }
-    .art-meta {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px; color: var(--ink-4); letter-spacing: 0.2px;
-      margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line);
-    }
-    .art-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-4); }
 
     /* PROSE */
-    .prose { font-size: 17px; color: var(--ink-2); line-height: 1.75; }
+    .prose { font-size: 17px; color: #2A2822; line-height: 1.75; }
     .prose > * + * { margin-top: 1.15em; }
-    .prose h2 {
-      font-size: 26px; font-weight: 700; color: var(--ink);
-      letter-spacing: -0.6px; line-height: 1.2;
-      margin-top: 2em; margin-bottom: 0.1em; text-wrap: balance;
-    }
-    .prose h3 {
-      font-size: 20px; font-weight: 700; color: var(--ink);
-      letter-spacing: -0.3px; line-height: 1.3;
-      margin-top: 1.6em; margin-bottom: 0.1em;
-    }
-    .prose p { text-wrap: pretty; }
-    .prose a { color: var(--brand-2); font-weight: 600; text-decoration: underline; text-decoration-color: var(--brand-soft); text-underline-offset: 3px; }
-    .prose a:hover { text-decoration-color: var(--brand); }
-    .prose strong { font-weight: 700; color: var(--ink); }
+    .prose h2 { font-size: 26px; font-weight: 700; color: #15140F; letter-spacing: -0.02em; line-height: 1.2; margin-top: 2em; margin-bottom: 0.1em; }
+    .prose h3 { font-size: 20px; font-weight: 700; color: #15140F; letter-spacing: -0.01em; line-height: 1.3; margin-top: 1.6em; margin-bottom: 0.1em; }
+    .prose a { color: #4F5BE0; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(99,120,255,0.35); text-underline-offset: 3px; }
+    .prose a:hover { text-decoration-color: #6378FF; }
+    .prose strong { font-weight: 700; color: #15140F; }
     .prose ul, .prose ol { padding-left: 1.3em; }
     .prose li { margin-top: 0.5em; padding-left: 0.3em; }
-    .prose li::marker { color: var(--brand-2); }
-    .prose img { max-width: 100%; border-radius: 14px; border: 1px solid var(--line); display: block; }
-    .prose blockquote {
-      border-left: 3px solid var(--brand); background: var(--brand-tint);
-      padding: 14px 20px; border-radius: 0 12px 12px 0;
-      color: var(--ink-2); font-size: 16.5px;
-    }
+    .prose li::marker { color: #4F5BE0; }
+    .prose img { max-width: 100%; border-radius: 14px; border: 1px solid rgba(21,20,15,0.1); display: block; }
+    .prose blockquote { border-left: 3px solid #6378FF; background: #EEF0FF; padding: 14px 20px; border-radius: 0 12px 12px 0; color: #2A2822; font-size: 16.5px; }
     .prose blockquote p { margin: 0; }
-    .prose code {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.88em;
-      background: #efeee8; border: 1px solid var(--line); border-radius: 6px;
-      padding: 1px 6px; color: var(--ink);
-    }
-    .prose pre {
-      background: var(--bg-dark); color: #e8e8ea;
-      padding: 18px 20px; overflow: auto; border-radius: 12px;
-      font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6;
-    }
+    .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: #EDEBE3; border: 1px solid rgba(21,20,15,0.1); border-radius: 6px; padding: 1px 6px; color: #15140F; }
+    .prose pre { background: #15140F; color: #EDEBE3; padding: 18px 20px; overflow: auto; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6; }
     .prose pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
-    .prose hr { border: none; border-top: 1px solid var(--line); margin: 2em 0; }
+    .prose hr { border: none; border-top: 1px solid rgba(21,20,15,0.1); margin: 2em 0; }
+    .prose table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .prose thead tr { background: #15140F; color: #F2EFE8; }
+    .prose th { text-align: left; padding: 13px 16px; font-weight: 600; }
+    .prose td { padding: 12px 16px; color: #4A463E; border-top: 1px solid rgba(21,20,15,0.08); }
 
     /* CTA */
-    .cta {
-      margin-top: 56px;
-      position: relative; overflow: hidden;
-      background: var(--bg-dark);
-      border-radius: 20px;
-      padding: 34px 36px;
-      box-shadow: 0 24px 48px -28px rgba(12,12,13,0.4);
-    }
-    .cta::before {
-      content: ""; position: absolute; inset: 0;
-      background: radial-gradient(520px 240px at 88% -30%, rgba(99,120,255,0.42), transparent 62%);
-      pointer-events: none;
-    }
-    .cta-inner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap; }
-    .cta-eyebrow {
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
-      color: #9aa6ff; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px;
-    }
-    .cta-title { font-size: 23px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.2; text-wrap: balance; }
-    .cta-sub { font-size: 14.5px; color: rgba(255,255,255,0.55); margin-top: 10px; line-height: 1.55; max-width: 380px; }
-    .cta-btn {
-      flex-shrink: 0;
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 22px; border-radius: 12px;
-      background: #fff; color: var(--ink);
-      font-size: 14.5px; font-weight: 700; letter-spacing: -0.1px;
-      box-shadow: 0 8px 22px -8px rgba(99,120,255,0.5);
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -10px rgba(99,120,255,0.6); }
+    .art-cta { margin: 44px 0; background: #15140F; border-radius: 22px; padding: clamp(28px,4vw,40px); position: relative; overflow: hidden; }
+    .art-cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 85% 120%, rgba(99,120,255,0.4), transparent 60%); }
+    .art-cta-inner { position: relative; }
+    .art-cta-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,120,255,0.18); border: 1px solid rgba(99,120,255,0.3); color: #B7C0FF; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; margin-bottom: 16px; }
+    .art-cta h3 { font-size: clamp(22px,2.6vw,28px); font-weight: 700; letter-spacing: -0.02em; color: #F7F4EE; margin: 0 0 10px; }
+    .art-cta p { font-size: 16px; line-height: 1.55; color: #B6B1A6; margin: 0 0 22px; max-width: 440px; }
+    .art-cta-btn { display: inline-block; background: #6378FF; color: #fff; padding: 14px 28px; border-radius: 13px; font-weight: 600; font-size: 16px; box-shadow: 0 14px 34px -14px rgba(99,120,255,0.8); transition: transform .15s; }
+    .art-cta-btn:hover { transform: translateY(-2px); }
 
-    /* FOOTER */
-    .footer {
-      background: var(--bg-dark);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 28px 32px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
-    .footer-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.3px; }
-    .footer-links { display: flex; gap: 20px; }
-    .footer-link { font-size: 12px; color: rgba(255,255,255,0.5); transition: color 0.15s; }
-    .footer-link:hover { color: rgba(255,255,255,0.85); }
+    /* FAQ */
+    .art-faq { margin-top: 44px; }
+    .art-faq h2 { font-size: 26px; font-weight: 700; color: #15140F; letter-spacing: -0.02em; margin: 0 0 14px; }
+    .art-faq-item { background: #fff; border: 1px solid rgba(21,20,15,0.1); border-radius: 14px; padding: 4px 20px; margin-top: 10px; }
+    .art-faq-item summary { list-style: none; cursor: pointer; font-weight: 600; font-size: 16.5px; padding: 16px 0; color: #15140F; }
+    .art-faq-item summary::-webkit-details-marker { display: none; }
+    .art-faq-item p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0 0 16px; }
 
-    @media (max-width: 560px) {
-      .nav { padding: 0 16px; }
-      .nav-logo-sub { display: none; }
-      .page { padding: 28px 16px 64px; }
-      article h1 { font-size: 30px; letter-spacing: -1px; }
-      .art-lead { font-size: 16.5px; }
-      .prose { font-size: 16px; }
-      .prose h2 { font-size: 22px; }
-      .cta { padding: 26px 22px; }
-      .cta-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
-      .cta-btn { width: 100%; justify-content: center; }
-      .footer { flex-direction: column; padding: 22px 16px; gap: 12px; text-align: center; }
+    /* ABOUT */
+    .art-about { margin-top: 44px; padding: 26px 28px; background: #FAF8F4; border: 1px solid rgba(21,20,15,0.08); border-radius: 16px; }
+    .art-about-label { font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #9A958B; margin-bottom: 12px; }
+    .art-about p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
-
-<!-- NAV -->
-<nav class="nav">
-  <a href="/" class="nav-logo">
-    <div class="nav-logo-mark" style="background:none;box-shadow:none;padding:0;">
-      <img src="/static/img/spiral-icon.svg" width="28" height="28" alt="SEOdyssey">
+<!-- ===== NAV ===== -->
+<nav style="position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(14px);background:rgba(247,244,238,0.72);border-bottom:1px solid rgba(21,20,15,0.07);">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+    <a href="/" style="display:flex;align-items:center;gap:11px;margin-right:auto;">
+      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+      <span style="display:flex;flex-direction:column;line-height:1.05;">
+        <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span>
+        <span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span>
+      </span>
+    </a>
+    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:14.5px;color:#4A463E;font-weight:500;">
+      <a href="/#audit" style="transition:color .15s;">Возможности</a>
+      <a href="/#audit" style="transition:color .15s;">Аудит</a>
+      <a href="https://seodyssey.ru/geo-check/" style="transition:color .15s;">GEO-проверка</a>
+      <a href="/#pricing" style="transition:color .15s;">Тарифы</a>
+      <a href="/blog/" style="color:#6378FF;font-weight:600;transition:color .15s;">Блог</a>
     </div>
-    <div>
-      <div class="nav-logo-text">SEOdyssey</div>
-      <div class="nav-logo-sub mono">мониторинг сайтов</div>
-    </div>
-  </a>
-  <a href="https://app.seodyssey.ru/" class="btn btn-dark">Перейти в сервис
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-  </a>
+    <a href="https://app.seodyssey.ru/" style="background:#15140F;color:#F7F4EE;padding:10px 18px;border-radius:11px;font-weight:600;font-size:14.5px;transition:transform .15s,background .15s;">Перейти в сервис</a>
+  </div>
 </nav>
 
-<!-- PAGE -->
-<main class="page">
-  <div class="wrap">
-
-    <a class="back" href="{% url 'blog_index' %}">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
+<!-- ===== ARTICLE ===== -->
+<main>
+  <article class="art">
+    <a class="art-back" href="{% url 'blog_index' %}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
       Все статьи
     </a>
 
-    <article>
-      {% if post.cover %}
-        <div class="art-cover"><img src="{{ post.cover.url }}" alt="{{ post.title }}"></div>
-      {% endif %}
-      <header class="art-head">
-        <div class="eyebrow">Блог</div>
-        <h1>{{ post.title }}</h1>
-        {% if post.description %}<p class="art-lead">{{ post.description }}</p>{% endif %}
-        <div class="art-meta">
-          {% if post.published_at %}<span class="date">{{ post.published_at }}</span>{% endif %}
-          {% if post.published_at and post.read_time %}<span class="dot"></span>{% endif %}
-          {% if post.read_time %}<span class="rt">{{ post.read_time }} мин чтения</span>{% endif %}
-        </div>
-      </header>
+    {% if post.cover %}
+      <div class="art-cover"><img src="{{ post.cover.url }}" alt="{{ post.title }}"></div>
+    {% endif %}
 
-      <div class="prose">
-        {{ post.body|safe }}
-      </div>
-    </article>
+    <div class="art-meta">
+      {% if post.published_at %}<span>{{ post.published_at }}</span>{% endif %}
+      {% if post.published_at and post.read_time %}<span class="dot"></span>{% endif %}
+      {% if post.read_time %}<span>{{ post.read_time }} мин чтения</span>{% endif %}
+    </div>
+    <h1>{{ post.title }}</h1>
+
+    <div class="prose">
+      {{ post.body|safe }}
+    </div>
 
     <!-- CTA -->
-    <aside class="cta">
-      <div class="cta-inner">
-        <div>
-          <div class="cta-eyebrow">Бесплатно · GEO-аудит</div>
-          <div class="cta-title">Проверьте свой сайт за пару минут</div>
-          <p class="cta-sub">Узнайте, готова ли ваша страница попадать в ответы нейросетей. Без регистрации.</p>
-        </div>
-        <a class="cta-btn" href="/geo-check/">Проверить сайт
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
+    <div class="art-cta">
+      <div class="art-cta-inner">
+        <div class="art-cta-eyebrow"><span style="width:6px;height:6px;border-radius:50%;background:#9FB0FF;"></span>Бесплатно · GEO-аудит</div>
+        <h3>Проверьте свой сайт за пару минут</h3>
+        <p>Узнайте, готова ли ваша страница попадать в ответы нейросетей. Без регистрации.</p>
+        <a class="art-cta-btn" href="/geo-check/">Проверить сайт →</a>
       </div>
-    </aside>
+    </div>
 
-  </div>
+    {% if post.faq_items.all %}
+    <!-- FAQ: видимый блок + источник для FAQPage JSON-LD -->
+    <section class="art-faq" itemscope itemtype="https://schema.org/FAQPage">
+      <h2>Частые вопросы</h2>
+      {% for item in post.faq_items.all %}
+        <details class="art-faq-item">
+          <summary>{{ item.question }}</summary>
+          <p>{{ item.answer|linebreaksbr }}</p>
+        </details>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- О компании -->
+    <section class="art-about">
+      <div class="art-about-label">О компании</div>
+      <p><strong>SEOdyssey</strong> — сервис мониторинга видимости брендов в ответах нейросетей (Яндекс Нейро, ChatGPT) и GEO/SEO-аудита сайтов. Помогаем брендам и агентствам по всей России отслеживать, как их упоминают и цитируют AI-системы, и улучшать эту видимость.</p>
+    </section>
+  </article>
 </main>
 
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-text">© 2026 SEOdyssey · мониторинг сайтов</div>
-  <div class="footer-links">
-    <a href="/requisites/" class="footer-link">Реквизиты</a>
-    <a href="/offer/" class="footer-link">Оферта</a>
-    <a href="https://t.me/seodyssey" class="footer-link" target="_blank" rel="noopener">Поддержка</a>
+<!-- ===== FOOTER ===== -->
+<footer style="border-top:1px solid rgba(21,20,15,0.08);">
+  <div style="max-width:1200px;margin:0 auto;padding:54px 24px 40px;display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;">
+    <div style="flex:1 1 280px;min-width:240px;">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
+        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+        <div style="display:flex;flex-direction:column;line-height:1.05;"><span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span><span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span></div>
+      </div>
+      <p style="font-size:14px;color:#8A857A;line-height:1.55;margin:0;max-width:300px;">Инженерный GEO/AI-аудит с готовым кодом. Не оценка, а конкретные строки, которые копируете и вставляете.</p>
+    </div>
+    <div style="display:flex;gap:54px;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Продукт</span>
+        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Возможности</a>
+        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Аудит</a>
+        <a href="/#pricing" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Тарифы</a>
+        <a href="/blog/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Блог</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Документы</span>
+        <a href="/requisites/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Реквизиты</a>
+        <a href="/offer/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Оферта</a>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Поддержка</a>
+      </div>
+    </div>
+  </div>
+  <div style="border-top:1px solid rgba(21,20,15,0.08);">
+    <div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9A958B;">
+      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
+      <span>Сделано для рунета · Яндекс Нейро + ChatGPT</span>
+    </div>
   </div>
 </footer>
-
 </body>
 </html>

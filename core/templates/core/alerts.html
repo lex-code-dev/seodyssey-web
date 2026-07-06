@@ -9,8 +9,8 @@
       <p class="text-slate-600 mt-1">Все «ой» в одном месте. Удобно и немножко страшно.</p>
     </div>
     <div class="flex gap-2">
-      <a href="{% url 'integrations' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">Интеграции</a>
-      <a href="{% url 'sites' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold">К сайтам</a>
+      <a href="{% url 'user_settings' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">Интеграции</a>
+      <a href="{% url 'dashboard' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold">К сайтам</a>
     </div>
   </div>
 
@@ -31,7 +31,7 @@
         <a href="{% url 'alert_detail' check_id=a.id %}" class="block p-5 hover:bg-slate-50">
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
-              <div class="font-extrabold text-rose-700">🚨 FAIL · {{ a.site.name }}</div>
+              <div class="font-extrabold text-rose-700">🚨 Ошибка · {{ a.site.name }}</div>
               <div class="text-sm text-slate-600 mt-1 truncate">{% if a.result %}{{ a.result|truncatechars:140 }}{% else %}Проверка упала без текста.{% endif %}</div>
             </div>
             <div class="text-xs text-slate-500 whitespace-nowrap">{{ a.created_at|date:"d.m H:i" }}</div>

@@ -6,7 +6,7 @@
   <div class="flex items-start justify-between gap-4">
     <div>
       <div class="flex items-center gap-2">
-        <span class="text-sm px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">FAIL</span>
+        <span class="text-sm px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">Ошибка</span>
         <h1 class="text-2xl font-extrabold">Алерт</h1>
       </div>
       <p class="text-slate-600 mt-1">Сайт: {{ check.site.name }} · {{ check.created_at|date:"d.m.Y H:i" }}</p>
@@ -22,7 +22,7 @@
       <h2 class="text-lg font-extrabold">Сводка</h2>
       <div class="mt-4 space-y-3">
         <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-          <div class="font-extrabold text-rose-800">Проверка завершилась статусом FAIL</div>
+          <div class="font-extrabold text-rose-800">Проверка завершилась с ошибкой</div>
           <div class="text-sm text-slate-700 mt-1">
             {% if check.result %}{{ check.result|truncatechars:400 }}{% else %}Без деталей. Да, так бывает. Да, это бесит.{% endif %}
           </div>
@@ -56,13 +56,13 @@
         <div class="mt-4 flex flex-col gap-2">
           <button class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm font-semibold" disabled>Создать задачу (позже)</button>
           <button class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm font-semibold" disabled>Экспорт (позже)</button>
-          <a href="{% url 'integrations' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold text-center">Настроить интеграции</a>
+          <a href="{% url 'user_settings' %}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-semibold text-center">Настроить интеграции</a>
         </div>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
         <h2 class="text-lg font-extrabold">Правило</h2>
-        <p class="mt-2 text-sm text-slate-600">Пока правило одно: FAIL = алерт. Дальше добавим WARN/INFO и гибкие пороги.</p>
+        <p class="mt-2 text-sm text-slate-600">Пока правило одно: ошибка = алерт. Дальше добавим уровни важности и гибкие пороги.</p>
       </div>
     </aside>
   </div>

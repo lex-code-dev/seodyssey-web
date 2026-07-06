@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "ui/base.html" %}
+{% block title %}Доступ запрещён · SEOdyssey{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px;">
+  <div style="font-size:96px;font-weight:600;color:var(--line);letter-spacing:-0.06em;line-height:1;font-variant-numeric:tabular-nums;">403</div>
+  <h1 class="page-title-sm">Доступ запрещён</h1>
+  <p style="font-size:14px;color:var(--muted);max-width:360px;line-height:1.6;margin:0;">У вас нет прав для просмотра этой страницы.</p>
+  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+    <a href="/" class="btn-primary">На главную</a>
+    <a href="javascript:history.back()" class="btn-ghost">← Назад</a>
+  </div>
+</div>
+{% endblock %}

@@ -2,62 +2,73 @@
 {% block title %}Отчёт {{ title }} · SEOdyssey{% endblock %}
 
 {% block content %}
-<div class="flex flex-col gap-6">
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-extrabold">Отчёт: {{ title }}</h1>
-      <p class="text-slate-600 mt-1">{{ sites_count }} сайта(ов) · Проверок: {{ checks_total }} · FAIL: {{ fails_total }}</p>
-    </div>
-    <div class="flex gap-2">
-      <a href="{% url 'reports' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold">← К отчётам</a>
-      <button class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold" disabled>Скачать PDF (позже)</button>
-    </div>
+<div style="margin-bottom:20px;">
+  <a href="{% url 'reports' %}" class="btn-ghost btn-sm">← К отчётам</a>
+</div>
+
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">СВОДНЫЙ ОТЧЁТ</div>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <h1 class="page-title">Отчёт: {{ title }}</h1>
+    <button class="btn-ghost" disabled style="opacity:0.55;cursor:not-allowed;">Скачать PDF (позже)</button>
   </div>
+  <p class="page-sub">{{ sites_count }} сайт(а/ов) · Проверок: {{ checks_total }} · Ошибок: <span style="color:var(--fail-fg);">{{ fails_total }}</span></p>
+</div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <h2 class="text-lg font-extrabold">По сайтам</h2>
-      <div class="mt-3 overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="text-slate-500">
-            <tr class="border-b border-slate-200">
-              <th class="text-left py-3 pr-4 font-semibold">Сайт</th>
-              <th class="text-left py-3 pr-4 font-semibold">Проверок</th>
-              <th class="text-left py-3 pr-4 font-semibold">FAIL</th>
-              <th class="text-right py-3 font-semibold">Детали</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-200">
-            {% for row in per_site %}
-              <tr>
-                <td class="py-3 pr-4 font-semibold">{{ row.site.name }}</td>
-                <td class="py-3 pr-4">{{ row.checks }}</td>
-                <td class="py-3 pr-4 {% if row.fails %}text-rose-700 font-extrabold{% else %}text-slate-700{% endif %}">{{ row.fails }}</td>
-                <td class="py-3 text-right"><a class="text-emerald-700 font-semibold" href="{% url 'site_checks' site_id=row.site.id %}">Открыть</a></td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="4" class="py-4 text-slate-500">Данных нет.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+  <div class="tile"><div class="label">Проверок</div><div class="value">{{ checks_total }}</div></div>
+  <div class="tile"><div class="label">Ошибок</div><div class="value" style="color:var(--fail-fg);">{{ fails_total }}</div></div>
+  <div class="tile"><div class="label">ОК-прогонов</div><div class="value">{{ oks_total }}</div></div>
+</div>
 
-    <aside class="space-y-4">
-      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-extrabold">Итоги</h2>
-        <div class="mt-4 space-y-2 text-sm">
-          <div class="flex items-center justify-between"><span>Проверок</span><span class="font-semibold">{{ checks_total }}</span></div>
-          <div class="flex items-center justify-between"><span>FAIL</span><span class="font-semibold text-rose-700">{{ fails_total }}</span></div>
-          <div class="flex items-center justify-between"><span>OK</span><span class="font-semibold">{{ oks_total }}</span></div>
-        </div>
-      </div>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start;">
 
-      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-extrabold">Экспорт</h2>
-        <p class="mt-2 text-sm text-slate-600">Сделаем позже: PDF/CSV, отправка на email, шаринг.</p>
+  <section class="card card-pad-lg">
+    <div class="card-head">
+      <div>
+        <div class="section-title">По сайтам</div>
+        <div class="section-meta" style="margin-top:2px;">Активность за период</div>
       </div>
-    </aside>
-  </div>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Сайт</th>
+          <th class="r">Проверок</th>
+          <th class="r">Ошибок</th>
+          <th class="r"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in per_site %}
+        <tr>
+          <td><div class="cell-primary">{{ row.site.name }}</div></td>
+          <td class="r numeric">{{ row.checks }}</td>
+          <td class="r numeric" style="{% if row.fails %}color:var(--fail-fg);font-weight:500;{% endif %}">{{ row.fails }}</td>
+          <td class="r"><a href="{% url 'site_checks' site_id=row.site.id %}" class="link-accent" style="font-size:12.5px;">Открыть →</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="padding:18px 0;color:var(--muted-2);">Данных нет.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <aside style="display:flex;flex-direction:column;gap:16px;">
+    <div class="card">
+      <div class="section-title" style="margin-bottom:14px;">Итоги</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;"><span class="text-muted">Проверок</span><span class="numeric" style="font-weight:500;">{{ checks_total }}</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;"><span class="text-muted">Ошибок</span><span class="numeric" style="font-weight:500;color:var(--fail-fg);">{{ fails_total }}</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;"><span class="text-muted">ОК</span><span class="numeric" style="font-weight:500;color:var(--ok-fg);">{{ oks_total }}</span></div>
+      </div>
+    </div>
+
+    <div class="card-flat" style="padding:18px 20px;border-radius:12px;">
+      <div class="section-title" style="margin-bottom:10px;">Экспорт</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:0;">PDF, CSV и отправка на email — в следующей версии.</p>
+    </div>
+  </aside>
+
 </div>
 {% endblock %}

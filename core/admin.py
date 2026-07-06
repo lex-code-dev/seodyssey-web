@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db.models import Q, Count
 from .models import Site, SiteMember, CheckRun, IssueSolution
+from landing.models import ServicePrice, BlogPost, FAQItem
 
 
 @admin.register(Site)
@@ -20,6 +21,21 @@ class CheckRunAdmin(admin.ModelAdmin):
     list_display = ("id", "site", "status", "created_at")
     list_filter = ("status",)
 
+from core.models import AIUsage
+
+@admin.register(AIUsage)
+class AIUsageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'month', 'used', 'remaining')
+    list_filter = ('month',)
+    search_fields = ('user__username',)
+    list_editable = ('used',)
+
+    def remaining(self, obj):
+        from core.ai_limits import AI_LIMIT_PER_MONTH, UNLIMITED_USERS
+        if obj.user.username in UNLIMITED_USERS:
+            return '∞'
+        return AI_LIMIT_PER_MONTH - obj.used
+    remaining.short_description = 'Осталось'
 
 @admin.register(IssueSolution)
 class IssueSolutionAdmin(admin.ModelAdmin):
@@ -112,3 +128,40 @@ class IssueSolutionAdmin(admin.ModelAdmin):
             )
 
         return queryset, use_distinct
+
+
+@admin.register(ServicePrice)
+class ServicePriceAdmin(admin.ModelAdmin):
+    list_display = ("title", "code", "price", "old_price", "is_active", "updated_at")
+    list_editable = ("price", "old_price", "is_active")
+    search_fields = ("code", "title")
+
+
+class FAQItemInline(admin.TabularInline):
+    model = FAQItem
+    extra = 3
+    fields = ("order", "question", "answer")
+    ordering = ("order", "id")
+
+
+@admin.register(BlogPost)
+class BlogPostAdmin(admin.ModelAdmin):
+    list_display = ("title", "slug", "is_published", "published_at", "updated_at")
+    list_filter = ("is_published",)
+    search_fields = ("title", "slug", "description")
+    list_editable = ("is_published",)
+    prepopulated_fields = {"slug": ("title",)}
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [FAQItemInline]
+
+    fieldsets = (
+        ("Контент", {
+            "fields": ("title", "slug", "description", "body", "cover"),
+        }),
+        ("Публикация", {
+            "fields": ("is_published", "published_at"),
+        }),
+        ("Служебное", {
+            "fields": ("created_at", "updated_at"),
+        }),
+    )

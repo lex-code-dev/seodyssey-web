@@ -2,65 +2,59 @@
 {% block title %}Помощь · SEOdyssey{% endblock %}
 
 {% block content %}
-<div class="flex flex-col gap-6">
-  <div>
-    <h1 class="text-2xl font-extrabold">Помощь</h1>
-    <p class="text-slate-600 mt-1">Ответы на «что это», «почему так» и «куда делся мой трафик».</p>
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">ЦЕНТР ПОМОЩИ</div>
+  <h1 class="page-title">Частые вопросы</h1>
+  <p class="page-sub">Если не нашли ответ — напишите напрямую, отвечаем быстро.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start;">
+
+  <div class="card card-pad-lg">
+    <details class="faq-item">
+      <summary class="faq-q">SEOdyssey может вмешиваться в сайт?<span class="pm">+</span></summary>
+      <div class="faq-a">Нет. Мониторинг — это только чтение данных. Мы не вносим никаких изменений на вашем сайте.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Почему нет данных по трафику?<span class="pm">+</span></summary>
+      <div class="faq-a">Скорее всего, не подключена Яндекс Метрика или не выбран счётчик для этого сайта. Перейдите на страницу сайта → Интеграции → Метрика.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Почему нет данных Вебмастера?<span class="pm">+</span></summary>
+      <div class="faq-a">Нужно подключить Яндекс через OAuth в разделе Интеграции, а затем привязать конкретный сайт в Вебмастере на странице сайта.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Не приходят уведомления в Telegram<span class="pm">+</span></summary>
+      <div class="faq-a">Проверьте, что в разделе Интеграции указан правильный chat_id и включены уведомления. Получить chat_id можно, написав боту @seodyssey_alert_bot.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Как часто запускаются проверки?<span class="pm">+</span></summary>
+      <div class="faq-a">Проверки запускаются автоматически по расписанию. Также можно запустить проверку вручную на странице сайта.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Что такое AI-видимость?<span class="pm">+</span></summary>
+      <div class="faq-a">Это метрика того, насколько ваш сайт заметен в ответах AI-поисковиков (ChatGPT, Perplexity и других). Функция находится в разработке.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Можно ли добавить один сайт нескольким пользователям?<span class="pm">+</span></summary>
+      <div class="faq-a">Каждый пользователь добавляет сайты самостоятельно. Прогоны и данные у каждого свои — без пересечений.</div>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Как удалить сайт?<span class="pm">+</span></summary>
+      <div class="faq-a">Откройте страницу сайта и нажмите «Удалить» в правом верхнем углу. Сайт можно восстановить, добавив тот же домен повторно.</div>
+    </details>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <section class="lg:col-span-2 space-y-4">
-      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-extrabold">Частые вопросы</h2>
-        <div class="mt-4 space-y-3 text-sm">
-          <div class="rounded-2xl border border-slate-200 p-4">
-            <div class="font-extrabold">SEOdyssey может «вмешиваться» в сайт?</div>
-            <div class="mt-1 text-slate-600">Нет. Мониторинг = чтение данных. Никаких правок и деплоев.</div>
-          </div>
-          <div class="rounded-2xl border border-slate-200 p-4">
-            <div class="font-extrabold">Почему нет данных по трафику?</div>
-            <div class="mt-1 text-slate-600">Не подключена Метрика или нет доступа к счётчику.</div>
-          </div>
-          <div class="rounded-2xl border border-slate-200 p-4">
-            <div class="font-extrabold">Можно ли отключить алерты?</div>
-            <div class="mt-1 text-slate-600">Да — в настройках уведомлений и на уровне сайта (позже).</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-extrabold">Написать в поддержку</h2>
-        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-sm font-bold">Тема</label>
-            <input class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50" placeholder="Например: не приходит Telegram" />
-          </div>
-          <div>
-            <label class="text-sm font-bold">Сайт (опционально)</label>
-            <select class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white">
-              <option>Не выбран</option>
-              {% for s in sites %}
-                <option>{{ s.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="md:col-span-2">
-            <label class="text-sm font-bold">Сообщение</label>
-            <textarea class="mt-2 w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50" rows="5" placeholder="Опиши проблему и приложи скрин (если есть)."></textarea>
-          </div>
-        </div>
-        <button class="mt-5 px-5 py-3 rounded-2xl bg-emerald-600 text-white font-semibold" disabled>Отправить (позже)</button>
-      </div>
-    </section>
-
-    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <h2 class="text-lg font-extrabold">Быстрые ссылки</h2>
-      <div class="mt-4 space-y-2 text-sm">
-        <a href="{% url 'integrations' %}" class="block px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50">Интеграции</a>
-        <a href="{% url 'alerts' %}" class="block px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50">Алерты</a>
-        <a href="{% url 'user_settings' %}#security" class="block px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50">Безопасность</a>
-      </div>
-    </aside>
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="card card-pad-lg">
+      <div class="section-title" style="margin-bottom:8px;">Не нашли ответ?</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 16px;">Напишите напрямую — отвечаем быстро. Обычно в течение пары часов в рабочее время.</p>
+      <a href="https://t.me/alexeydevochkin" target="_blank" class="btn-primary" style="background:#2AABEE;width:100%;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
+        Написать в Telegram
+      </a>
+    </div>
   </div>
+
 </div>
 {% endblock %}

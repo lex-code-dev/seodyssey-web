@@ -1,50 +1,84 @@
 {% extends "ui/base.html" %}
-{% block title %}Тариф и оплата · SEOdyssey{% endblock %}
+{% block title %}Тарифы · SEOdyssey{% endblock %}
 
+{% load money %}
 {% block content %}
-<div class="flex flex-col gap-6">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">ВАШ АККАУНТ</div>
+  <h1 class="page-title">Тарифы</h1>
+  <p class="page-sub">Управление подпиской. Оплата подключается — пока смена тарифа по запросу.</p>
+</div>
+
+{% if subscription %}
+<section class="card card-pad-lg" style="margin-bottom:24px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <span class="eyebrow">Текущий тариф</span>
+    {% if subscription.status == "active" %}
+      <span class="badge-ok badge-dot">Активна</span>
+    {% elif subscription.status == "trial" %}
+      <span class="badge-ok badge-dot">Триал</span>
+    {% elif subscription.status == "past_due" %}
+      <span class="badge-warn badge-dot">Просрочена</span>
+    {% else %}
+      <span class="badge-dot">Отменена</span>
+    {% endif %}
+  </div>
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:12px;">
+    <div style="font-size:48px;font-weight:600;letter-spacing:-0.04em;line-height:1;color:var(--ink);">{{ current_plan.name }}</div>
+    {% if current_plan.price_monthly %}
+      <div style="font-size:18px;color:var(--muted);letter-spacing:-0.015em;">{{ current_plan.price_monthly|thousands }} ₽/мес</div>
+    {% else %}
+      <div style="font-size:18px;color:var(--muted);letter-spacing:-0.015em;">бесплатно</div>
+    {% endif %}
+  </div>
+  {% if subscription.expires_at %}
+    <p class="page-sub" style="margin-top:4px;">Действует до {{ subscription.expires_at|date:"d.m.Y" }}</p>
+  {% endif %}
+  <hr class="hr" style="margin:24px 0 20px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
     <div>
-      <h1 class="text-2xl font-extrabold">Тариф и оплата</h1>
-      <p class="text-slate-600 mt-1">Пока без платежей: это MVP. Но лимиты и планы — чтобы продукт выглядел как продукт.</p>
+      <div class="eyebrow">Сайтов</div>
+      <div style="font-size:24px;font-weight:500;color:var(--ink);letter-spacing:-0.025em;margin-top:6px;">
+        <span class="numeric">{{ sites_count }}</span>
+        <span style="font-size:14px;color:var(--muted-2);font-weight:400;"> / {{ current_plan.max_projects }}</span>
+      </div>
     </div>
-    <button class="px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-semibold" disabled>Изменить тариф</button>
+    <div>
+      <div class="eyebrow">Алертов · 30 дней</div>
+      <div class="numeric" style="font-size:24px;font-weight:500;color:var(--ink);letter-spacing:-0.025em;margin-top:6px;">{{ alerts_30d }}</div>
+    </div>
   </div>
+</section>
+{% endif %}
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <h2 class="text-lg font-extrabold">Текущий тариф</h2>
-      <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <div class="text-sm text-slate-500">Plan</div>
-            <div class="mt-1 text-xl font-extrabold">MVP · до 5 сайтов</div>
-            <div class="mt-1 text-sm text-slate-600">Оплата появится позже, когда будет за что платить 🙂</div>
-          </div>
-          <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">активен</span>
-        </div>
-      </div>
-
-      <h3 class="mt-6 text-sm font-extrabold">Использование</h3>
-      <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <div class="text-xs text-slate-500">Сайты</div>
-          <div class="mt-1 font-extrabold">{{ sites_count }} / 5</div>
-        </div>
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <div class="text-xs text-slate-500">Алерты / 30 дней</div>
-          <div class="mt-1 font-extrabold">{{ alerts_30d }}</div>
-        </div>
-      </div>
-
-      <h3 class="mt-6 text-sm font-extrabold">История</h3>
-      <div class="mt-3 text-sm text-slate-600">Платежей пока нет.</div>
-    </section>
-
-    <aside class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-      <h2 class="text-lg font-extrabold">Заметка</h2>
-      <p class="mt-3 text-sm text-slate-600">Когда подключим оплату — появится и нормальный биллинг. Пока важнее, чтобы мониторинг работал.</p>
-    </aside>
-  </div>
+<div class="section-title" style="margin-bottom:14px;">Все тарифы</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+  {% for plan in plans %}
+  <section class="card card-pad-lg" style="display:flex;flex-direction:column;{% if plan.id == current_plan.id %}border:2px solid var(--accent);{% endif %}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span class="eyebrow">{{ plan.name }}</span>
+      {% if plan.id == current_plan.id %}<span class="badge-ok badge-dot">Ваш</span>{% endif %}
+    </div>
+    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:16px;">
+      <span style="font-size:32px;font-weight:600;letter-spacing:-0.03em;color:var(--ink);">{{ plan.price_monthly|thousands }}</span>
+      <span style="font-size:14px;color:var(--muted-2);">₽/мес</span>
+    </div>
+    <ul style="margin:0 0 18px;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;flex:1;">
+      <li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink-2);"><span style="color:var(--accent);margin-top:2px;">✓</span>До {{ plan.max_projects }} сайтов</li>
+      <li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink-2);"><span style="color:var(--accent);margin-top:2px;">✓</span>AI-рекомендаций: {{ plan.ai_limit }}/мес</li>
+      <li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink-2);"><span style="color:var(--accent);margin-top:2px;">✓</span>Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+      <li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink-2);"><span style="color:var(--accent);margin-top:2px;">✓</span>Интеграций на сайт: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+      {% if plan.telegram_alerts %}<li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink-2);"><span style="color:var(--accent);margin-top:2px;">✓</span>Telegram-алерты</li>{% endif %}
+    </ul>
+    {% if plan.id == current_plan.id %}
+      <button class="btn-secondary" style="width:100%;justify-content:center;" disabled>Текущий тариф</button>
+    {% elif plan.price_monthly > 0 %}
+      <form method="post" action="{% url 'create_payment' plan.id %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">Выбрать</button>
+      </form>
+    {% endif %}
+  </section>
+  {% endfor %}
 </div>
 {% endblock %}

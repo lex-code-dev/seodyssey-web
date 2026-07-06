@@ -1,0 +1,199 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}Аналитика · SEOdyssey{% endblock %}
+
+{% block content %}
+<script src="{% static 'js/chart.umd.min.js' %}"></script>
+
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">ОБНОВЛЯЕТСЯ КАЖДЫЕ 5 МИНУТ</div>
+  <h1 class="page-title">Аналитика</h1>
+  <p class="page-sub">Использование SEOdyssey за последние 30 дней.</p>
+</div>
+
+{% if metric_cards %}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+  {% for label,val,color in metric_cards %}
+  <div class="tile">
+    <div class="label">{{ label }}</div>
+    <div class="value" style="color:{{ color }};">{{ val }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card card-pad-lg" style="margin-bottom:20px;">
+  <div class="card-head">
+    <div>
+      <div class="section-title">Динамика за 30 дней</div>
+      <div class="section-meta" style="margin-top:2px;">Активность · проверки · регистрации</div>
+    </div>
+  </div>
+  <div style="height:280px;"><canvas id="chartMain"></canvas></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+
+  <div class="card card-pad-lg">
+    <div class="card-head">
+      <div>
+        <div class="section-title">Популярные страницы</div>
+        <div class="section-meta" style="margin-top:2px;">За 30 дней · по посещениям</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% for page in top_pages %}
+      {% with max_c=top_pages.0.c %}
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:12.5px;color:var(--ink-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ page.path }}</div>
+        <div class="numeric" style="font-size:13px;font-weight:500;color:var(--ink);flex-shrink:0;width:32px;text-align:right;">{{ page.c }}</div>
+        <div style="width:80px;height:5px;background:var(--surface-2);border-radius:3px;flex-shrink:0;overflow:hidden;">
+          <div style="height:5px;background:var(--accent);border-radius:3px;width:{% widthratio page.c max_c 80 %}px;"></div>
+        </div>
+      </div>
+      {% endwith %}
+      {% empty %}
+        <div style="font-size:12.5px;color:var(--muted-2);">Нет данных</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card card-pad-lg">
+    <div class="card-head">
+      <div>
+        <div class="section-title">Активность по часам</div>
+        <div class="section-meta" style="margin-top:2px;">За последние 7 дней</div>
+      </div>
+    </div>
+    <div style="height:200px;"><canvas id="chartHours"></canvas></div>
+  </div>
+
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;">
+
+  <div class="card card-pad-lg">
+    <div class="card-head">
+      <div>
+        <div class="section-title">Пользователи</div>
+        <div class="section-meta" style="margin-top:2px;">Активные</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% for u in users %}
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:13px;font-weight:500;color:var(--ink);">{{ u.username }}</div>
+          <div style="font-size:12px;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.email|default:"—" }}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:10.5px;color:var(--tertiary);text-transform:uppercase;letter-spacing:0.05em;">посл. вход</div>
+          <div class="numeric" style="font-size:12px;color:var(--muted);">{% if u.last_login %}{{ u.last_login|date:"d.m H:i" }}{% else %}—{% endif %}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card card-pad-lg">
+    <div class="card-head">
+      <div>
+        <div class="section-title">Недельный Retention</div>
+        <div class="section-meta" style="margin-top:2px;">По дате регистрации</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="tbl" style="font-size:12px;min-width:520px;">
+        <thead>
+          <tr>
+            <th>Когорта</th>
+            <th class="c">N</th>
+            {% for i in "12345678" %}<th class="c">W+{{ forloop.counter0 }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in retention_data %}
+          <tr>
+            <td class="numeric">{{ row.week }}</td>
+            <td class="c numeric text-muted">{{ row.size }}</td>
+            {% for pct in row.weeks %}
+            <td class="c" style="padding:6px;">
+              <span class="numeric" style="display:inline-block;min-width:44px;padding:3px 0;border-radius:4px;font-size:11.5px;font-weight:500;
+                {% if pct >= 50 %}background:var(--ok-bg);color:var(--ok-fg);
+                {% elif pct >= 20 %}background:var(--warn-bg);color:var(--warn-fg);
+                {% elif pct > 0 %}background:var(--fail-bg);color:var(--fail-fg);
+                {% else %}color:var(--tertiary);{% endif %}">{% if pct > 0 %}{{ pct }}%{% else %}—{% endif %}</span>
+            </td>
+            {% endfor %}
+          </tr>
+          {% empty %}
+          <tr><td colspan="10" style="padding:12px;color:var(--muted-2);">Нет данных</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const cs = getComputedStyle(document.documentElement);
+const accent = cs.getPropertyValue('--accent').trim() || '#3d5bf5';
+const ok = cs.getPropertyValue('--ok-fg').trim() || '#3b6d11';
+const warn = cs.getPropertyValue('--warn-fg').trim() || '#854f0b';
+const muted = cs.getPropertyValue('--muted-2').trim() || '#9a9a96';
+const line = cs.getPropertyValue('--line').trim() || '#ebebe7';
+const ink = cs.getPropertyValue('--ink').trim() || '#0b0b0b';
+
+Chart.defaults.font.family = 'Inter, sans-serif';
+Chart.defaults.font.size = 11;
+Chart.defaults.color = muted;
+
+const commonOpts = {
+  responsive: true, maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, padding: 14, font: { size: 11.5 }, usePointStyle: true, pointStyle: 'circle' } },
+    tooltip: { backgroundColor: ink, padding: 10, titleFont: { size: 11 }, bodyFont: { size: 11.5 }, displayColors: false }
+  },
+  scales: {
+    x: { grid: { color: line, drawTicks: false }, ticks: { color: muted, padding: 8, maxRotation: 0 }, border: { display: false } },
+    y: { grid: { color: line, drawTicks: false }, ticks: { color: muted, padding: 8 }, beginAtZero: true, border: { display: false } }
+  }
+};
+
+new Chart(document.getElementById('chartMain'), {
+  type: 'line',
+  data: {
+    labels: {{ chart_days|safe }},
+    datasets: [
+      { label: 'Активность', data: {{ chart_activity|safe }}, borderColor: accent, backgroundColor: accent + '14', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 1.5 },
+      { label: 'Проверки', data: {{ chart_checks|safe }}, borderColor: ok, backgroundColor: ok + '0d', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 1.5 },
+      { label: 'Регистрации', data: {{ chart_registrations|safe }}, borderColor: warn, backgroundColor: warn, type: 'bar', yAxisID: 'yReg', borderRadius: 2, barThickness: 6 }
+    ]
+  },
+  options: {
+    ...commonOpts,
+    scales: { ...commonOpts.scales, yReg: { position: 'right', grid: { drawOnChartArea: false, display: false }, ticks: { color: warn, padding: 8 }, beginAtZero: true, max: 10, border: { display: false } } }
+  }
+});
+
+new Chart(document.getElementById('chartHours'), {
+  type: 'bar',
+  data: {
+    labels: {{ chart_hours|safe }},
+    datasets: [{
+      data: {{ chart_hours_data|safe }},
+      backgroundColor: ((ctx) => {
+        const h = ctx.dataIndex;
+        if (h >= 9 && h <= 18) return accent + 'd9';
+        if (h >= 19 && h <= 23) return accent + '80';
+        return accent + '33';
+      }),
+      borderRadius: 2, barPercentage: 0.7
+    }]
+  },
+  options: { ...commonOpts, plugins: { ...commonOpts.plugins, legend: { display: false } } }
+});
+</script>
+{% endblock %}

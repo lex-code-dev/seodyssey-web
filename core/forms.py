@@ -1,6 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 from .models import Site
 
@@ -45,27 +47,32 @@ class AddSiteForm(forms.ModelForm):
         if not domain:
             raise ValidationError("Укажи домен (например: example.com)")
 
-        # Ищем уже существующий сайт по НОРМАЛИЗОВАННОМУ домену
-        existing = Site.objects.filter(domain=domain).first()
+        # Домен должен содержать точку и иметь TLD минимум 2 символа
+        parts = domain.split(".")
+        if len(parts) < 2 or len(parts[-1]) < 2:
+            raise ValidationError("Введи полный домен с зоной (например: example.com или site.ru)")
 
-        # Если он удалён — пометим, что будем восстанавливать
-        if existing and existing.is_deleted:
-            self.restored_site = existing
-            return domain
+        # Домен не должен быть просто числом или IP без зоны
+        if all(p.isdigit() for p in parts):
+            raise ValidationError("Введи доменное имя, а не IP-адрес")
 
-        # Если он НЕ удалён — это дубль
-        if existing and not existing.is_deleted:
-            raise ValidationError("Такой домен уже добавлен.")
-
+        self._normalized_domain = domain
         return domain
 
     def validate_unique(self):
-        """
-        Django ModelForm сам проверяет unique поля.
-        Нам нужно пропустить эту проверку, если сайт найден и он is_deleted=True
-        (мы его восстановим).
-        """
-        if getattr(self, "restored_site", None):
-            return
+        # убираем стандартную глобальную проверку уникальности domain
+        pass
 
-        super().validate_unique()
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    # honeypot: скрытое поле, люди его не видят, боты заполняют
+    website = forms.CharField(required=False, widget=forms.HiddenInput)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+
+    def clean_website(self):
+        if self.cleaned_data.get("website"):
+            raise forms.ValidationError("Spam detected.")
+        return self.cleaned_data["website"]

@@ -1,10 +1,430 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "ui/base.html" %}
+{% block title %}Первичный анализ · {{ site.domain }}{% endblock %}
+
+{% block content %}
+
+{# ============================================================ #}
+{#  PRINT / PDF STYLES                                          #}
+{# ============================================================ #}
+<style>
+@media print {
+  /* Скрываем лишнее */
+  .btn-ghost, .btn-primary, .btn-export-pdf,
+  details, [data-noprint],
+  nav, header, footer,
+  .sidebar-nav, .topbar {
+    display: none !important;
+  }
+
+  body { background: #fff !important; color: #111 !important; font-family: system-ui, sans-serif; }
+  .audit-layout { display: block !important; }
+  .audit-right-col { position: static !important; margin-bottom: 24pt; }
+
+  .card, .card-pad-lg {
+    border: 0.5pt solid #ddd !important;
+    border-radius: 6pt !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+
+  .badge-ok    { background: #e6f4ec !important; color: #2e7d52 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .badge-warn  { background: #fef3e2 !important; color: #9a5f00 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .badge-fail  { background: #fdeaea !important; color: #b83232 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .badge-accent{ background: #eff3ff !important; color: #3a5bd9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .dotind { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  svg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 22mm 16mm;
+  }
+
+  .pdf-header { display: flex !important; }
+  .pdf-footer { display: block !important; }
+  .page-head  { display: none !important; }
+
+  section { break-inside: avoid; margin-bottom: 16pt; }
+  a { text-decoration: none !important; color: inherit !important; }
+  .audit-main-col { gap: 16pt !important; }
+}
+
+/* PDF-шапка — скрыта на экране */
+.pdf-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14pt;
+  margin-bottom: 20pt;
+  border-bottom: 1pt solid #e5e5e5;
+}
+.pdf-header-logo {
+  font-size: 18pt;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+.pdf-header-logo span { color: #4f6ef7; }
+.pdf-header-meta {
+  font-size: 9pt;
+  color: #888;
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* PDF-футер — скрыт на экране */
+.pdf-footer {
+  display: none;
+  margin-top: 28pt;
+  padding-top: 10pt;
+  border-top: 0.5pt solid #e5e5e5;
+  font-size: 8.5pt;
+  color: #aaa;
+  text-align: center;
+}
+.pdf-footer strong { color: #555; }
+</style>
+
+{# PDF-шапка (видна только при печати) #}
+<div class="pdf-header">
+  <div class="pdf-header-logo">SEO<span>dyssey</span></div>
+  <div class="pdf-header-meta">
+    Аудит сайта: <strong>{{ site.domain }}</strong><br>
+    {% if audit %}{{ audit.created_at|date:"d.m.Y, H:i" }}{% endif %}
+  </div>
+</div>
+
+{# Экранный хедер #}
+<div style="margin-bottom:20px;">
+  <a href="{% url 'site_checks' site_id=site.id %}" class="btn-ghost btn-sm">← К сайту</a>
+</div>
+
+<div class="page-head" style="display:block;">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <div>
+      <div class="eyebrow" style="margin-bottom:10px;">Первичный анализ</div>
+      <h1 class="page-title">Аудит сайта</h1>
+      <p class="page-sub">{{ site.domain }}{% if audit %} · проверка структуры, индексируемости и AI-готовности{% endif %}</p>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+      {% if audit %}
+      <div style="font-size:12px;color:var(--muted-2);display:flex;gap:12px;align-items:center;">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+        {{ audit.created_at|date:"d.m.Y · H:i" }}
+      </div>
+      {% endif %}
+      <div style="display:flex;gap:8px;align-items:center;">
+
+        <form method="post" action="{% url 'audit_run' site_id=site.id %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="btn-primary" style="font-size:13px;">{% if audit %}Запустить заново{% else %}Запустить анализ{% endif %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if not audit %}
+
+<div class="card card-pad-lg" style="margin-top:24px;text-align:center;padding:48px 28px;">
+  <div class="eyebrow" style="margin-bottom:14px;">Готов к запуску</div>
+  <div style="font-size:18px;font-weight:500;letter-spacing:-0.015em;color:var(--ink);margin-bottom:8px;">Анализ ещё не запускался</div>
+  <p style="font-size:13.5px;color:var(--muted);max-width:42ch;margin:0 auto 24px;line-height:1.6;">
+    Запустите первичный анализ — проверим техническое здоровье, индексируемость, SEO-основу и AI-готовность. Это займёт около 10–15 секунд.
+  </p>
+  <form method="post" action="{% url 'audit_run' site_id=site.id %}" style="margin:0;">
+    {% csrf_token %}
+    <button type="submit" class="btn-primary">Запустить анализ</button>
+  </form>
+</div>
+
+{% elif is_running %}
+
+<div class="card card-pad-lg" style="margin-top:24px;text-align:center;padding:48px 28px;">
+  <div class="eyebrow" style="margin-bottom:14px;color:var(--accent);">Выполняется</div>
+  <div style="font-size:18px;font-weight:500;letter-spacing:-0.015em;color:var(--ink);margin-bottom:8px;">Анализ выполняется…</div>
+  <p style="font-size:13.5px;color:var(--muted);max-width:42ch;margin:0 auto;line-height:1.6;">
+    Проверяем сайт — это займёт около 15–30 секунд. Страница обновится автоматически.
+  </p>
+  <div style="margin-top:20px;display:flex;justify-content:center;gap:6px;">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:0.3;"></span>
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:0.6;"></span>
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:1;"></span>
+  </div>
+</div>
+<script>setTimeout(function(){ location.reload(); }, 5000);</script>
+
+{% else %}
+
+<div class="audit-layout" style="display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start;">
+
+  {# === LEFT COLUMN === #}
+  <div class="audit-main-col" style="display:flex;flex-direction:column;gap:24px;">
+
+    {# AI-резюме #}
+    {% if audit.summary %}
+    <section class="card card-pad-lg" style="background:var(--accent-bg);border-color:var(--accent-line);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;">
+        <div>
+          <div class="eyebrow" style="color:var(--accent);margin-bottom:8px;">AI-резюме</div>
+          <div style="font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-0.012em;line-height:1.35;">
+            Итоги первичного анализа
+          </div>
+        </div>
+        <span class="badge-accent badge-nodot">AI</span>
+      </div>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.7;max-width:62ch;">{{ audit.summary }}</p>
+    </section>
+    {% endif %}
+
+    {# Блоки проверок #}
+    {% for block_key, checks in audit.results.items %}
+    <section>
+      <div class="card-head" style="margin-bottom:12px;align-items:baseline;">
+        <div style="display:flex;align-items:baseline;gap:14px;">
+          <span style="font-size:11px;font-weight:500;color:var(--tertiary);font-variant-numeric:tabular-nums;letter-spacing:0.06em;">
+            {{ forloop.counter|stringformat:"02d" }}
+          </span>
+          <div>
+            <div class="section-title">
+              {% if block_key == "technical" %}Техническое здоровье
+              {% elif block_key == "indexability" %}Индексируемость
+              {% elif block_key == "seo" %}SEO-основа
+              {% elif block_key == "trust" %}Доверие и аналитика
+              {% elif block_key == "ai_geo" %}AI / GEO-готовность
+              {% elif block_key == "sitemap_pages" %}Страницы из Sitemap
+              {% else %}{{ block_key }}
+              {% endif %}
+            </div>
+            <div class="section-meta" style="margin-top:2px;">
+              {% if block_key == "technical" %}Доступность, отклик, сертификаты
+              {% elif block_key == "indexability" %}robots.txt, sitemap, мета-теги
+              {% elif block_key == "seo" %}Title, description, заголовки, скорость
+              {% elif block_key == "trust" %}Счётчики, контактные данные, политики
+              {% elif block_key == "ai_geo" %}Распознаваемость для языковых моделей
+              {% elif block_key == "sitemap_pages" %}HTTP-статусы, noindex, title, description, H1
+              {% else %}{{ checks|length }} проверок{% endif %}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;" data-block-summary="{{ block_key }}"></div>
+      </div>
+
+      <div class="card" style="padding:10px 12px;">
+        <div style="display:flex;flex-direction:column;" data-block-items="{{ block_key }}">
+          {% for item in checks %}
+          <div
+            data-status="{{ item.status }}"
+            style="display:grid;grid-template-columns:14px 1fr auto;align-items:flex-start;gap:14px;padding:12px 8px;{% if not forloop.first %}border-top:0.5px solid var(--line);{% endif %}"
+          >
+            <span class="dotind {% if item.status == 'ok' %}ok{% elif item.status == 'warning' %}warn{% else %}fail{% endif %}" style="margin-top:6px;"></span>
+            <span style="font-size:13.5px;color:var(--ink-2);line-height:1.55;letter-spacing:-0.003em;">{{ item.message }}</span>
+            {% if item.status == 'ok' %}<span class="badge-ok badge-nodot">OK</span>
+            {% elif item.status == 'warning' %}<span class="badge-warn badge-nodot">Внимание</span>
+            {% else %}<span class="badge-fail badge-nodot">Ошибка</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    {% endfor %}
+
+    {# Сырой JSON — скрыт при печати #}
+    <section class="card-flat" style="padding:14px 20px;border-radius:12px;" data-noprint>
+      <details>
+        <summary style="cursor:pointer;font-size:12.5px;font-weight:500;color:var(--muted);list-style:none;display:flex;align-items:center;justify-content:space-between;">
+          Сырой JSON (для отладки)
+          <span style="color:var(--tertiary);font-size:16px;">+</span>
+        </summary>
+        <div style="margin-top:12px;background:var(--surface-2);border:0.5px solid var(--line);border-radius:8px;padding:12px;font-size:11.5px;color:var(--muted);white-space:pre-wrap;word-break:break-all;line-height:1.6;font-family:'JetBrains Mono',monospace;">{{ audit.results }}</div>
+      </details>
+    </section>
+
+  </div>
+
+  {# === RIGHT COLUMN === #}
+  <div class="audit-right-col" style="display:flex;flex-direction:column;gap:16px;position:sticky;top:24px;">
+
+    {# Сводка #}
+    <div class="card card-pad-lg">
+      <div class="eyebrow" style="margin-bottom:16px;">Состояние сайта</div>
+
+      <div style="display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <div style="position:relative;width:140px;height:140px;">
+          <svg id="audit-donut" viewBox="0 0 100 100" width="140" height="140" style="transform:rotate(-90deg);cursor:default;">
+            <circle id="donut-track" cx="50" cy="50" r="38" fill="none" stroke="var(--surface-2)" stroke-width="12"/>
+            <circle id="donut-fail" cx="50" cy="50" r="38" fill="none" stroke="#e06b6b" stroke-width="12"
+              stroke-dasharray="0 239" stroke-linecap="butt"/>
+            <circle id="donut-warn" cx="50" cy="50" r="38" fill="none" stroke="#e0943a" stroke-width="12"
+              stroke-dasharray="0 239" stroke-linecap="butt"/>
+            <circle id="donut-ok" cx="50" cy="50" r="38" fill="none" stroke="#5a9e6f" stroke-width="12"
+              stroke-dasharray="0 239" stroke-linecap="butt"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+            <span id="audit-center-label" style="font-size:26px;font-weight:500;letter-spacing:-0.04em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;">0%</span>
+          </div>
+          <div id="donut-tooltip" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;padding:5px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;z-index:10;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;gap:14px;font-size:12px;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:5px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#5a9e6f;display:inline-block;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
+          OK&nbsp;<span id="audit-ok-num" class="numeric">0</span>
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#e0943a;display:inline-block;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
+          Внимание&nbsp;<span id="audit-warn-num" class="numeric">0</span>
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#e06b6b;display:inline-block;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></span>
+          Ошибка&nbsp;<span id="audit-fail-num" class="numeric">0</span>
+        </span>
+      </div>
+    </div>
+
+    {# Параметры прогона #}
+    <div class="card">
+      <div class="section-title" style="margin-bottom:14px;">Параметры прогона</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span class="text-muted">Сайт</span>
+          <span style="font-size:13px;color:var(--ink-2);">{{ site.domain }}</span>
+        </div>
+        {% if audit.id %}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span class="text-muted">ID анализа</span>
+          <span class="numeric">#{{ audit.id }}</span>
+        </div>
+        {% endif %}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span class="text-muted">Запуск</span>
+          <span class="numeric">{{ audit.created_at|date:"d.m H:i" }}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span class="text-muted">Тип</span>
+          <span>первичный</span>
+        </div>
+      </div>
+    </div>
+
+    {# Кнопка экспорта #}
+    <a href="{% url 'audit_result_pdf' site_id=site.id %}" class="btn-export-pdf btn-primary" style="width:100%;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.85;">
+        <path d="M4 1h6l3 3v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <path d="M9 1v4h4" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <path d="M5.5 9.5h5M5.5 11.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Выгрузить PDF
+    </button>
+
+  </a>
+</div>
+
+{# PDF-футер (виден только при печати) #}
+<div class="pdf-footer">
+  Сгенерировано сервисом <strong>SEOdyssey</strong> &middot; seodyssey.ru &middot; {{ audit.created_at|date:"d.m.Y, H:i" }}
+</div>
+
+{% if audit.block_summaries %}
+{{ audit.block_summaries|json_script:"block-summaries-data" }}
+{% endif %}
+
+<script>
+(function () {
+  var items = document.querySelectorAll('[data-status]');
+  var ok = 0, warn = 0, fail = 0;
+  var perBlock = {};
+  items.forEach(function (el) {
+    var status = el.getAttribute('data-status');
+    var block = el.closest('[data-block-items]');
+    var key = block ? block.getAttribute('data-block-items') : '_';
+    if (!perBlock[key]) perBlock[key] = { ok: 0, warn: 0, fail: 0 };
+    if (status === 'ok') { ok++; perBlock[key].ok++; }
+    else if (status === 'warning') { warn++; perBlock[key].warn++; }
+    else { fail++; perBlock[key].fail++; }
+  });
+  var total = ok + warn + fail;
+  var set = function (id, v) { var n = document.getElementById(id); if (n) n.textContent = v; };
+  set('audit-ok-num', ok);
+  set('audit-warn-num', warn);
+  set('audit-fail-num', fail);
+
+  var pct = total > 0 ? Math.round((ok / total) * 1000) / 10 : 0;
+  var cl = document.getElementById('audit-center-label');
+  if (cl) cl.textContent = pct + '%';
+
+  if (total > 0) {
+    var circ = 2 * Math.PI * 38;
+    var okArc   = (ok   / total) * circ;
+    var warnArc = (warn / total) * circ;
+    var failArc = (fail / total) * circ;
+    var gap = total > 1 ? 1.5 : 0;
+
+    var dOk = document.getElementById('donut-ok');
+    if (dOk) dOk.setAttribute('stroke-dasharray', Math.max(0, okArc - gap) + ' ' + circ);
+
+    var dWarn = document.getElementById('donut-warn');
+    if (dWarn) {
+      dWarn.setAttribute('stroke-dasharray', Math.max(0, warnArc - gap) + ' ' + circ);
+      dWarn.setAttribute('stroke-dashoffset', -okArc);
+    }
+
+    var dFail = document.getElementById('donut-fail');
+    if (dFail) {
+      dFail.setAttribute('stroke-dasharray', Math.max(0, failArc - gap) + ' ' + circ);
+      dFail.setAttribute('stroke-dashoffset', -(okArc + warnArc));
+    }
+
+    var tooltip = document.getElementById('donut-tooltip');
+    var segments = [
+      { el: dOk,   label: 'OK',       count: ok },
+      { el: dWarn, label: 'Внимание', count: warn },
+      { el: dFail, label: 'Ошибка',   count: fail },
+    ];
+    segments.forEach(function(seg) {
+      if (!seg.el) return;
+      seg.el.style.cursor = 'pointer';
+      seg.el.addEventListener('mouseenter', function() {
+        if (!tooltip) return;
+        tooltip.textContent = seg.label + ': ' + seg.count;
+        tooltip.style.display = 'block';
+      });
+      seg.el.addEventListener('mouseleave', function() {
+        if (tooltip) tooltip.style.display = 'none';
+      });
+    });
+  }
+
+  Object.keys(perBlock).forEach(function (key) {
+    var head = document.querySelector('[data-block-summary="' + key + '"]');
+    if (!head) return;
+    var p = perBlock[key];
+    var html = '';
+    if (p.ok   > 0) html += '<span class="badge-ok badge-nodot">'   + p.ok   + ' OK</span>';
+    if (p.warn > 0) html += '<span class="badge-warn badge-nodot">' + p.warn + ' внимание</span>';
+    if (p.fail > 0) html += '<span class="badge-fail badge-nodot">' + p.fail + ' ошибка</span>';
+    head.innerHTML = html;
+  });
+
+  var summariesEl = document.getElementById('block-summaries-data');
+  if (summariesEl) {
+    var summaries = JSON.parse(summariesEl.textContent);
+    Object.keys(summaries).forEach(function(key) {
+      var blockEl = document.querySelector('[data-block-items="' + key + '"]');
+      if (!blockEl || !summaries[key]) return;
+      var section = blockEl.closest('section');
+      if (!section) return;
+      var div = document.createElement('div');
+      div.style.cssText = 'margin-top:12px;padding:14px 16px;background:var(--accent-bg);border:0.5px solid var(--accent-line);border-radius:10px;font-size:13px;color:var(--ink-2);line-height:1.65;';
+      div.innerHTML = '<span style="font-size:11px;font-weight:500;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:6px;">AI-вывод</span>' + summaries[key];
+      section.appendChild(div);
+    });
+  }
+})();
+</script>
+
+{% endif %}
+
+{% endblock %}

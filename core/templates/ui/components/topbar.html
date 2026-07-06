@@ -1,33 +1,59 @@
-<header class="lg:hidden sticky top-0 z-30 bg-white border-b border-slate-200">
+{% load static %}
+<header class="lg:hidden sticky top-0 z-30" style="background:var(--surface);border-bottom:0.5px solid var(--line);">
   <div class="px-4 py-3 flex items-center justify-between gap-3">
-    <a href="{% url 'dashboard' %}" class="flex items-center gap-2">
-      <div class="h-9 w-9 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-semibold">O</div>
-      <div class="font-semibold">SEOdyssey</div>
+    <a href="{% url 'dashboard' %}" class="flex items-center gap-2" style="text-decoration:none;">
+      <div style="width:28px;height:28px;border-radius:7px;background:var(--surface-2);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;padding:3px;box-sizing:border-box;">
+        <img src="{% static 'img/spiral-icon.svg' %}" width="22" height="22" alt="SEOdyssey">
+      </div>
+      <span style="font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-0.015em;">SEOdyssey</span>
     </a>
+    {% if request.user.is_authenticated %}
     <div class="flex items-center gap-2">
-      <a href="{% url 'site_new' %}" class="px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold">+ Сайт</a>
-      <button id="mnavBtn" type="button" class="px-3 py-2 rounded-xl border border-slate-200 text-sm">Меню</button>
+      <a href="{% url 'site_new' %}" class="btn-primary" style="padding:6px 12px;font-size:12px;">+ Сайт</a>
+      <button id="mnavBtn" type="button" class="btn-ghost" style="padding:6px 12px;font-size:12px;">Меню</button>
     </div>
+    {% endif %}
   </div>
-  <div id="mnav" class="hidden px-4 pb-4">
-    <div class="grid grid-cols-2 gap-2 text-sm">
-      <a href="{% url 'dashboard' %}" class="mnavlink">Обзор</a>
-      <a href="{% url 'sites' %}" class="mnavlink">Сайты</a>
-      <a href="{% url 'alerts' %}" class="mnavlink">Алерты</a>
-      <a href="{% url 'reports' %}" class="mnavlink">Отчёты</a>
-      <a href="{% url 'integrations' %}" class="mnavlink">Интеграции</a>
-      <a href="{% url 'billing' %}" class="mnavlink">Тариф</a>
-      <a href="{% url 'team' %}" class="mnavlink">Команда</a>
-      <a href="{% url 'user_settings' %}" class="mnavlink">Настройки</a>
-      <a href="{% url 'help' %}" class="mnavlink col-span-2">Помощь</a>
-    </div>
+
+  {% if request.user.is_authenticated %}
+  <!-- Overlay-backdrop -->
+  <div id="mnavBackdrop" class="hidden fixed inset-0 z-40" style="background:rgba(11,11,11,0.4);"></div>
+
+  <!-- Dropdown -->
+  <div id="mnav" class="hidden absolute z-50"
+       style="top:56px;right:12px;min-width:200px;background:var(--surface);border:0.5px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08);overflow:hidden;">
+    <nav style="display:flex;flex-direction:column;padding:6px;font-size:13px;">
+      <a href="{% url 'dashboard' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Мои сайты</a>
+      <div style="height:0.5px;background:var(--line);margin:6px 4px;"></div>
+      <a href="{% url 'billing' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Тарифы</a>
+      <a href="{% url 'team' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Команда</a>
+      <a href="{% url 'user_settings' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Интеграции</a>
+      <a href="{% url 'help' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Помощь</a>
+    </nav>
   </div>
+
+  <style>
+    #mnav a:hover { background: var(--surface-2); }
+  </style>
+
   <script>
     (function(){
-      const b = document.getElementById('mnavBtn');
-      const m = document.getElementById('mnav');
-      if(!b || !m) return;
-      b.addEventListener('click', () => m.classList.toggle('hidden'));
+      var btn = document.getElementById('mnavBtn');
+      var menu = document.getElementById('mnav');
+      var backdrop = document.getElementById('mnavBackdrop');
+      if (!btn || !menu) return;
+      function close() {
+        menu.classList.add('hidden');
+        backdrop.classList.add('hidden');
+        btn.textContent = 'Меню';
+      }
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var isOpen = !menu.classList.contains('hidden');
+        isOpen ? close() : (menu.classList.remove('hidden'), backdrop.classList.remove('hidden'), btn.textContent = 'Закрыть');
+      });
+      backdrop.addEventListener('click', close);
     })();
   </script>
+  {% endif %}
 </header>

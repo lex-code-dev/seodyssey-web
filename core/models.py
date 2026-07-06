@@ -16,7 +16,7 @@ def normalize_domain(raw: str) -> str:
 
 class Site(models.Model):
     name = models.CharField("Название", max_length=255)
-    domain = models.CharField("Домен", max_length=255, unique=True)
+    domain = models.CharField("Домен", max_length=255)
     is_active = models.BooleanField("Активен", default=True)
     manual_traffic_week = models.IntegerField("Трафик за неделю (ручной)", null=True, blank=True)
     manual_indexed_pages = models.IntegerField("Страниц в индексе (ручной)", null=True, blank=True)
@@ -117,11 +117,31 @@ class UserProfile(models.Model):
     telegram_enabled = models.BooleanField("Telegram-уведомления включены", default=False)
     telegram_chat_id = models.CharField("Telegram chat_id", max_length=64, blank=True, default="")
 
+    onboarding_done = models.BooleanField("Онбординг пройден", default=False)
+
     created_at = models.DateTimeField("Создан", auto_now_add=True)
     updated_at = models.DateTimeField("Обновлён", auto_now=True)
 
     def __str__(self):
         return f"Profile for {self.user}"
+
+class UserActivity(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="activity",
+        null=True, blank=True,
+    )
+    path = models.CharField("Путь", max_length=512)
+    method = models.CharField("Метод", max_length=8, default="GET")
+    created_at = models.DateTimeField("Время", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Активность"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} — {self.path} — {self.created_at:%Y-%m-%d %H:%M}"
 
 class YandexOAuth(models.Model):
     user = models.OneToOneField(
@@ -311,3 +331,18 @@ class IssueSolution(models.Model):
     def __str__(self):
         code = f" / {self.issue_code}" if self.issue_code else ""
         return f"{self.check_key}{code} [{self.severity}] - {self.title}"
+
+class AIUsage(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ai_usage'
+    )
+    month = models.CharField(max_length=7)  # формат: "2026-05"
+    used = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'month')
+
+    def __str__(self):
+        return f"{self.user} — {self.month}: {self.used}"

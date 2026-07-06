@@ -26,6 +26,10 @@ YANDEX_CLIENT_ID = os.getenv("YANDEX_CLIENT_ID", "")
 YANDEX_CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET", "")
 YANDEX_REDIRECT_URI = os.getenv("YANDEX_REDIRECT_URI", "")
 YANDEX_SCOPE = os.getenv("YANDEX_SCOPE", "metrika:read webmaster:verify")
+YOOKASSA_SHOP_ID = os.getenv("YOOKASSA_SHOP_ID", "")
+YOOKASSA_SECRET_KEY = os.getenv("YOOKASSA_SECRET_KEY", "")
+
+APP_DOMAIN = "app.seodyssey.ru"
 
 
 
@@ -37,7 +41,7 @@ YANDEX_SCOPE = os.getenv("YANDEX_SCOPE", "metrika:read webmaster:verify")
 SECRET_KEY = 'django-insecure-#9(p2izhx+s+mldn^#t1gc1vk_#i@w58y_xvmmo%!%$w1tr8c*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "79.174.86.23",
@@ -45,6 +49,8 @@ ALLOWED_HOSTS = [
     "localhost",
     "seodyssey.ru",
     "www.seodyssey.ru",
+    "app.seodyssey.ru",
+    "147.45.171.100",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -53,6 +59,8 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # Application definition
 
@@ -62,8 +70,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'landing',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+    'ai_queries',
+    'audits',
+    'billing',
+    'course',
+    'django_ckeditor_5',
 ]
 
 MIDDLEWARE = [
@@ -74,6 +88,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.AppDomainMiddleware',
+    'core.middleware.ActivityMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -143,7 +159,67 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "TIMEOUT": 3600,  # 1 час
+    }
+}
+
+# Celery
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_TASK_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+
+# --- CKEditor 5 ---
+CKEDITOR_5_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+CKEDITOR_5_UPLOAD_FILE_TYPES = ["jpg", "jpeg", "png", "gif", "webp", "svg"]
+
+CKEDITOR_5_CONFIGS = {
+    "default": {
+        "toolbar": [
+            "heading", "|",
+            "bold", "italic", "link", "|",
+            "bulletedList", "numberedList", "blockQuote", "|",
+            "imageUpload", "insertTable", "|",
+            "undo", "redo",
+        ],
+        "image": {
+            "toolbar": [
+                "imageTextAlternative", "|",
+                "imageStyle:alignLeft", "imageStyle:alignCenter", "imageStyle:alignRight",
+            ],
+        },
+        "table": {
+            "contentToolbar": ["tableColumn", "tableRow", "mergeTableCells"],
+        },
+    },
+}
+
+# === Email (Timeweb SMTP) ===
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.go2.unisender.ru"
+EMAIL_PORT = 587
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "8255186"
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = "SEOdyssey <info@seodyssey.ru>"
+SERVER_EMAIL = "info@seodyssey.ru"
+EMAIL_TIMEOUT = 20
+# Message-ID должен использовать FQDN домена, а не хостнейм сервера ("seodyssey").
+# Иначе Gmail может молча отбрасывать письма.
+from django.core.mail import utils as _mail_utils
+_mail_utils.DNS_NAME._fqdn = "seodyssey.ru"

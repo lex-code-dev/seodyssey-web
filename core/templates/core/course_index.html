@@ -1,0 +1,57 @@
+{% extends "ui/base.html" %}
+{% block title %}Курс · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">ОБУЧЕНИЕ</div>
+  <h1 class="page-title">Курс</h1>
+  <p class="page-sub">Видеоуроки по модулям. Смотрите по порядку — так проще всего.</p>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:16px;max-width:760px;">
+
+  {% for module, lessons in modules_with_lessons %}
+  <div class="card card-pad-lg">
+    <div class="eyebrow" style="margin-bottom:4px;">МОДУЛЬ {{ module.order }}</div>
+    <div class="section-title" style="margin-bottom:8px;">{{ module.title }}</div>
+    {% if module.description %}
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 12px;">{{ module.description }}</p>
+    {% endif %}
+
+    {% if lessons %}
+    <div style="display:flex;flex-direction:column;">
+      {% for lesson in lessons %}
+      <a href="{% url 'course_lesson' lesson.slug %}"
+         style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;">
+        <span style="font-size:14px;">{{ lesson.order }}. {{ lesson.title }}</span>
+        {% if lesson.is_free %}<span class="badge" style="font-size:11px;">Бесплатно</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="font-size:13px;color:var(--muted);margin:0;">Уроки скоро появятся.</p>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="card card-pad-lg">
+    <p style="font-size:13px;color:var(--muted);margin:0;">Опубликованных модулей пока нет — курс готовится.</p>
+  </div>
+  {% endfor %}
+
+  {% if orphan_lessons %}
+  <div class="card card-pad-lg">
+    <div class="section-title" style="margin-bottom:8px;">Дополнительные уроки</div>
+    <div style="display:flex;flex-direction:column;">
+      {% for lesson in orphan_lessons %}
+      <a href="{% url 'course_lesson' lesson.slug %}"
+         style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;">
+        <span style="font-size:14px;">{{ lesson.order }}. {{ lesson.title }}</span>
+        {% if lesson.is_free %}<span class="badge" style="font-size:11px;">Бесплатно</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

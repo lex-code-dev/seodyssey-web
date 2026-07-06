@@ -1,15 +1,63 @@
 {% if messages %}
-  <div class="space-y-2 mb-5">
+  <div id="toast-container" class="fixed z-50" style="bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;">
     {% for message in messages %}
-      <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <div class="font-semibold">
-            {% if message.tags %}{{ message.tags|upper }}{% else %}INFO{% endif %}
+      {% if message.tags == 'success' %}
+        {% with kind='success' icon='✓' title='Готово' %}
+        <div class="toast-item is-{{ kind }}">
+          <div class="toast-icon">{{ icon }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="toast-title">{{ title }}</div>
+            <div class="toast-msg">{{ message }}</div>
           </div>
-          <div class="text-slate-700 mt-1">{{ message }}</div>
+          <button class="toast-x" onclick="this.closest('.toast-item').remove()" aria-label="Закрыть">✕</button>
         </div>
-        <span class="text-xs text-slate-500 whitespace-nowrap">{{ now|date:"d.m.Y" }}</span>
-      </div>
+        {% endwith %}
+      {% elif message.tags == 'error' %}
+        {% with kind='error' icon='✕' title='Ошибка' %}
+        <div class="toast-item is-{{ kind }}">
+          <div class="toast-icon">{{ icon }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="toast-title">{{ title }}</div>
+            <div class="toast-msg">{{ message }}</div>
+          </div>
+          <button class="toast-x" onclick="this.closest('.toast-item').remove()" aria-label="Закрыть">✕</button>
+        </div>
+        {% endwith %}
+      {% elif message.tags == 'warning' %}
+        {% with kind='warning' icon='!' title='Внимание' %}
+        <div class="toast-item is-{{ kind }}">
+          <div class="toast-icon">{{ icon }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="toast-title">{{ title }}</div>
+            <div class="toast-msg">{{ message }}</div>
+          </div>
+          <button class="toast-x" onclick="this.closest('.toast-item').remove()" aria-label="Закрыть">✕</button>
+        </div>
+        {% endwith %}
+      {% else %}
+        {% with kind='info' icon='i' title='Инфо' %}
+        <div class="toast-item is-{{ kind }}">
+          <div class="toast-icon">{{ icon }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="toast-title">{{ title }}</div>
+            <div class="toast-msg">{{ message }}</div>
+          </div>
+          <button class="toast-x" onclick="this.closest('.toast-item').remove()" aria-label="Закрыть">✕</button>
+        </div>
+        {% endwith %}
+      {% endif %}
     {% endfor %}
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".toast-item").forEach(function (el) {
+        setTimeout(function () {
+          el.style.opacity = "0";
+          el.style.transform = "translateY(10px)";
+          setTimeout(function () { el.remove(); }, 300);
+        }, 4500);
+      });
+    });
+  </script>
 {% endif %}

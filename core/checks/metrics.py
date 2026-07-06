@@ -72,9 +72,16 @@ class MetricsCheck:
             oauth = YandexOAuth.objects.filter(user=member.user).first()
             if oauth:
                 try:
-                    traffic_week = get_visits_last_7d(
+                    from core.integrations.yandex_metrica import get_visits_week
+                    traffic_week, traffic_date_from, traffic_date_to = get_visits_week(
                         access_token=oauth.access_token,
                         counter_id=site.yandex_metrica_counter_id,
+                        offset=0,
+                    )
+                    prev_traffic_week, prev_date_from, prev_date_to = get_visits_week(
+                        access_token=oauth.access_token,
+                        counter_id=site.yandex_metrica_counter_id,
+                        offset=-1,
                     )
                 except Exception:
                     traffic_week = None
@@ -123,14 +130,15 @@ class MetricsCheck:
             "excluded_pages": excluded_pages,
             "sqi": sqi,
             "traffic_source": "metrika:trafficSource=organic",
-            "traffic_window": "last_7_full_days",
+            "traffic_window": f"{traffic_date_from.isoformat()} — {traffic_date_to.isoformat()}" if traffic_week is not None else "last_7_full_days",
+            "traffic_prev_window": f"{prev_date_from.isoformat()} — {prev_date_to.isoformat()}" if 'prev_date_from' in dir() else None,
+            "traffic_prev_week": prev_traffic_week if 'prev_traffic_week' in dir() else None,
             "indexed_source": indexed_source,
         }
 
         prev_metrics = self._get_prev_metrics(site, check_id)
-        prev_traffic = prev_metrics.get("seo_visits_week")
-        if prev_traffic is None:
-            prev_traffic = prev_metrics.get("traffic_week")
+        # приоритет: свежие данные прошлой недели из API, fallback на прошлый чек
+        prev_traffic = locals().get("prev_traffic_week") or prev_metrics.get("seo_visits_week") or prev_metrics.get("traffic_week")
         prev_indexed = prev_metrics.get("indexed_pages")
 
 

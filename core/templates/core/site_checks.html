@@ -1,377 +1,524 @@
 {% extends "ui/base.html" %}
 {% block title %}{{ site.name }} · SEOdyssey{% endblock %}
+{% block extra_css %}<style>
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+</style>
+{% endblock %}
+
+<script>
+function showAiToast(used, limit) {
+  if (!limit) return;
+  const left = limit - used;
+  const msg = left > 0
+    ? `AI-проверка использована. Осталось ${left} из ${limit}`
+    : `Лимит AI-проверок исчерпан. Обновится 1-го числа следующего месяца.`;
+  const toast = document.createElement('div');
+  toast.className = 'toast-item flex items-start gap-3 bg-white border border-slate-200 rounded-2xl shadow-lg px-4 py-3 text-sm max-w-sm';
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 16px;background:#fff;border:0.5px solid #e5e5e3;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);font-size:13px;color:#111;max-width:320px;display:flex;align-items:flex-start;gap:10px;';
+  toast.innerHTML = `<span style="font-size:15px;">${left > 0 ? '✨' : '⚠️'}</span><span style="line-height:1.5;">${msg}</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+function loadRecommendations() {
+  const btn = document.getElementById('ai-rec-btn');
+  const result = document.getElementById('ai-rec-result');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  fetch('{% url "site_ai_recommendations" site_id=site.id %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+  })
+  .then(r => r.json())
+  .then(resp => {
+    if (resp.status === 'limit') {
+      result.style.display = 'flex';
+      result.innerHTML = `<div style="font-size:12.5px;color:#b5651d;background:#fdf3e3;border:0.5px solid #f5d9a8;border-radius:8px;padding:10px 14px;">${resp.text}</div>`;
+      btn.disabled = false;
+      btn.textContent = 'Получить рекомендации';
+      showAiToast(resp.ai_used, resp.ai_limit);
+      return;
+    }
+    if (resp.status !== 'ok') throw new Error(resp.text || 'Ошибка');
+    showAiToast(resp.ai_used, resp.ai_limit);
+    const data = resp.data;
+    result.style.display = 'flex';
+    result.innerHTML = '';
+
+    if (data.intro) {
+      const intro = document.createElement('div');
+      intro.style.cssText = 'font-size:12.5px;color:var(--muted);line-height:1.6;padding:4px 0;';
+      intro.textContent = data.intro;
+      result.appendChild(intro);
+    }
+
+    (data.recommendations || []).forEach(rec => {
+      const isFail = rec.severity === 'fail';
+      const card = document.createElement('div');
+      card.style.cssText = 'border:0.5px solid var(--line);border-radius:8px;padding:12px 14px;';
+
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
+      header.innerHTML = `
+        <div style="font-size:13px;font-weight:500;color:var(--ink);">${rec.title}</div>
+        <span style="flex-shrink:0;font-size:11px;padding:2px 8px;border-radius:20px;
+          ${isFail ? 'background:#fdecea;color:#c0392b;' : 'background:#fdf3e3;color:#b5651d;'}">
+          ${isFail ? 'Ошибка' : 'Внимание'}
+        </span>`;
+      card.appendChild(header);
+
+      const box = document.createElement('div');
+      box.style.cssText = 'background:var(--accent-bg);border:0.5px solid var(--accent-line);border-radius:7px;padding:10px 12px;';
+      let boxHTML = '<div style="font-size:11px;font-weight:500;color:var(--accent);margin-bottom:5px;">Что делать</div>';
+      if (rec.summary) {
+        boxHTML += `<p style="font-size:12px;color:var(--ink-2);line-height:1.6;margin:0 0 8px;">${rec.summary}</p>`;
+      }
+      if (rec.steps && rec.steps.length) {
+        boxHTML += '<ol style="margin:0;display:flex;flex-direction:column;gap:5px;">';
+        rec.steps.forEach((step, i) => {
+          boxHTML += `<li style="display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink-2);line-height:1.5;">
+            <span style="width:18px;height:18px;border-radius:50%;background:var(--surface);border:0.5px solid var(--accent-line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--accent);flex-shrink:0;margin-top:1px;">${i+1}</span>
+            ${step}
+          </li>`;
+        });
+        boxHTML += '</ol>';
+      }
+      box.innerHTML = boxHTML;
+      card.appendChild(box);
+      result.appendChild(card);
+    });
+
+    btn.textContent = 'Обновить';
+    btn.disabled = false;
+  })
+  .catch(() => {
+    result.style.display = 'flex';
+    result.innerHTML = '<div style="font-size:12.5px;color:#c0392b;">Ошибка. Попробуйте ещё раз.</div>';
+    btn.disabled = false;
+    btn.textContent = 'Получить';
+  });
+}
+</script>
 
 {% block content %}
-<div class="flex flex-col gap-6">
-  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
-    <div class="min-w-0">
-      <div class="flex flex-wrap items-center gap-2">
-        {% if site_last_status == 'fail' %}
-          <span class="text-sm px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold">FAIL</span>
-        {% elif site_last_status == 'ok' %}
-          <span class="text-sm px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">OK</span>
-        {% else %}
-          <span class="text-sm px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-semibold">—</span>
-        {% endif %}
+<div style="margin-bottom:20px;">
+  <a href="{% url 'dashboard' %}" class="btn-ghost btn-sm">← К сайтам</a>
+</div>
 
-        <h1 class="text-2xl font-extrabold truncate">{{ site.name }}</h1>
-        <span class="text-slate-500 truncate">{{ site.domain }}</span>
+<div class="page-head" style="display:block;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+    {% if site_last_status == 'fail' %}
+      <span class="badge-fail badge-dot">Ошибка</span>
+    {% elif site_last_status == 'warn' %}
+      <span class="badge-warn badge-dot">Внимание</span>
+    {% elif site_last_status == 'ok' %}
+      <span class="badge-ok badge-dot">ОК</span>
+    {% endif %}
+    <span class="tag">{{ site.domain }}</span>
+  </div>
 
-        {% if restored_banner %}
-          <span class="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
-            Сайт был ранее удалён и восстановлен
-          </span>
-        {% endif %}
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <h1 class="page-title">{{ site.name }}</h1>
+        <button onclick="document.getElementById('rename-modal').style.display='flex'" class="btn-link" style="font-size:12px;text-decoration:underline;">переименовать</button>
       </div>
-      <p class="text-slate-600 mt-2">
-        {% if last_check_at %}Последняя проверка: {{ last_check_at|date:"d.m.Y H:i" }}{% else %}Проверок ещё не было{% endif %}
-        · Следующая: завтра 08:00 (пример)
+      <p class="page-sub">
+        {% if last_check_at %}Последняя проверка — {{ last_check_at|date:"d.m.Y H:i" }}.{% else %}Проверок ещё не было.{% endif %}
       </p>
     </div>
-
-    <div class="flex flex-col sm:flex-row gap-2">
-      <a href="{% url 'sites' %}" class="px-4 py-2.5 rounded-2xl border border-slate-200 bg-white font-semibold text-center">← К сайтам</a>
-
-      <form method="post" action="{% url 'run_check' site_id=site.id %}">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <form method="post" action="{% url 'run_check' site_id=site.id %}" style="margin:0;">
         {% csrf_token %}
-        <button {% if has_active_check %}disabled{% endif %} class="px-4 py-2.5 rounded-2xl {% if has_active_check %}bg-slate-200 text-slate-500{% else %}bg-emerald-600 text-white{% endif %} font-semibold text-center">
-          {% if has_active_check %}Проверка в очереди{% else %}Запустить проверку{% endif %}
+        <button type="submit" class="btn-primary" id="runCheckBtn" {% if has_active_check %}disabled style="opacity:0.5;cursor:not-allowed;"{% endif %}>
+          {% if has_active_check %}<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;opacity:0.8;animation:blink 1.2s infinite;"></span>Проверка идёт…</span>{% else %}Запустить проверку{% endif %}
         </button>
       </form>
-
-      <form method="post" action="{% url 'delete_site' site_id=site.id %}">
+      <form method="post" action="{% url 'delete_site' site_id=site.id %}" style="margin:0;">
         {% csrf_token %}
-        <button class="px-4 py-2.5 rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 font-semibold">Удалить</button>
+        <button type="submit" class="btn-danger" onclick="return confirm('Удалить сайт {{ site.name }}?')">Удалить</button>
       </form>
     </div>
   </div>
+  {% if has_active_check %}
+  <p style="font-size:12px;color:var(--muted-2);margin-top:8px;">Проверка выполняется на сервере — можно спокойно переходить на другие страницы, она не прервётся.</p>
+  {% endif %}
+</div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    <section class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-      <div class="flex items-center justify-between gap-3">
+<style>@keyframes blink{0%,100%{opacity:0.3}50%{opacity:1}}</style>
+<script>
+  document.getElementById('runCheckBtn') && document.getElementById('runCheckBtn').addEventListener('click', function(){
+    var btn = this;
+    setTimeout(function(){
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;opacity:0.8;animation:blink 1.2s infinite;"></span>Запускаем…</span>';
+    }, 50);
+  });
+</script>
+
+{# Rename modal — preserved from old template #}
+<div id="rename-modal" style="display:none;position:fixed;inset:0;background:rgba(11,11,11,0.55);z-index:100;align-items:center;justify-content:center;">
+  <div class="card card-pad-lg" style="width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <div style="font-size:16px;font-weight:600;letter-spacing:-0.015em;margin-bottom:16px;">Переименовать сайт</div>
+    <form method="post" action="{% url 'site_rename' site_id=site.id %}">
+      {% csrf_token %}
+      <input type="text" name="name" value="{{ site.name }}" class="input" autofocus>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+        <button type="button" onclick="document.getElementById('rename-modal').style.display='none'" class="btn-ghost">Отмена</button>
+        <button type="submit" class="btn-primary">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 240px;gap:24px;align-items:start;">
+
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    {# Состояние сайта — плитки проверок #}
+    <section class="card card-pad-lg">
+      <div class="card-head">
         <div>
-          <h2 class="text-lg font-extrabold">Проверки</h2>
-          <p class="text-sm text-slate-500 mt-1">3 последних запуска в области просмотра.</p>
+          <div class="section-title">Состояние сайта</div>
+          <div class="section-meta" style="margin-top:2px;">Последний запуск{% if last_check_at %} — {{ last_check_at|date:"d.m в H:i" }}{% endif %}</div>
         </div>
       </div>
 
-      <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200">
-        <div class="grid grid-cols-[112px_108px_minmax(0,1fr)_92px] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-500">
-          <div>Дата</div>
-          <div>Статус</div>
-          <div>Сводка</div>
-          <div class="text-right">Действие</div>
+      {% with checks_map=checks.0.result.checks %}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+
+        <div class="check-tile">
+          <div class="head">
+            <div class="name">Сайт доступен</div>
+            <span class="dotind {% if checks_map.http.status == 'ok' %}ok{% elif checks_map.http.status == 'warn' %}warn{% elif checks_map.http.status == 'fail' %}fail{% else %}idle{% endif %}"></span>
+          </div>
+          <div class="val">{{ checks_map.http.last_http_status|default:"—" }}</div>
         </div>
 
-        <div class="max-h-[246px] overflow-y-auto">
-          {% for c in checks %}
-            <div class="grid grid-cols-[112px_108px_minmax(0,1fr)_92px] gap-4 border-b border-slate-200 px-4 py-3 items-start min-h-[82px]">
-              <div class="text-sm font-medium text-slate-900 whitespace-nowrap">
-                {{ c.created_at|date:"d.m H:i" }}
-              </div>
-
-              <div>
-                {% if c.status == 'fail' %}
-                  <span class="inline-flex px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
-                {% elif c.status == 'ok' %}
-                  <span class="inline-flex px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">OK</span>
-                {% elif c.status == 'queued' %}
-                  <span class="inline-flex px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">QUEUED</span>
-                {% else %}
-                  <span class="inline-flex px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">{{ c.status|upper }}</span>
-                {% endif %}
-              </div>
-
-              <div class="min-w-0">
-                {% with s=c.result.summary %}
-                  {% if s %}
-                    <div class="text-sm font-semibold text-slate-900 truncate">{{ s.title }}</div>
-                    {% with checks_map=c.result.checks %}
-                      {% if checks_map %}
-                        {% with http_s=checks_map.http.summary dns_s=checks_map.dns.summary ssl_s=checks_map.ssl.summary domain_s=checks_map.domain.summary metrics_s=checks_map.metrics.summary %}
-                          {% if checks_map.http.status != "ok" and http_s and http_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ http_s.title }}</div>
-                          {% elif checks_map.dns.status != "ok" and dns_s and dns_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ dns_s.title }}</div>
-                          {% elif checks_map.ssl.status != "ok" and ssl_s and ssl_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ ssl_s.title }}</div>
-                          {% elif checks_map.domain.status != "ok" and domain_s and domain_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ domain_s.title }}</div>
-                          {% elif checks_map.metrics.status != "ok" and metrics_s and metrics_s.title %}
-                            <div class="text-xs text-slate-500 mt-1 truncate">Причина: {{ metrics_s.title }}</div>
-                          {% endif %}
-                        {% endwith %}
-                      {% endif %}
-                    {% endwith %}
-
-                    {% if s.lines %}
-                      <div class="text-xs text-slate-500 truncate">• {{ s.lines.0 }}</div>
-                    {% endif %}
-                  {% else %}
-                    <span class="text-slate-400">—</span>
-                  {% endif %}
-                {% endwith %}
-              </div>
-
-              <div class="text-right">
-                <a href="{% url 'check_detail' check_id=c.id %}" class="text-emerald-700 font-semibold hover:text-emerald-800 whitespace-nowrap">
-                  Открыть
-                </a>
-              </div>
-            </div>
-          {% empty %}
-            <div class="px-4 py-4 text-sm text-slate-500">Проверок ещё нет.</div>
-          {% endfor %}
+        <div class="check-tile">
+          <div class="head">
+            <div class="name">SSL-сертификат</div>
+            <span class="dotind {% if checks_map.ssl.status == 'ok' %}ok{% elif checks_map.ssl.status == 'warn' %}warn{% elif checks_map.ssl.status == 'fail' %}fail{% else %}idle{% endif %}"></span>
+          </div>
+          <div class="val">{{ checks_map.ssl.expires_in_days|default:"—" }} <span style="font-size:13px;color:var(--muted);font-weight:400;">дн.</span></div>
         </div>
-      </div>
 
-      <div class="mt-4 text-xs text-slate-500">
-        Важно: если проверка очереди задвоит пункты — это баг. Мы его добьём, но не сегодня.
+        <div class="check-tile">
+          <div class="head">
+            <div class="name">Домен</div>
+            <span class="dotind {% if checks_map.domain.status == 'ok' %}ok{% elif checks_map.domain.status == 'warn' %}warn{% elif checks_map.domain.status == 'fail' %}fail{% else %}idle{% endif %}"></span>
+          </div>
+          <div class="val">{{ checks_map.domain.expires_in_days|default:"—" }} <span style="font-size:13px;color:var(--muted);font-weight:400;">дн.</span></div>
+        </div>
+
+        <div class="check-tile">
+          <div class="head">
+            <div class="name">Трафик</div>
+            <span class="dotind {% if checks_map.traffic.status == 'ok' %}ok{% elif checks_map.traffic.status == 'warn' %}warn{% elif checks_map.traffic.status == 'fail' %}fail{% else %}idle{% endif %}"></span>
+          </div>
+          <div class="val">{{ checks_map.traffic.current|default:"—" }}</div>
+          <div class="sub">{{ checks_map.traffic.prev|default:"—" }} → {{ checks_map.traffic.current|default:"—" }}</div>
+        </div>
+
+        <div class="check-tile">
+          <div class="head">
+            <div class="name">Страниц в поиске</div>
+            <span class="dotind {% if checks_map.index.status == 'ok' %}ok{% elif checks_map.index.status == 'warn' %}warn{% elif checks_map.index.status == 'fail' %}fail{% else %}idle{% endif %}"></span>
+          </div>
+          <div class="val">{{ checks_map.index.current|default:"—" }}</div>
+          <div class="sub">{{ checks_map.index.prev|default:"—" }} → {{ checks_map.index.current|default:"—" }}</div>
+        </div>
+
+        <div class="check-tile">
+          <div class="head">
+            <div class="name">ИКС (Яндекс)</div>
+            <span class="dotind {% if checks_map.sqi.status == 'ok' %}ok{% elif checks_map.sqi.status == 'warn' %}warn{% elif checks_map.sqi.status == 'fail' %}fail{% else %}idle{% endif %}"></span>
+          </div>
+          <div class="val">{{ checks_map.sqi.current|default:"—" }}</div>
+          <div class="sub">{{ checks_map.sqi.prev|default:"—" }} → {{ checks_map.sqi.current|default:"—" }}</div>
+        </div>
+
       </div>
+      {% endwith %}
     </section>
 
-    <aside class="space-y-4">
-      <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="font-bold">Метрики</div>
-          <span class="text-xs text-slate-500">MVP</span>
-        </div>
 
-        {% if not metrics_available %}
-          <div class="mt-2 text-sm text-slate-600">Пока нет данных. Запусти проверку.</div>
-        {% else %}
-          <div class="mt-3 space-y-3 text-sm">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-slate-500 text-xs">Трафик WoW</div>
-                <div class="font-semibold">
-                  {% if traffic_check.current %}
-                    {{ traffic_check.prev|default:"—" }} → {{ traffic_check.current }}
-                    {% if traffic_check.delta_pct is not None %}
-                      ({{ traffic_check.delta_pct }}%)
-                    {% endif %}
-                  {% else %}
-                    —
-                  {% endif %}
-                </div>
-              </div>
-              <div>
-                {% if traffic_check.status == "fail" %}
-                  <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
-                {% elif traffic_check.status == "warn" %}
-                  <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">WARN</span>
-                {% elif traffic_check.status == "ok" %}
-                  <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">OK</span>
-                {% else %}
-                  <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">SKIP</span>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-slate-500 text-xs">Страницы в индексе WoW</div>
-                <div class="font-semibold">
-                  {% if index_check.current %}
-                    {{ index_check.prev|default:"—" }} → {{ index_check.current }}
-                    {% if index_check.delta_pct is not None %}
-                      ({{ index_check.delta_pct }}%)
-                    {% endif %}
-                  {% else %}
-                    —
-                  {% endif %}
-                </div>
-              </div>
-              <div>
-                {% if index_check.status == "fail" %}
-                  <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
-                {% elif index_check.status == "warn" %}
-                  <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">WARN</span>
-                {% elif index_check.status == "ok" %}
-                  <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">OK</span>
-                {% else %}
-                  <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">SKIP</span>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-slate-500 text-xs">{% if excluded_check.label %}{{ excluded_check.label }}{% else %}Исключённые страницы WoW{% endif %}</div>
-                <div class="font-semibold">
-                  {% if excluded_check.current is not None %}
-                    {{ excluded_check.prev|default:"—" }} → {{ excluded_check.current }}
-                    {% if excluded_check.delta_pct is not None %}
-                      (+{{ excluded_check.delta_pct }}%)
-                    {% endif %}
-                  {% else %}
-                    —
-                  {% endif %}
-                </div>
-              </div>
-              <div>
-                {% if excluded_check.status == "fail" %}
-                  <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
-                {% elif excluded_check.status == "warn" %}
-                  <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">WARN</span>
-                {% elif excluded_check.status == "ok" %}
-                  <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">OK</span>
-                {% else %}
-                  <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">SKIP</span>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-slate-500 text-xs">{% if sqi_check.label %}{{ sqi_check.label }}{% else %}ИКС WoW{% endif %}</div>
-                <div class="font-semibold">
-                  {% if sqi_check.current is not None %}
-                    {{ sqi_check.prev|default:"—" }} → {{ sqi_check.current }}
-                    {% if sqi_check.delta is not None %}
-                      ({{ sqi_check.delta }})
-                    {% endif %}
-                  {% else %}
-                    —
-                  {% endif %}
-                </div>
-              </div>
-              <div>
-                {% if sqi_check.status == "fail" %}
-                  <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
-                {% elif sqi_check.status == "warn" %}
-                  <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">WARN</span>
-                {% elif sqi_check.status == "ok" %}
-                  <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">OK</span>
-                {% else %}
-                  <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold">SKIP</span>
-                {% endif %}
-              </div>
-            </div>
-
-            {% if last_metrics.seo_visits_week or last_metrics.indexed_pages or last_metrics.excluded_pages or last_metrics.sqi %}
-              <div class="pt-2 border-t border-slate-200 text-xs text-slate-500">
-                Текущие: seo_visits_week={{ last_metrics.seo_visits_week|default:"—" }},
-                indexed_pages={{ last_metrics.indexed_pages|default:"—" }},
-                excluded_pages={{ last_metrics.excluded_pages|default:"—" }},
-                sqi={{ last_metrics.sqi|default:"—" }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-        <div class="font-bold">Интеграции</div>
-        <div class="mt-2 flex flex-wrap gap-2 text-xs">
-          {% if yandex_ready %}
-            <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Вебмастер</span>
-          {% else %}
-            <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">Вебмастер</span>
-          {% endif %}
-        </div>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <a href="{% url 'site_metrica' site.id %}"
-             class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold">
-            Метрика
-          </a>
-          <a href="{% url 'site_webmaster' site.id %}"
-             class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold">
-            Вебмастер
-          </a>
-        </div>
-        <a href="{% url 'integrations' %}" class="mt-3 inline-block text-sm text-emerald-700 font-semibold">Настроить →</a>
-      </div>
-    </aside>
-  </div>
-
-  {% if open_issues %}
-    <section class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+    {% if request.user.is_authenticated %}
+    <section class="card card-pad-lg">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div>
-          <h2 class="text-xl font-extrabold">Проблемы и что делать</h2>
-          <p class="text-sm text-slate-600 mt-1">
-            Здесь показываются только активные проблемы, которые требуют внимания.
-          </p>
+          <div class="section-title">AI-рекомендации</div>
+          <div class="section-meta" style="margin-top:2px;">На основе последней проверки сайта</div>
         </div>
-        <div class="text-sm text-slate-500">
-          Всего: <span class="font-semibold text-slate-800">{{ open_issues|length }}</span>
-        </div>
+        <button id="ai-rec-btn" onclick="loadRecommendations()"
+          style="padding:7px 18px;border-radius:8px;color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer;background:linear-gradient(90deg,#6e3bff,#3d5bf5,#00b4d8,#3d5bf5,#6e3bff);background-size:300% 100%;animation:shimmer 4s ease-in-out infinite;">
+          Получить рекомендации
+        </button>
       </div>
+      <div id="ai-rec-result" style="display:none;flex-direction:column;gap:10px;"></div>
+    </section>
+    {% endif %}
 
-      <div class="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+    {# Проблемы и что делать #}
+    {% if open_issues %}
+    <section class="card card-pad-lg">
+      <div class="card-head">
+        <div>
+          <div class="section-title">Проблемы и что делать</div>
+          <div class="section-meta" style="margin-top:2px;">Только активные, требующие внимания</div>
+        </div>
+        <span class="text-muted-2" style="font-size:12px;">Всего: {{ open_issues|length }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
         {% for iss in open_issues %}
-          <div class="rounded-2xl border border-slate-200 p-4 h-full flex flex-col">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="text-base font-bold text-slate-900">
-                  {{ iss.title|default:iss.check_key }}
-                </div>
-                <div class="mt-1 text-sm text-slate-500">
-                  Последний раз: {{ iss.last_seen_at|date:"d.m.Y H:i" }}
-                </div>
-              </div>
-
-              {% if iss.severity == "fail" %}
-                <span class="shrink-0 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">FAIL</span>
-              {% else %}
-                <span class="shrink-0 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">WARN</span>
-              {% endif %}
+        <div class="issue">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;">
+            <div>
+              <div style="font-size:14px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;">{{ iss.title|default:iss.check_key }}</div>
+              <div class="section-meta" style="margin-top:4px;">Последний раз: {{ iss.last_seen_at|date:"d.m.Y H:i" }}</div>
             </div>
-
-            {% if iss.solution_short_summary or iss.solution_steps %}
-              <div class="mt-4 rounded-2xl border border-sky-200 bg-sky-50/70 p-4">
-                <div class="text-sm font-bold text-sky-900">Что делать</div>
-
-                {% if iss.solution_short_summary %}
-                  <p class="mt-2 text-sm leading-6 text-sky-950">
-                    {{ iss.solution_short_summary }}
-                  </p>
-                {% endif %}
-
-                {% if iss.solution_steps %}
-                  <ol class="mt-3 space-y-2 text-sm text-sky-950">
-                    {% for step in iss.solution_steps %}
-                      <li class="flex items-start gap-2">
-                        <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white border border-sky-200 text-xs font-bold text-sky-800">
-                          {{ forloop.counter }}
-                        </span>
-                        <span class="leading-6">{{ step }}</span>
-                      </li>
-                    {% endfor %}
-                  </ol>
-                {% endif %}
-              </div>
+            {% if iss.severity == "fail" %}
+              <span class="badge-fail badge-dot">Ошибка</span>
+            {% else %}
+              <span class="badge-warn badge-dot">Внимание</span>
             {% endif %}
-
-            <div class="mt-auto pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              {% if iss.last_checkrun %}
-                <a class="text-sm text-emerald-700 font-semibold hover:text-emerald-800" href="{% url 'check_detail' check_id=iss.last_checkrun.id %}">
-                  Открыть прогон →
-                </a>
-              {% else %}
-                <div></div>
-              {% endif %}
-
-              <div class="flex flex-wrap gap-2">
-                <form method="post" action="{% url 'issue_mute' issue_id=iss.id %}">
-                  {% csrf_token %}
-                  <button class="text-sm px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-semibold">
-                    Mute
-                  </button>
-                </form>
-                <form method="post" action="{% url 'issue_resolve' issue_id=iss.id %}">
-                  {% csrf_token %}
-                  <button class="text-sm px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-semibold">
-                    Resolve
-                  </button>
-                </form>
-              </div>
+          </div>
+          {% if iss.solution_short_summary or iss.solution_steps %}
+          <div class="what-to-do">
+            <div class="label">Что делать</div>
+            {% if iss.solution_short_summary %}<p>{{ iss.solution_short_summary }}</p>{% endif %}
+            {% if iss.solution_steps %}
+            <ol>
+              {% for step in iss.solution_steps %}
+              <li><span class="num">{{ forloop.counter }}</span>{{ step }}</li>
+              {% endfor %}
+            </ol>
+            {% endif %}
+          </div>
+          {% endif %}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px;">
+            {% if iss.last_checkrun %}
+              <a href="{% url 'check_detail' check_id=iss.last_checkrun.id %}" class="link-accent" style="font-size:12.5px;">Открыть прогон →</a>
+            {% else %}<div></div>{% endif %}
+            <div style="display:flex;gap:6px;">
+              <form method="post" action="{% url 'issue_mute' issue_id=iss.id %}" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn-link">Скрыть</button>
+              </form>
+              <form method="post" action="{% url 'issue_resolve' issue_id=iss.id %}" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn-link">Решено</button>
+              </form>
             </div>
           </div>
+        </div>
         {% endfor %}
       </div>
     </section>
-  {% endif %}
+    {% endif %}
+
+    {# История проверок #}
+    <section class="card card-pad-lg">
+      <div class="card-head">
+        <div>
+          <div class="section-title">История проверок</div>
+          <div class="section-meta" style="margin-top:2px;">Последние запуски</div>
+        </div>
+        <button onclick="toggleHistory()" id="history-toggle" class="btn-link" style="color:var(--accent);">показать все</button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th class="c">Статус</th>
+            <th>Сводка</th>
+            <th class="r"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in checks %}
+          {% if forloop.counter > 3 %}<tr class="history-extra" style="display:none;">{% else %}<tr>{% endif %}
+            <td class="numeric" style="white-space:nowrap;">
+              <span class="local-time" data-utc="{{ c.created_at|date:'c' }}">{{ c.created_at|date:"d.m H:i" }}</span>
+              {% if c.result.is_auto %}<span style="font-size:10.5px;color:var(--tertiary);margin-left:4px;text-transform:uppercase;letter-spacing:0.05em;">авто</span>{% endif %}
+            </td>
+            <td class="c">
+              {% if c.status == 'fail' %}<span class="badge-fail badge-dot">Ошибка</span>
+              {% elif c.status == 'ok' %}<span class="badge-ok badge-dot">ОК</span>
+              {% elif c.status == 'queued' %}<span class="badge-accent badge-dot">В очереди</span>
+              {% elif c.status == 'running' %}<span class="badge-accent badge-dot">Выполняется</span>
+              {% else %}<span class="text-muted-2" style="font-size:11.5px;">{{ c.status }}</span>{% endif %}
+            </td>
+            <td class="text-muted">{% with s=c.result.summary %}{% if s %}{{ s.title }}{% else %}—{% endif %}{% endwith %}</td>
+            <td class="r"><a href="{% url 'check_detail' check_id=c.id %}" class="link-accent" style="font-size:12.5px;">Открыть →</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="padding:18px 0;color:var(--muted-2);">Проверок ещё нет.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <script>
+        function toggleHistory() {
+          var rows = document.querySelectorAll('.history-extra');
+          var btn = document.getElementById('history-toggle');
+          if (!rows.length) { btn.style.display = 'none'; return; }
+          var hidden = rows[0].style.display === 'none';
+          rows.forEach(function(r){ r.style.display = hidden ? '' : 'none'; });
+          btn.textContent = hidden ? 'свернуть' : 'показать все';
+        }
+      </script>
+    </section>
+
+  </div>
+
+  {# Right sidebar #}
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">Интеграции</div>
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--line);">
+          <div style="font-size:13px;color:var(--ink-2);">Вебмастер</div>
+          {% if site.yandex_webmaster_host_id %}<span class="badge-ok badge-dot" style="font-size:10.5px;">активно</span>{% else %}<span class="badge-muted">не подключено</span>{% endif %}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--line);">
+          <div style="font-size:13px;color:var(--ink-2);">Метрика</div>
+          {% if site.yandex_metrica_counter_id %}<span class="badge-ok badge-dot" style="font-size:10.5px;">активно</span>{% else %}<span class="badge-muted">не подключено</span>{% endif %}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+          <div style="font-size:13px;color:var(--ink-2);">Telegram</div>
+          {% if telegram_ready %}<span class="badge-ok badge-dot" style="font-size:10.5px;">активно</span>{% else %}<span class="badge-muted">не подключено</span>{% endif %}
+        </div>
+      </div>
+      <hr class="hr" style="margin:12px 0;">
+      <a href="{% url 'site_edit' site_id=site.id %}" class="link-accent" style="font-size:12.5px;">Изменить счётчики →</a>
+    </div>
+
+
+
+  </div>
 </div>
+
+
+<script>
+document.querySelectorAll('.local-time').forEach(el => {
+  const utc = el.dataset.utc;
+  if (!utc) return;
+  const d = new Date(utc);
+  el.textContent = d.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+});
+</script>
+
+{% if has_active_check %}
+<script>setTimeout(function(){ location.reload(); }, 7000);</script>
+{% endif %}
+
+<style>
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+</style>
+
+<script>
+function showAiToast(used, limit) {
+  if (!limit) return;
+  const left = limit - used;
+  const msg = left > 0
+    ? `AI-проверка использована. Осталось ${left} из ${limit}`
+    : `Лимит AI-проверок исчерпан. Обновится 1-го числа следующего месяца.`;
+  const toast = document.createElement('div');
+  toast.className = 'toast-item flex items-start gap-3 bg-white border border-slate-200 rounded-2xl shadow-lg px-4 py-3 text-sm max-w-sm';
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 16px;background:#fff;border:0.5px solid #e5e5e3;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);font-size:13px;color:#111;max-width:320px;display:flex;align-items:flex-start;gap:10px;';
+  toast.innerHTML = `<span style="font-size:15px;">${left > 0 ? '✨' : '⚠️'}</span><span style="line-height:1.5;">${msg}</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+function loadRecommendations() {
+  const btn = document.getElementById('ai-rec-btn');
+  const result = document.getElementById('ai-rec-result');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  fetch('{% url "site_ai_recommendations" site_id=site.id %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+  })
+  .then(r => r.json())
+  .then(resp => {
+    if (resp.status === 'limit') {
+      result.style.display = 'flex';
+      result.innerHTML = `<div style="font-size:12.5px;color:#b5651d;background:#fdf3e3;border:0.5px solid #f5d9a8;border-radius:8px;padding:10px 14px;">${resp.text}</div>`;
+      btn.disabled = false;
+      btn.textContent = 'Получить рекомендации';
+      showAiToast(resp.ai_used, resp.ai_limit);
+      return;
+    }
+    if (resp.status !== 'ok') throw new Error(resp.text || 'Ошибка');
+    showAiToast(resp.ai_used, resp.ai_limit);
+    const data = resp.data;
+    result.style.display = 'flex';
+    result.innerHTML = '';
+
+    if (data.intro) {
+      const intro = document.createElement('div');
+      intro.style.cssText = 'font-size:12.5px;color:var(--muted);line-height:1.6;padding:4px 0;';
+      intro.textContent = data.intro;
+      result.appendChild(intro);
+    }
+
+    (data.recommendations || []).forEach(rec => {
+      const isFail = rec.severity === 'fail';
+      const card = document.createElement('div');
+      card.style.cssText = 'border:0.5px solid var(--line);border-radius:8px;padding:12px 14px;';
+
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;';
+      header.innerHTML = `
+        <div style="font-size:13px;font-weight:500;color:var(--ink);">${rec.title}</div>
+        <span style="flex-shrink:0;font-size:11px;padding:2px 8px;border-radius:20px;
+          ${isFail ? 'background:#fdecea;color:#c0392b;' : 'background:#fdf3e3;color:#b5651d;'}">
+          ${isFail ? 'Ошибка' : 'Внимание'}
+        </span>`;
+      card.appendChild(header);
+
+      const box = document.createElement('div');
+      box.style.cssText = 'background:var(--accent-bg);border:0.5px solid var(--accent-line);border-radius:7px;padding:10px 12px;';
+      let boxHTML = '<div style="font-size:11px;font-weight:500;color:var(--accent);margin-bottom:5px;">Что делать</div>';
+      if (rec.summary) {
+        boxHTML += `<p style="font-size:12px;color:var(--ink-2);line-height:1.6;margin:0 0 8px;">${rec.summary}</p>`;
+      }
+      if (rec.steps && rec.steps.length) {
+        boxHTML += '<ol style="margin:0;display:flex;flex-direction:column;gap:5px;">';
+        rec.steps.forEach((step, i) => {
+          boxHTML += `<li style="display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink-2);line-height:1.5;">
+            <span style="width:18px;height:18px;border-radius:50%;background:var(--surface);border:0.5px solid var(--accent-line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--accent);flex-shrink:0;margin-top:1px;">${i+1}</span>
+            ${step}
+          </li>`;
+        });
+        boxHTML += '</ol>';
+      }
+      box.innerHTML = boxHTML;
+      card.appendChild(box);
+      result.appendChild(card);
+    });
+
+    btn.textContent = 'Обновить';
+    btn.disabled = false;
+  })
+  .catch(() => {
+    result.style.display = 'flex';
+    result.innerHTML = '<div style="font-size:12.5px;color:#c0392b;">Ошибка. Попробуйте ещё раз.</div>';
+    btn.disabled = false;
+    btn.textContent = 'Получить';
+  });
+}
+</script>
+
 {% endblock %}

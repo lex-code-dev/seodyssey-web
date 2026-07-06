@@ -1,10 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "ui/base.html" %}
+{% block title %}История запросов · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">AI-ВИДИМОСТЬ</div>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <h1 class="page-title">История анализов</h1>
+    <div style="display:flex;gap:8px;">
+      <form method="post" action="{% url 'ai_queries:history_clear' %}" onsubmit="return confirm('Очистить всю историю?')" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn-ghost btn-sm">Очистить</button>
+      </form>
+      <a href="{% url 'ai_queries:analyze' %}" class="btn-primary">+ Новый анализ</a>
+    </div>
+  </div>
+  <p class="page-sub">Прошлые подборки запросов для разных сайтов. Кликните, чтобы открыть полную таблицу.</p>
+</div>
+
+{% if items %}
+<div style="display:flex;flex-direction:column;gap:12px;">
+  {% for item in items %}
+  <a href="{% url 'ai_queries:history_detail' item.pk %}" class="card" style="cursor:pointer;text-decoration:none;color:inherit;padding:18px 22px;display:block;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent-line)'" onmouseout="this.style.borderColor='var(--line)'">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+          <h3 style="font-size:16px;font-weight:600;letter-spacing:-0.015em;color:var(--ink);margin:0;">{{ item.brand|default:"—" }}</h3>
+          <span class="tag">{{ item.input_url }}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span>{{ item.theme|join:", " }}</span>
+          {% if item.geo.city or item.geo.country %}
+          <span style="color:var(--tertiary);">·</span>
+          <span>{{ item.geo.city }}{% if item.geo.city and item.geo.country %}, {% endif %}{{ item.geo.country }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div class="numeric" style="font-size:11.5px;color:var(--muted-2);">{{ item.created_at|date:"d.m.Y H:i" }}</div>
+        <div style="font-size:13px;color:var(--accent);margin-top:4px;font-weight:500;">{{ item.ai_queries|length }} запросов</div>
+      </div>
+    </div>
+
+    {% if item.ai_queries %}
+    <hr class="hr" style="margin:14px 0 12px;">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      {% for q in item.ai_queries|slice:":5" %}
+      <span class="tag">{{ q }}</span>
+      {% endfor %}
+      {% if item.ai_queries|length > 5 %}
+      <span class="tag" style="color:var(--muted-2);">+{{ item.ai_queries|length|add:"-5" }} ещё</span>
+      {% endif %}
+    </div>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="card card-pad-lg" style="text-align:center;padding:64px 24px;">
+  <div style="width:56px;height:56px;margin:0 auto 20px;border-radius:12px;background:var(--surface-2);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted-2);">
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14" stroke-linecap="round"/></svg>
+  </div>
+  <h2 style="font-size:18px;font-weight:600;letter-spacing:-0.02em;margin:0 0 8px;color:var(--ink);">Анализов пока нет</h2>
+  <p style="font-size:13.5px;color:var(--muted);line-height:1.6;margin:0 auto 20px;max-width:340px;">Запустите первый анализ, чтобы узнать, по каким запросам ваш сайт может попасть в AI-выдачу.</p>
+  <a href="{% url 'ai_queries:analyze' %}" class="btn-primary">Запустить первый анализ</a>
+</div>
+{% endif %}
+{% endblock %}

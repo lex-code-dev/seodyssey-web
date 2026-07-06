@@ -1,10 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "ui/base.html" %}
+{% block title %}Настройки сайта · SEOdyssey{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:20px;">
+  <a href="{% url 'site_checks' site_id=site.id %}" class="btn-ghost btn-sm">← К сайту</a>
+</div>
+
+<div class="page-head" style="display:block;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    <span class="tag">{{ site.domain }}</span>
+  </div>
+  <h1 class="page-title">Настройки: {{ site.name }}</h1>
+  <p class="page-sub">Управление счётчиками Метрики и привязкой к Вебмастеру.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start;">
+
+  <div class="card card-pad-lg">
+    <div class="section-title" style="margin-bottom:6px;">Интеграции Яндекса</div>
+    <div class="section-meta" style="margin-bottom:20px;">Только этот сайт. Глобальные настройки OAuth — в разделе «Интеграции».</div>
+
+    {% if not yandex_ready %}
+      <div style="padding:18px;background:var(--warn-bg);border:0.5px solid var(--warn-line);border-radius:10px;">
+        <div style="font-size:13.5px;color:var(--warn-fg);font-weight:500;margin-bottom:4px;">Яндекс не подключён</div>
+        <div style="font-size:13px;color:var(--ink-2);line-height:1.55;margin-bottom:14px;">Без подключения мы не сможем получать данные Метрики и Вебмастера. Только чтение — мы ничего не меняем на вашем сайте.</div>
+        <a href="{% url 'yandex_connect' %}?next={% url 'site_edit' site_id=site.id %}" class="btn-primary">Подключить через OAuth →</a>
+      </div>
+    {% else %}
+      <div id="integrations-loading" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);padding:16px 0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin 1s linear infinite;flex-shrink:0;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Загружаем счётчики Метрики и сайты Вебмастера…
+      </div>
+
+      <form method="post" id="edit-form" style="display:none;flex-direction:column;gap:20px;">
+        {% csrf_token %}
+
+        <div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span class="eyebrow">01</span>
+            <label class="field-label" style="margin:0;font-size:13px;color:var(--ink);">Счётчик Метрики</label>
+          </div>
+          <div style="position:relative;">
+            <select name="counter_id" id="counter_select" class="input" style="appearance:none;padding-right:36px;">
+              <option value="">— не выбран —</option>
+            </select>
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted-2);pointer-events:none;">▾</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span class="eyebrow">02</span>
+            <label class="field-label" style="margin:0;font-size:13px;color:var(--ink);">Сайт Вебмастера</label>
+          </div>
+          <div style="position:relative;">
+            <select name="host_id" id="host_select" class="input" style="appearance:none;padding-right:36px;">
+              <option value="">— не выбран —</option>
+            </select>
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted-2);pointer-events:none;">▾</span>
+          </div>
+        </div>
+
+        <hr class="hr">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--muted-2);">Изменения вступят в силу со следующей проверкой.</span>
+          <div style="display:flex;gap:8px;">
+            <a href="{% url 'site_checks' site_id=site.id %}" class="btn-ghost">Отмена</a>
+            <button type="submit" class="btn-primary">Сохранить</button>
+          </div>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="card-flat" style="padding:20px 22px;border-radius:12px;">
+    <div class="section-title" style="margin-bottom:12px;">Что это даёт</div>
+    <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;">
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-2);"><span style="width:5px;height:5px;border-radius:50%;background:var(--ok-fg);flex-shrink:0;margin-top:7px;"></span>Недельная динамика трафика из Метрики</li>
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-2);"><span style="width:5px;height:5px;border-radius:50%;background:var(--ok-fg);flex-shrink:0;margin-top:7px;"></span>Страницы в индексе и исключения</li>
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-2);"><span style="width:5px;height:5px;border-radius:50%;background:var(--ok-fg);flex-shrink:0;margin-top:7px;"></span>ИКС и его динамика</li>
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-2);"><span style="width:5px;height:5px;border-radius:50%;background:var(--ok-fg);flex-shrink:0;margin-top:7px;"></span>Ошибки и предупреждения Вебмастера</li>
+    </ul>
+    <hr class="hr" style="margin:14px 0;">
+    <div style="font-size:12px;color:var(--muted);line-height:1.55;">Только чтение. Мы не меняем настройки счётчиков, не запускаем рекламу и не отправляем данные третьим лицам.</div>
+  </div>
+
+</div>
+
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<script>
+fetch("{% url 'site_new_integrations' %}")
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById("integrations-loading").style.display = "none";
+    document.getElementById("edit-form").style.display = "flex";
+    const counterSel = document.getElementById("counter_select");
+    const hostSel = document.getElementById("host_select");
+    (data.counters || []).forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.text = `${c.name} — id=${c.id}`;
+      if (c.id == {{ site.yandex_metrica_counter_id|default:"0" }}) opt.selected = true;
+      counterSel.appendChild(opt);
+    });
+    (data.hosts || []).forEach(h => {
+      const opt = document.createElement("option");
+      opt.value = h.host_id;
+      opt.text = h.unicode_host_url || h.host_id;
+      if (h.host_id == "{{ site.yandex_webmaster_host_id|default:'' }}") opt.selected = true;
+      hostSel.appendChild(opt);
+    });
+  });
+</script>
+{% endblock %}

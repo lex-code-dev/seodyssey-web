@@ -1,0 +1,197 @@
+{% extends "ui/base.html" %}
+{% block title %}Подбор запросов для AI-выдачи · SEOdyssey{% endblock %}
+{% block description %}Подберите информационные запросы для продвижения в AI-поиске: Яндекс, ChatGPT и Google AI. Брендовые, тематические и сравнительные запросы для GEO/AEO-аудита.{% endblock %}
+
+{% block content %}
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">AI-ВИДИМОСТЬ · АНАЛИЗ</div>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <h1 class="page-title">Подбор запросов для AI-выдачи</h1>
+    <a href="{% url 'ai_queries:history' %}" class="link-accent" style="font-size:13px;">История анализов →</a>
+  </div>
+  <p class="page-sub">Подберём информационные запросы, по которым ваш сайт может попасть в ответы ChatGPT, Perplexity и Google AI.</p>
+</div>
+
+<div class="card card-pad-lg" style="margin-bottom:20px;">
+  <form id="analyze-form" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+    {% csrf_token %}
+    <div style="flex:1;min-width:260px;">
+      <label class="field-label">URL сайта</label>
+      <input type="url" id="url-input" class="input" placeholder="https://example.ru" value="{{ prefill_url }}" required>
+    </div>
+    <button type="submit" id="submit-btn" class="btn-primary" style="height:38px;">Анализировать</button>
+  </form>
+</div>
+
+<div id="loading" style="display:none;font-size:13px;color:var(--muted);padding:12px 0;align-items:center;gap:10px;">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+  Анализируем сайт, это займёт 20–40 секунд...
+</div>
+
+<div id="result"></div>
+
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<script>
+const TYPE_BADGE_CLASS = {
+  'брендовый': 'badge-accent',
+  'слепой': 'badge-ok',
+  'сравнительный': 'badge-warn',
+};
+const TYPE_LABEL = { 'брендовый': 'Брендовый', 'слепой': 'Тематический', 'сравнительный': 'Сравнительный' };
+const INTENT_LABELS = {
+  'информационный': 'Инфо',
+  'коммерческий': 'Коммерция',
+  'сравнение': 'Сравнение',
+  'локальный': 'Локальный',
+  'репутация': 'Репутация',
+  'прочее': 'Прочее',
+};
+
+function typeLabel(type) {
+  const cls = TYPE_BADGE_CLASS[type] || 'badge-muted';
+  const lbl = TYPE_LABEL[type] || type || '—';
+  return `<span class="${cls} badge-dot">${lbl}</span>`;
+}
+
+function fmtCount(c) {
+  if (c == null) return { txt: '—', color: 'var(--tertiary)' };
+  if (c >= 10000) return { txt: c.toLocaleString('ru-RU'), color: 'var(--warn-fg)' };
+  if (c >= 1000) return { txt: c.toLocaleString('ru-RU'), color: 'var(--ink)' };
+  return { txt: c.toLocaleString('ru-RU'), color: 'var(--muted)' };
+}
+
+document.getElementById('analyze-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const url = document.getElementById('url-input').value.trim();
+  const loading = document.getElementById('loading');
+  const result = document.getElementById('result');
+  const btn = document.getElementById('submit-btn');
+
+  loading.style.display = 'flex';
+  result.innerHTML = '';
+  btn.disabled = true;
+  btn.textContent = 'Анализируем...';
+
+  try {
+    const response = await fetch("{% url 'ai_queries:analyze' %}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+      body: `url=${encodeURIComponent(url)}`
+    });
+    const data = await response.json();
+
+    // Показываем тост с лимитом
+    if (data.ai_used && data.ai_limit) {
+      const left = data.ai_limit - data.ai_used;
+      const msg = left > 0
+        ? `AI-проверка использована. Осталось ${left} из ${data.ai_limit}`
+        : `Лимит AI-проверок исчерпан. Обновится 1-го числа следующего месяца.`;
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 16px;background:#fff;border:0.5px solid #e5e5e3;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);font-size:13px;color:#111;max-width:320px;display:flex;align-items:flex-start;gap:10px;';
+      toast.innerHTML = `<span style="font-size:15px;">${left > 0 ? '✨' : '⚠️'}</span><span style="line-height:1.5;">${msg}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    if (data.status === 'limit' || data.error) {
+      result.innerHTML = `<div style="padding:14px 16px;background:var(--fail-bg);border:0.5px solid var(--fail-line);border-radius:10px;color:var(--fail-fg);font-size:13px;">${data.error || data.error}</div>`;
+      return;
+    }
+
+    const scores = (data.quality?.query_scores || []);
+    const scoresMap = {};
+    scores.forEach(s => { scoresMap[s.query] = s; });
+    const geo = [data.geo?.city, data.geo?.country].filter(Boolean).join(', ') || '—';
+
+    let html = `
+      <div class="card-flat" style="padding:18px 22px;border-radius:12px;margin-bottom:16px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+          <div>
+            <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap;">
+              <h2 style="font-size:22px;font-weight:600;letter-spacing:-0.025em;margin:0;color:var(--ink);">${data.brand}</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;">
+              <span>${(data.theme||[]).join(', ')}</span>
+              <span style="color:var(--tertiary);">·</span>
+              <span>${geo}</span>
+            </div>
+          </div>
+          <button id="copy-btn" onclick="copyQueries()" class="btn-ghost btn-sm">Скопировать список</button>
+        </div>
+      </div>
+      <div class="card card-pad-lg">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:32px;">#</th>
+              <th style="width:130px;">Тип</th>
+              <th>Запрос</th>
+              <th style="width:110px;">Интент</th>
+              <th class="r" style="width:100px;">Спрос</th>
+              <th class="c" style="width:70px;">Яндекс</th>
+              <th class="c" style="width:70px;">Google</th>
+              <th class="c" style="width:80px;">ChatGPT</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    (data.ai_queries || []).forEach((q, i) => {
+      const s = scoresMap[q] || {};
+      const intent = s.intent || 'прочее';
+      const count = (data.wordstat_counts || {})[q];
+      const queryType = (data.query_types || {})[q] || '';
+      const c = fmtCount(count);
+      const intentLabel = INTENT_LABELS[intent] || intent;
+      html += `
+        <tr>
+          <td class="numeric text-muted-2">${i+1}</td>
+          <td>${typeLabel(queryType)}</td>
+          <td style="font-size:13.5px;color:var(--ink);line-height:1.4;">${q}</td>
+          <td><span class="tag">${intentLabel}</span></td>
+          <td class="r numeric" style="color:${c.color};font-size:13px;">${c.txt}</td>
+          <td class="c text-muted-2">—</td>
+          <td class="c text-muted-2">—</td>
+          <td class="c text-muted-2">—</td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    html += `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px;">
+        <div class="card" style="padding:14px 16px;">
+          <span class="badge-accent badge-dot">Брендовый</span>
+          <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 0;">Запросы с упоминанием вашего бренда. Показывают, знают ли нейросети компанию и правильно ли её описывают.</p>
+        </div>
+        <div class="card" style="padding:14px 16px;">
+          <span class="badge-ok badge-dot">Тематический</span>
+          <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 0;">Запросы без упоминания бренда — как реальный пользователь описывает задачу. Показывают, рекомендуют ли нейросети вас без подсказки.</p>
+        </div>
+        <div class="card" style="padding:14px 16px;">
+          <span class="badge-warn badge-dot">Сравнительный</span>
+          <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 0;">Запросы на сравнение подходов или решений. Показывают, понимают ли нейросети отличие вашего продукта от альтернатив.</p>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--muted-2);margin-top:14px;line-height:1.6;">Запросы без данных по спросу могут активно использоваться в AI-поиске — там паттерны поиска отличаются от Яндекса.</p>
+    `;
+    result.innerHTML = html;
+    window._lastQueries = data.ai_queries || [];
+  } catch(err) {
+    result.innerHTML = `<div style="padding:14px 16px;background:var(--fail-bg);border:0.5px solid var(--fail-line);border-radius:10px;color:var(--fail-fg);font-size:13px;">Ошибка: ${err.message}</div>`;
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    btn.textContent = 'Анализировать';
+  }
+});
+
+function copyQueries() {
+  const queries = (window._lastQueries || []).join('\n');
+  navigator.clipboard.writeText(queries).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Скопировано';
+    setTimeout(() => { btn.textContent = 'Скопировать список'; }, 2000);
+  });
+}
+</script>
+{% endblock %}

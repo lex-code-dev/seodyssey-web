@@ -1,10 +1,677 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>GEO-отчёт · SEOdyssey</title>
+  <link rel="icon" href="/static/favicon.ico" sizes="any">
+  <link rel="icon" href="/static/img/spiral-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+
+    :root {
+      --bg: #f7f4ee;
+      --bg-card: #ffffff;
+      --bg-dark: #15140f;
+      --ink: #15140f;
+      --ink-2: #4a463e;
+      --ink-3: #6b675e;
+      --ink-4: #9a958b;
+      --line: rgba(21,20,15,0.09);
+      --line-2: rgba(21,20,15,0.06);
+      --brand: #6378ff;
+      --brand-2: #4f5be0;
+      --brand-soft: #dde2ff;
+      --brand-tint: #eef0ff;
+
+      --ok: #1f9d55;
+      --ok-soft: #e4f5ec;
+      --ok-line: #c8ead6;
+      --warn: #9a6612;
+      --warn-soft: #fdf6ec;
+      --warn-line: #f0e0bd;
+      --fail: #a33129;
+      --fail-soft: #fcefee;
+      --fail-line: #f3d4d0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: "ss01", "cv11";
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-feature-settings: "ss01"; }
+
+    /* NAV */
+    .nav {
+      background: rgba(244, 243, 238, 0.85);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
+    .nav-logo-mark {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, #7d8eff 0%, #5567e6 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.7) inset, 0 6px 14px -4px rgba(99,120,255,0.45);
+    }
+    .nav-logo-text { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; line-height: 1.15; }
+    .nav-logo-sub { font-size: 10px; color: var(--ink-4); margin-top: 1px; letter-spacing: 0.3px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 10px;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; transition: transform 0.15s, box-shadow 0.15s; letter-spacing: -0.1px;
+    }
+    .btn-dark { background: var(--ink); color: #fff; box-shadow: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 4px 14px -4px rgba(0,0,0,0.25); }
+    .btn-dark:hover { transform: translateY(-1px); box-shadow: 0 1px 0 0 rgba(255,255,255,0.08) inset, 0 8px 18px -6px rgba(0,0,0,0.3); }
+
+    /* PAGE */
+    .page {
+      flex: 1; position: relative; overflow: hidden;
+      padding: 56px 24px 88px;
+      background:
+        radial-gradient(900px 420px at 50% -12%, rgba(99,120,255,0.14), transparent 62%),
+        var(--bg);
+    }
+    .page::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(12,12,13,0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(12,12,13,0.035) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 45% at 50% 8%, #000 16%, transparent 68%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 45% at 50% 8%, #000 16%, transparent 68%);
+      pointer-events: none;
+    }
+    .wrap { position: relative; max-width: 740px; margin: 0 auto; }
+
+    .head { margin-bottom: 26px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500; color: var(--brand-2);
+      text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px;
+    }
+    .eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--brand); }
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.9px; line-height: 1.08; }
+    .url {
+      margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+      font-size: 13px; color: var(--brand-2);
+      background: var(--brand-tint); border: 1px solid var(--brand-soft);
+      border-radius: 8px; padding: 6px 11px; word-break: break-all;
+    }
+    .url svg { flex-shrink: 0; color: var(--brand-2); }
+
+    /* PENDING */
+    .pending-card {
+      background: var(--bg-card); border: 1px solid var(--line); border-radius: 18px;
+      padding: 44px 30px; text-align: center;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.8) inset, 0 26px 54px -32px rgba(12,12,13,0.18);
+    }
+    .spinner {
+      width: 36px; height: 36px; margin: 0 auto 20px;
+      border: 3px solid var(--brand-soft); border-top-color: var(--brand);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .pending-title { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 8px; }
+    .pending-desc { font-size: 14.5px; color: var(--ink-3); max-width: 420px; margin: 0 auto; line-height: 1.6; text-wrap: pretty; }
+
+    /* SCORE */
+    .score-card {
+      background: var(--bg-card); border: 1px solid var(--line); border-radius: 18px;
+      padding: 30px; margin-bottom: 30px;
+      display: flex; align-items: center; gap: 30px;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.8) inset, 0 26px 54px -32px rgba(12,12,13,0.18);
+    }
+    .gauge { position: relative; flex-shrink: 0; width: 132px; height: 132px; }
+    .gauge svg { transform: rotate(-90deg); }
+    .gauge-center {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .gauge-num { font-size: 38px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+    .gauge-num small { font-size: 18px; font-weight: 700; color: var(--ink-4); }
+    .score-side { flex: 1; }
+    .score-head { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+    .score-desc { font-size: 14px; color: var(--ink-3); line-height: 1.5; margin-bottom: 18px; text-wrap: pretty; }
+    .counts { display: flex; gap: 10px; flex-wrap: wrap; }
+    .count {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 13px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    }
+    .count .mono { font-size: 14px; }
+    .count.ok   { background: var(--ok-soft);   border: 1px solid var(--ok-line);   color: var(--ok); }
+    .count.warn { background: var(--warn-soft); border: 1px solid var(--warn-line); color: var(--warn); }
+    .count.fail { background: var(--fail-soft); border: 1px solid var(--fail-line); color: var(--fail); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.fail { background: var(--fail); }
+
+    /* SECTIONS */
+    .section-title {
+      display: flex; align-items: center; gap: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+      margin: 30px 0 14px; color: var(--ink-2);
+    }
+    .section-title .tag {
+      width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    }
+    .section-title.fail .tag { background: var(--fail-soft); color: var(--fail); }
+    .section-title.warn .tag { background: var(--warn-soft); color: var(--warn); }
+    .section-title.ok .tag   { background: var(--ok-soft);   color: var(--ok); }
+
+    .item {
+      background: var(--bg-card); border: 1px solid var(--line);
+      border-left: 3px solid var(--line);
+      border-radius: 12px; padding: 15px 17px; margin-bottom: 10px;
+      font-size: 14.5px; color: var(--ink-2); line-height: 1.5;
+      display: flex; gap: 12px; align-items: flex-start;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.7) inset;
+    }
+    .item .ic { flex-shrink: 0; margin-top: 1px; }
+    .item.fail    { border-left-color: var(--fail); }
+    .item.warning { border-left-color: var(--warn); }
+    .item.fail .ic { color: var(--fail); }
+    .item.warning .ic { color: var(--warn); }
+    .item.ok { border-left-color: var(--ok); }
+    .item.ok .ic { color: var(--ok); }
+    .ok-summary {
+      background: var(--ok-soft); border: 1px solid var(--ok-line);
+      border-radius: 12px; padding: 15px 17px; font-size: 14.5px; color: var(--ok);
+      display: flex; gap: 11px; align-items: center; font-weight: 500;
+    }
+    .ok-details > summary { cursor: pointer; list-style: none; }
+    .ok-details > summary::-webkit-details-marker { display: none; }
+    .ok-details > summary::marker { content: ""; }
+    .ok-chevron { margin-left: auto; flex-shrink: 0; transition: transform .2s ease; }
+    .ok-details[open] .ok-chevron { transform: rotate(180deg); }
+    .ok-list { margin-top: 10px; }
+    @media print {
+      .ok-list { display: block !important; }
+      .ok-chevron { display: none; }
+    }
+
+    /* UPSELL */
+    .upsell {
+      position: relative; overflow: hidden;
+      margin-top: 38px; padding: 32px 30px;
+      background: var(--bg-dark);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 18px;
+      text-align: center;
+      box-shadow: 0 26px 60px -30px rgba(12,12,13,0.45);
+    }
+    .upsell::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(600px 280px at 50% -20%, rgba(99,120,255,0.3), transparent 65%);
+      pointer-events: none;
+    }
+    .upsell-inner { position: relative; }
+    .upsell-eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500; color: #aab6ff;
+      text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 14px;
+    }
+    .upsell h2 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 12px; line-height: 1.15; }
+    .upsell p { color: rgba(255,255,255,0.6); font-size: 14.5px; max-width: 480px; margin: 0 auto 22px; line-height: 1.6; text-wrap: pretty; }
+    .upsell p b { color: rgba(255,255,255,0.92); font-weight: 700; }
+    .price { display: inline-flex; align-items: baseline; gap: 10px; margin-bottom: 22px; }
+    .price .old { color: rgba(255,255,255,0.4); text-decoration: line-through; font-size: 16px; }
+    .price .new { color: #fff; font-weight: 800; font-size: 30px; letter-spacing: -1px; }
+    .price .save {
+      font-size: 11px; font-weight: 600; color: #aab6ff;
+      background: rgba(99,120,255,0.18); border: 1px solid rgba(99,120,255,0.35);
+      border-radius: 6px; padding: 3px 8px; align-self: center;
+    }
+    .pay-btn {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: linear-gradient(135deg, #7d8eff 0%, #5567e6 100%); color: #fff;
+      padding: 15px 30px; border-radius: 12px; font-weight: 700; font-size: 15.5px; letter-spacing: -0.2px;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.25) inset, 0 12px 28px -8px rgba(99,120,255,0.6);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .pay-btn:hover { transform: translateY(-1px); box-shadow: 0 1px 0 0 rgba(255,255,255,0.3) inset, 0 16px 34px -8px rgba(99,120,255,0.7); }
+    .upsell.pending, .upsell.muted { background: var(--bg-card); border: 1px solid var(--line); box-shadow: 0 1px 0 0 rgba(255,255,255,0.8) inset, 0 18px 40px -28px rgba(12,12,13,0.16); }
+    .upsell.pending::before, .upsell.muted::before { display: none; }
+    .upsell.pending .upsell-eyebrow, .upsell.muted .upsell-eyebrow { color: var(--brand-2); }
+    .upsell.pending h2, .upsell.muted h2 { color: var(--ink); }
+    .upsell.pending p, .upsell.muted p { color: var(--ink-3); }
+    .upsell .spinner { border-color: var(--brand-soft); border-top-color: var(--brand); }
+
+    /* AI BREAKDOWN */
+    .ai-card {
+      background: var(--bg-card); border: 1px solid var(--line);
+      border-radius: 14px; padding: 22px; margin-bottom: 14px;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.8) inset, 0 18px 40px -30px rgba(12,12,13,0.14);
+    }
+    .ai-card-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 16.5px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 9px;
+    }
+    .ai-card-title .badge {
+      flex-shrink: 0; width: 24px; height: 24px; border-radius: 7px;
+      background: var(--brand-tint); border: 1px solid var(--brand-soft); color: var(--brand-2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ai-card-text { font-size: 14.5px; color: var(--ink-2); margin-bottom: 12px; line-height: 1.6; }
+    .ai-steps { font-size: 14.5px; color: var(--ink-2); margin: 0 0 14px 4px; padding-left: 18px; }
+    .ai-steps li { margin-bottom: 6px; padding-left: 4px; }
+    .ai-steps li::marker { color: var(--brand-2); font-weight: 700; }
+    .ai-rewrite { background: var(--brand-tint); border-left: 3px solid var(--brand); border-radius: 8px; padding: 12px 14px; margin: 4px 0 14px; }
+    .ai-rewrite-label { font-size: 12px; font-weight: 700; color: var(--brand-2); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
+    .ai-rewrite-text { font-size: 15px; color: var(--ink); line-height: 1.6; }
+    .ai-code-wrap { position: relative; }
+    .ai-code {
+      background: var(--bg-dark); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 16px; overflow-x: auto;
+      font-size: 13px; line-height: 1.55; margin: 0;
+      font-family: 'JetBrains Mono', "SF Mono", Menlo, Consolas, monospace; color: #d6dae3;
+    }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 7px; padding: 6px 12px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.18); }
+    .demo-note { font-size: 12.5px; color: var(--ink-4); margin-top: 12px; }
+
+    /* EMAIL STUB */
+    .email-stub { margin-top: 30px; text-align: center; }
+    .email-btn {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 13px 24px; border-radius: 12px; font-family: inherit;
+      font-size: 14.5px; font-weight: 600; letter-spacing: -0.1px;
+      background: var(--ink); color: #fff; border: 1px solid var(--ink);
+      cursor: pointer; transition: opacity .15s ease;
+    }
+    .email-btn:hover { opacity: .85; }
+    .report-actions { margin-top: 30px; text-align: center; }
+    .actions-form { display: inline-flex; flex-direction: column; gap: 14px; align-items: center; }
+    .actions-row { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; }
+    .email-note { font-size: 12.5px; color: var(--ink-4); margin-top: 10px; }
+    .pdf-export { margin-top: 30px; text-align: center; }
+    .pdf-btn {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 13px 26px; border-radius: 12px;
+      background: var(--ink); color: #fff;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .pdf-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -6px rgba(0,0,0,0.3); }
+    .pdf-gate-label { margin: 0 0 10px; font-size: 14px; color: #555; }
+    .pdf-gate { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .pdf-gate-input {
+      padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px;
+      font-size: 14px; min-width: 220px;
+    }
+    .pdf-gate-input:focus { outline: none; border-color: #6366f1; }
+
+    /* FOOTER */
+    .footer {
+      background: var(--bg-dark); border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 28px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .footer-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.3px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-link { font-size: 12px; color: rgba(255,255,255,0.5); transition: color 0.15s; }
+    .footer-link:hover { color: rgba(255,255,255,0.85); }
+
+    @media (max-width: 560px) {
+      .nav { padding: 0 16px; }
+      .nav-logo-sub { display: none; }
+      .page { padding: 40px 16px 64px; }
+      h1 { font-size: 25px; }
+      .score-card { flex-direction: column; text-align: center; gap: 22px; padding: 26px 22px; }
+      .counts { justify-content: center; }
+      .upsell { padding: 28px 22px; }
+      .footer { flex-direction: column; padding: 22px 16px; gap: 12px; text-align: center; }
+    }
+  </style>
 </head>
 <body>
-$END$
+
+<!-- NAV -->
+<nav style="position:sticky;top:0;z-index:100;backdrop-filter:saturate(180%) blur(14px);background:rgba(247,244,238,0.72);border-bottom:1px solid rgba(21,20,15,0.07);">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+    <a href="/" style="display:flex;align-items:center;gap:11px;margin-right:auto;">
+      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+      <span style="display:flex;flex-direction:column;line-height:1.05;">
+        <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span>
+        <span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span>
+      </span>
+    </a>
+    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:14.5px;color:#4A463E;font-weight:500;">
+      <a href="/#audit" style="transition:color .15s;">Возможности</a>
+      <a href="/#audit" style="transition:color .15s;">Аудит</a>
+      <a href="/geo-check/" style="transition:color .15s;">GEO-проверка</a>
+      <a href="/#pricing" style="transition:color .15s;">Тарифы</a>
+      <a href="/blog/" style="transition:color .15s;">Блог</a>
+    </div>
+    <a href="https://app.seodyssey.ru/" style="background:#15140F;color:#F7F4EE;padding:10px 18px;border-radius:11px;font-weight:600;font-size:14.5px;transition:transform .15s,background .15s;">Перейти в сервис</a>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<main class="page">
+  <div class="wrap">
+
+    <!-- HEAD -->
+    <div class="head">
+      <div class="eyebrow">GEO-аудит · отчёт</div>
+      <h1>Готовность к AI-ответам</h1>
+      <div class="url">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+        <span class="mono">{{ lead.url }}</span>
+      </div>
+    </div>
+
+    {% if not check_done %}
+    <!-- PENDING: проверка идёт -->
+    <div class="pending-card">
+      <div class="spinner"></div>
+      <div class="pending-title">Проверяем страницу…</div>
+      <div class="pending-desc">Анализируем доступ AI-ботов, микроразметку и структуру. Обычно занимает 10–20 секунд — страница обновится сама.</div>
+    </div>
+    <script>setTimeout(function(){ location.reload(); }, 6000);</script>
+    {% else %}
+
+    <!-- SCORE -->
+    <div class="score-card">
+      <div class="gauge">
+        <svg width="132" height="132" viewBox="0 0 132 132">
+          <circle cx="66" cy="66" r="58" fill="none" stroke="#ebe9e2" stroke-width="12"/>
+          <circle cx="66" cy="66" r="58" fill="none" stroke="#6378ff" stroke-width="12"
+                  stroke-linecap="round" stroke-dasharray="364.4"
+                  stroke-dashoffset="calc(364.4 - 364.4 * {{ percent }} / 100)"/>
+        </svg>
+        <div class="gauge-center">
+          <div class="gauge-num">{{ percent }}<small>%</small></div>
+        </div>
+      </div>
+      <div class="score-side">
+        <div class="score-head">Оценка готовности страницы</div>
+        <div class="score-desc">Насколько страница подготовлена к цитированию в ChatGPT, Яндекс Нейро и Google AI по результатам проверок.</div>
+        <div class="counts">
+          <span class="count ok"><span class="dot ok"></span>Пройдено <span class="mono">{{ ok }}</span></span>
+          <span class="count warn"><span class="dot warn"></span>Улучшить <span class="mono">{{ warn }}</span></span>
+          <span class="count fail"><span class="dot fail"></span>Проблемы <span class="mono">{{ fail }}</span></span>
+        </div>
+      </div>
+    </div>
+
+    {% if fails %}
+    <div class="section-title fail">
+      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span>
+      Критичные проблемы
+    </div>
+    {% for r in fails %}
+    <div class="item fail">
+      <span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+      <div class="msg">{{ r.message }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if warns %}
+    <div class="section-title warn">
+      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+      Стоит улучшить
+    </div>
+    {% for r in warns %}
+    <div class="item warning">
+      <span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+      <div class="msg">{{ r.message }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if demo_item %}
+    <div class="section-title">
+      <span class="tag" style="background:var(--brand-tint);color:var(--brand-2);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+      Пример из платного разбора
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-title">
+        <span class="badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+        {{ demo_item.title }}
+      </div>
+      <div class="ai-card-text">{{ demo_item.explanation }}</div>
+      {% if demo_item.code %}
+      <div class="ai-code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        <pre class="ai-code"><code>{{ demo_item.code }}</code></pre>
+      </div>
+      {% endif %}
+      {% with remaining=fail|add:warn|add:"-1" %}
+      {% if remaining > 0 %}
+      <div class="demo-note">Демо. Разбор остальных проблем ({{ remaining }}) — в Pro-отчёте.</div>
+      {% else %}
+      <div class="demo-note">Демо-пример из Pro-отчёта.</div>
+      {% endif %}
+      {% endwith %}
+    </div>
+    <script>
+    function copyCode(btn){
+      var code = btn.parentElement.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var old = btn.innerText; btn.innerText = 'Скопировано';
+        setTimeout(function(){ btn.innerText = old; }, 1500);
+      });
+    }
+    </script>
+    {% endif %}
+
+    {% if ok %}
+    <div class="section-title ok">
+      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+      В порядке
+    </div>
+    <details class="ok-details">
+      <summary class="ok-summary">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span><span class="mono" style="font-weight:600;">{{ ok }}</span> проверок пройдено успешно.</span>
+        <svg class="ok-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="ok-list">
+        {% for r in oks %}
+        <div class="item ok">
+          <span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <div class="msg">{{ r.message }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+
+    {% if not is_paid and not awaiting_payment %}
+    <div class="upsell">
+      <div class="upsell-inner">
+        <div class="upsell-eyebrow">Платный разбор · с кодом</div>
+        <h2>Что именно исправить и как — с готовым кодом</h2>
+        <p>Бесплатный отчёт показывает, <b>что</b> не так. Платный разбор объясняет <b>как починить каждую проблему</b>: пошаговые инструкции и готовый код для вставки — микроразметка, мета-теги, структура.</p>
+        <div class="price">
+          {% if old_price %}<span class="old">{{ old_price }} ₽</span>{% endif %}
+          <span class="new">{{ price }} ₽</span>
+          {% if discount %}<span class="save">−{{ discount }}%</span>{% endif %}
+        </div>
+        <div>
+          <a class="pay-btn" href="{% url 'geo_pay' token=lead.access_token %}">
+            Оплатить {{ price }} ₽ и получить разбор
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if awaiting_payment %}
+    <div class="upsell pending">
+      <div class="upsell-inner">
+        <div class="spinner"></div>
+        <div class="upsell-eyebrow">Оплата принята</div>
+        <h2>Подтверждаем платёж…</h2>
+        <p>Это занимает несколько секунд. Как только платёж подтвердится, разбор начнёт готовиться автоматически — страница обновится сама.</p>
+      </div>
+    </div>
+    <script>setTimeout(function(){ location.reload(); }, 4000);</script>
+    {% endif %}
+    {% if ai_pending %}
+    <div class="upsell pending">
+      <div class="upsell-inner">
+        <div class="spinner"></div>
+        <div class="upsell-eyebrow">Оплата прошла</div>
+        <h2>Готовим ваш разбор…</h2>
+        <p>AI анализирует найденные проблемы и подбирает решения — обычно это занимает менее минуты. Страница обновится автоматически.</p>
+      </div>
+    </div>
+    <script>setTimeout(function(){ location.reload(); }, 8000);</script>
+    {% endif %}
+
+    {% if ai_error %}
+    <div class="upsell muted">
+      <div class="upsell-inner">
+        <div class="upsell-eyebrow">Разбор готовится</div>
+        <h2>Чуть дольше обычного</h2>
+        <p>Оплата прошла, но генерация разбора задержалась. Обновите страницу через пару минут — если разбор не появится, напишите нам, и мы всё поправим.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if ai_ready %}
+    <div class="section-title">
+      <span class="tag" style="background:var(--brand-tint);color:var(--brand-2);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+      Разбор: что исправить и как
+    </div>
+    {% for item in ai_items %}
+    <div class="ai-card">
+      <div class="ai-card-title">
+        <span class="badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+        {{ item.title }}
+      </div>
+      <div class="ai-card-text">{{ item.explanation }}</div>
+      {% if item.steps %}
+      <ol class="ai-steps">
+        {% for step in item.steps %}<li>{{ step }}</li>{% endfor %}
+      </ol>
+      {% endif %}
+      {% if item.rewrite %}
+      <div class="ai-rewrite">
+        <div class="ai-rewrite-label">Готовый вариант</div>
+        <div class="ai-rewrite-text">{{ item.rewrite }}</div>
+      </div>
+      {% endif %}
+      {% if item.code %}
+      <div class="ai-code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        <pre class="ai-code"><code>{{ item.code }}</code></pre>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <script>
+    function copyCode(btn){
+      var code = btn.parentElement.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(function(){
+        var old = btn.innerText; btn.innerText = 'Скопировано';
+        setTimeout(function(){ btn.innerText = old; }, 1500);
+      });
+    }
+    </script>
+    {% endif %}
+
+    <!-- Экспорт: PDF + отправка на почту -->
+    <div class="report-actions">
+      {% if request.GET.mail == "ok" %}
+      <div class="email-note">✅ Отчёт отправлен на {{ lead.email }}</div>
+      {% elif request.GET.mail == "err" %}
+      <div class="email-note">⚠️ Не удалось отправить письмо, попробуйте ещё раз</div>
+      {% endif %}
+
+      {% if lead.email %}
+      <div class="actions-row">
+        <a class="pdf-btn" href="{% url 'geo_report_pdf' token=lead.access_token %}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+          Скачать PDF
+        </a>
+        <form method="post" action="{% url 'geo_report_send_email' token=lead.access_token %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="email-btn">✉️ Прислать результат себе</button>
+        </form>
+      </div>
+      {% else %}
+      <p class="pdf-gate-label">Укажите email — скачайте PDF или пришлите отчёт себе на почту:</p>
+      <form method="post" class="actions-form">
+        {% csrf_token %}
+        <input type="email" name="email" required placeholder="you@example.com" class="pdf-gate-input">
+        <div class="actions-row">
+          <button type="submit" class="pdf-btn" formaction="{% url 'geo_report_pdf' token=lead.access_token %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+            Скачать PDF
+          </button>
+          <button type="submit" class="email-btn" formaction="{% url 'geo_report_send_email' token=lead.access_token %}">✉️ Прислать результат себе</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+
+    {% endif %}
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid rgba(21,20,15,0.08);">
+  <div style="max-width:1200px;margin:0 auto;padding:54px 24px 40px;display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;">
+    <div style="flex:1 1 280px;min-width:240px;">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
+        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+        <div style="display:flex;flex-direction:column;line-height:1.05;"><span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span><span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span></div>
+      </div>
+      <p style="font-size:14px;color:#8A857A;line-height:1.55;margin:0;max-width:300px;">Инженерный GEO/AI-аудит с готовым кодом. Не оценка, а конкретные строки, которые копируете и вставляете.</p>
+    </div>
+    <div style="display:flex;gap:54px;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Продукт</span>
+        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Возможности</a>
+        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Аудит</a>
+        <a href="/#pricing" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Тарифы</a>
+        <a href="/blog/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Блог</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Документы</span>
+        <a href="/requisites/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Реквизиты</a>
+        <a href="/offer/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Оферта</a>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Поддержка</a>
+      </div>
+    </div>
+  </div>
+  <div style="border-top:1px solid rgba(21,20,15,0.08);">
+    <div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9A958B;">
+      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
+      <span>Сделано для рунета · Яндекс Нейро + ChatGPT</span>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

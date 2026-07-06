@@ -1,40 +1,70 @@
-<aside class="hidden lg:flex lg:flex-col w-72 shrink-0 border-r border-slate-200 bg-white">
-  <div class="px-6 py-5 border-b border-slate-200">
-    <a href="{% url 'dashboard' %}" class="flex items-center gap-3">
-      <div class="h-10 w-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-semibold">O</div>
+{% load static %}
+<aside class="hidden lg:flex lg:flex-col w-56 shrink-0" style="position:sticky;top:0;height:100vh;overflow-y:auto;">
+  <div style="padding:22px 18px 20px;border-bottom:0.5px solid var(--side-line);">
+    <a href="{% url 'dashboard' %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <div style="width:28px;height:28px;border-radius:7px;background:var(--surface-2);border:0.5px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px;box-sizing:border-box;">
+        <img src="{% static 'img/spiral-icon.svg' %}" width="22" height="22" alt="SEOdyssey">
+      </div>
       <div>
-        <div class="text-lg font-semibold leading-none">SEOdyssey</div>
-        <div class="text-xs text-slate-500 mt-1">там, где начинается рост</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-0.015em;line-height:1.2;">SEOdyssey</div>
+        <div style="font-size:10.5px;color:var(--muted-2);margin-top:1px;letter-spacing:0.04em;">мониторинг сайтов</div>
       </div>
     </a>
   </div>
 
-  <nav class="px-3 py-4 space-y-1 text-sm">
-    <a href="{% url 'dashboard' %}" class="navlink {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Обзор</a>
-    <a href="{% url 'sites' %}" class="navlink {% if request.resolver_match.url_name in 'sites site_new site_checks' %}active{% endif %}">Сайты</a>
-    <a href="{% url 'alerts' %}" class="navlink {% if request.resolver_match.url_name in 'alerts alert_detail' %}active{% endif %}">Алерты</a>
-    <a href="{% url 'reports' %}" class="navlink {% if request.resolver_match.url_name in 'reports report_detail' %}active{% endif %}">Отчёты</a>
-    <a href="{% url 'integrations' %}" class="navlink {% if request.resolver_match.url_name == 'integrations' %}active{% endif %}">Интеграции</a>
+  <nav style="padding:16px 10px 10px;flex:1;">
+    <a href="{% url 'dashboard' %}" class="ni {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'site_checks' or request.resolver_match.url_name == 'check_detail' or request.resolver_match.url_name == 'site_new' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="8" y="1" width="5" height="5" rx="1"/><rect x="1" y="8" width="5" height="5" rx="1"/><rect x="8" y="8" width="5" height="5" rx="1"/></svg>
+      Мои сайты
+    </a>
 
-    <div class="pt-3 mt-3 border-t border-slate-200"></div>
 
-    <a href="{% url 'billing' %}" class="navlink {% if request.resolver_match.url_name == 'billing' %}active{% endif %}">Тариф и оплата</a>
-    <a href="{% url 'team' %}" class="navlink {% if request.resolver_match.url_name == 'team' %}active{% endif %}">Команда</a>
-    <a href="{% url 'user_settings' %}" class="navlink {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">Настройки</a>
-    <a href="{% url 'help' %}" class="navlink {% if request.resolver_match.url_name == 'help' %}active{% endif %}">Помощь</a>
+    <a href="{% url 'audit_list' %}" class="ni {% if request.resolver_match.url_name == 'audit_list' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2 3h10M2 7h7M2 11h5"/><circle cx="12" cy="9" r="2.5"/><path d="M12 8v2h1.5"/></svg>
+      SEO-аудит
+    </a>
+    <a href="{% url 'ai_queries:geo_audit' %}" class="ni {% if request.resolver_match.url_name == 'geo_audit' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5"/></svg>
+      GEO-аудит
+    </a>
+
+
+    <div style="height:0.5px;background:var(--side-line);margin:14px 6px;"></div>
+
+    <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--tertiary);padding:0 10px;margin-bottom:6px;font-weight:500;">Аккаунт</div>
+
+    <a href="{% url 'billing' %}" class="ni {% if request.resolver_match.url_name == 'billing' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1" y="3" width="12" height="8" rx="1.5"/><line x1="1" y1="6" x2="13" y2="6"/></svg>
+      Тарифы
+    </a>
+    <a href="{% url 'team' %}" class="ni {% if request.resolver_match.url_name == 'team' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="5.5" cy="4.5" r="2"/><path d="M1 12c0-2.5 2-4.5 4.5-4.5S10 9.5 10 12"/><circle cx="10.5" cy="5" r="1.5"/><path d="M13 12c0-1.9-1.1-3.5-2.5-4"/></svg>
+      Команда
+    </a>
+    <a href="{% url 'user_settings' %}" class="ni {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M5 2.5v3M9 2.5v3M3.5 5.5h8M4 5.5v3a3 3 0 0 0 3 3v2M11 5.5v3a3 3 0 0 1-3 3v2"/></svg>
+      Интеграции
+    </a>
+    <a href="{% url 'help' %}" class="ni {% if request.resolver_match.url_name == 'help' %}active{% endif %}">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="5.5"/><path d="M5.5 5.5a1.5 1.5 0 012.8.75C8.3 7.5 7 7 7 8.5"/><circle cx="7" cy="10.5" r=".6" fill="currentColor" stroke="none"/></svg>
+      Помощь
+    </a>
   </nav>
 
-  <div class="mt-auto px-6 py-4 border-t border-slate-200">
-    <div class="flex items-center gap-3">
-      <div class="h-9 w-9 rounded-full bg-slate-200"></div>
-      <div class="min-w-0">
-        <div class="text-sm font-semibold truncate">{{ request.user.get_username }}</div>
-        <div class="text-xs text-slate-500 truncate">{{ request.user.email|default:"" }}</div>
+  {% if request.user.is_authenticated %}
+  <div style="padding:14px 14px 18px;border-top:0.5px solid var(--side-line);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0;">
+        {{ request.user.get_username|first|upper }}
       </div>
-      <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button class="ml-auto text-xs text-slate-500 hover:text-slate-700" type="submit">Выйти</button>
-      </form>
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">{{ request.user.get_username }}</div>
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button style="background:none;border:none;font-size:11px;color:var(--muted-2);cursor:pointer;padding:0;font-family:inherit;" type="submit">Выйти →</button>
+        </form>
+      </div>
     </div>
   </div>
+  {% endif %}
 </aside>
