@@ -1,6 +1,6 @@
 /* ============================================================
    SEOdyssey · landing design system
-   Тёплая бумага · чернила · перивинкль · Unbounded + Inter + JetBrains Mono
+   Тёплая бумага · чернила · перивинкль · Inter + JetBrains Mono
    Подключается всеми страницами landing/ через base.html
    ============================================================ */
 
@@ -52,13 +52,13 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- типографика ---------- */
 .display {
-  font-family: 'Unbounded', 'Inter', sans-serif;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.028em;
   text-wrap: balance;
 }
-h1.display { font-size: clamp(25px, 3.2vw, 40px); line-height: 1.16; margin: 0; }
-h2.display { font-size: clamp(21px, 2.5vw, 31px); line-height: 1.2; margin: 0; }
+h1.display { font-size: clamp(36px, 4.8vw, 58px); line-height: 1.06; margin: 0; }
+h2.display { font-size: clamp(29px, 3.6vw, 46px); line-height: 1.08; margin: 0; }
 .display .acc { color: var(--accent); }
 .lead { font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; color: var(--body); }
 .section-dark .lead { color: var(--dark-body); }

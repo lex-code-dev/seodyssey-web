@@ -22,7 +22,7 @@
     box-shadow: 0 16px 34px -14px rgba(21,20,15,0.55);
     animation: scfloat 5.5s ease-in-out infinite;
   }
-  .hero-score b { font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600; color: var(--ok-soft); }
+  .hero-score b { font-variant-numeric: tabular-nums; font-size: 21px; font-weight: 700; color: var(--ok-soft); }
   .hero-score small { font-size: 12px; line-height: 1.15; color: #C9C5BC; }
   .hero-window { background: var(--surface); border-radius: var(--radius-l); border: 1px solid var(--line); box-shadow: 0 30px 70px -34px rgba(21,20,15,0.4); overflow: hidden; }
   .hero-window-bar { display: flex; align-items: center; gap: 9px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
@@ -48,7 +48,7 @@
   .journey-step + .journey-step { padding-left: 28px; }
   .journey-num {
     display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
-    font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 600;
+    font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700;
     background: var(--accent); color: #fff; margin-bottom: 20px; position: relative; z-index: 1;
   }
   .journey-step:nth-child(2) .journey-num { background: var(--ink); }
@@ -134,7 +134,7 @@
   /* ===== code showcase ===== */
   .code-steps { display: flex; flex-direction: column; gap: 16px; }
   .code-step { display: flex; gap: 13px; }
-  .code-step b { flex: none; font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; color: var(--accent); font-weight: 600; }
+  .code-step b { flex: none; font-variant-numeric: tabular-nums; font-size: 20px; color: var(--accent); font-weight: 600; }
   .code-step h3 { font-weight: 600; font-size: 15.5px; margin: 0 0 2px; }
   .code-step p { font-size: 14px; color: #6B675E; line-height: 1.5; margin: 0; }
 
@@ -153,14 +153,14 @@
   .price-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 11px 22px; max-width: 560px; }
   .price-features span { display: flex; gap: 9px; font-size: 14.5px; color: #DAD6CC; }
   .price-box { flex: 0 1 280px; min-width: 240px; background: var(--dark-2); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 28px; text-align: center; }
-  .price-num { font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: clamp(34px,4.4vw,46px); font-weight: 600; line-height: 1; }
+  .price-num { font-variant-numeric: tabular-nums; font-size: clamp(40px,5vw,56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
   .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
   .plan { border-radius: 18px; padding: 26px; display: flex; flex-direction: column; }
   .plan-light { background: var(--surface); border: 1px solid rgba(21,20,15,0.1); }
   .plan-dark { background: var(--dark); color: #F2EFE8; border: 1px solid var(--dark); position: relative; box-shadow: 0 30px 64px -34px rgba(99,120,255,0.5); }
   .plan-tag { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; }
   .plan-price { display: flex; align-items: baseline; gap: 5px; margin-bottom: 4px; }
-  .plan-price b { font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 600; }
+  .plan-price b { font-variant-numeric: tabular-nums; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; }
   .plan-note { font-size: 13px; margin-bottom: 22px; }
   .plan-list { margin: 0 0 24px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; font-size: 14px; }
   .plan-list li { display: flex; gap: 9px; }
@@ -587,7 +587,7 @@
     <div class="price-hero-grid">
       <div style="flex:1 1 380px;min-width:280px;">
         <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:18px;">★ С чего начать</div>
-        <h3 style="font-family:'Unbounded',sans-serif;font-size:clamp(21px,2.4vw,28px);font-weight:500;letter-spacing:-0.01em;margin:0 0 10px;">Pro-отчёт по вашей странице</h3>
+        <h3 style="font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-0.02em;margin:0 0 10px;">Pro-отчёт по вашей странице</h3>
         <p style="font-size:15.5px;color:var(--dark-body);line-height:1.55;margin:0 0 24px;max-width:440px;">Разовая покупка, без подписки. Полный разбор одной страницы со всеми правками и кодом.</p>
         <div class="price-features">
           <span><span style="color:var(--ok-soft);">✓</span> Полный разбор всех проблем</span>
@@ -614,7 +614,7 @@
 
   <!-- Подписки -->
   <div style="text-align:center;margin:48px 0 26px;" data-reveal>
-    <h3 style="font-family:'Unbounded',sans-serif;font-size:clamp(18px,2vw,23px);font-weight:500;letter-spacing:-0.01em;margin:0 0 8px;">Подписки для постоянного мониторинга</h3>
+    <h3 style="font-size:clamp(20px,2.2vw,26px);font-weight:700;letter-spacing:-0.02em;margin:0 0 8px;">Подписки для постоянного мониторинга</h3>
     <p style="font-size:15px;color:#6B675E;margin:0;">Нужно следить постоянно и вести несколько сайтов — выбирайте тариф.</p>
   </div>
   <div class="plans" data-reveal-group>
