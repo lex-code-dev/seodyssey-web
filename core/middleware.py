@@ -34,6 +34,9 @@ class AppDomainMiddleware:
             # Блог тоже публичный, живёт на лендинге
             if path.startswith("/blog/"):
                 return self.get_response(request)
+            # Бесплатные инструменты (robots-txt-check и будущие) — на лендинге
+            if path.startswith("/tools/"):
+                return self.get_response(request)
             # sitemap и robots — отдаём Django, не редиректим
             if path in ("/sitemap.xml", "/robots.txt"):
                 return self.get_response(request)
