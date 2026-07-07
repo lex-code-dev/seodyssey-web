@@ -9,7 +9,8 @@ class AppDomainMiddleware:
         host = request.get_host().split(":")[0]
         path = request.path
 
-        if host in ("seodyssey.ru", "www.seodyssey.ru"):
+        # seodyssey.localhost — локальное превью лендинга (в проде хост не встречается)
+        if host in ("seodyssey.ru", "www.seodyssey.ru", "seodyssey.localhost"):
             if path == "/":
                 from billing.models import Plan
                 from landing.models import BlogPost, ServicePrice
@@ -35,6 +36,8 @@ class AppDomainMiddleware:
                 return self.get_response(request)
             # sitemap и robots — отдаём Django, не редиректим
             if path in ("/sitemap.xml", "/robots.txt"):
+                return self.get_response(request)
+            if host == "seodyssey.localhost":
                 return self.get_response(request)
             return redirect("https://app.seodyssey.ru" + path)
 

@@ -1,174 +1,135 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ post.title }} — SEOdyssey</title>
-  <link rel="icon" href="/static/favicon.ico" sizes="any">
-  <link rel="icon" href="/static/img/spiral-icon.svg" type="image/svg+xml">
-  <meta name="description" content="{{ post.description }}">
-  <link rel="canonical" href="https://seodyssey.ru/blog/{{ post.slug }}/">
-  <!-- OpenGraph -->
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="SEOdyssey">
-  <meta property="og:locale" content="ru_RU">
-  <meta property="og:title" content="{{ post.title }} — SEOdyssey">
-  <meta property="og:description" content="{{ post.description }}">
-  <meta property="og:url" content="https://seodyssey.ru/blog/{{ post.slug }}/">
-  {% if post.cover %}<meta property="og:image" content="https://seodyssey.ru{{ post.cover.url }}">{% endif %}
+{% extends "landing/base.html" %}
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ post.title }} — SEOdyssey">
-  <meta name="twitter:description" content="{{ post.description }}">
-  <meta name="twitter:url" content="https://seodyssey.ru/blog/{{ post.slug }}/">
-  {% if post.cover %}<meta name="twitter:image" content="https://seodyssey.ru{{ post.cover.url }}">{% endif %}
+{% block title %}{{ post.title }} — SEOdyssey{% endblock %}
+{% block description %}{{ post.description }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="https://seodyssey.ru/blog/{{ post.slug }}/">{% endblock %}
+{% block nav_blog %}class="active"{% endblock %}
+{% block nav_cta_label %}Перейти в сервис{% endblock %}
 
-  <!-- JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "BlogPosting",
-        "@id": "https://seodyssey.ru/blog/{{ post.slug }}/#article",
-        "headline": "{{ post.title|escapejs }}",
-        "description": "{{ post.description|escapejs }}",
-        "url": "https://seodyssey.ru/blog/{{ post.slug }}/",
-        "mainEntityOfPage": "https://seodyssey.ru/blog/{{ post.slug }}/",
-        {% if post.cover %}"image": "https://seodyssey.ru{{ post.cover.url }}",{% endif %}
-        {% if post.published_at %}"datePublished": "{{ post.published_at|date:'c' }}",
-        "dateModified": "{{ post.published_at|date:'c' }}",{% endif %}
-        "author": { "@type": "Organization", "name": "SEOdyssey", "url": "https://seodyssey.ru/" },
-        "publisher": { "@id": "https://seodyssey.ru/#organization" }
-      },
-      {
-        "@type": "Organization",
-        "@id": "https://seodyssey.ru/#organization",
-        "name": "SEOdyssey",
-        "url": "https://seodyssey.ru/",
-        "description": "SEOdyssey — сервис мониторинга видимости брендов в ответах нейросетей и GEO/SEO-аудита сайтов. Работаем в России.",
-        "areaServed": { "@type": "Country", "name": "Россия" },
-        "logo": "https://seodyssey.ru/static/img/spiral-icon.svg"
-      },
-      {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://seodyssey.ru/" },
-          { "@type": "ListItem", "position": 2, "name": "Блог", "item": "https://seodyssey.ru/blog/" },
-          { "@type": "ListItem", "position": 3, "name": "{{ post.title|escapejs }}", "item": "https://seodyssey.ru/blog/{{ post.slug }}/" }
-        ]
-      }{% if post.faq_items.all %},
-      {
-        "@type": "FAQPage",
-        "@id": "https://seodyssey.ru/blog/{{ post.slug }}/#faq",
-        "mainEntity": [
-          {% for item in post.faq_items.all %}{
-            "@type": "Question",
-            "name": "{{ item.question|escapejs }}",
-            "acceptedAnswer": { "@type": "Answer", "text": "{{ item.answer|escapejs }}" }
-          }{% if not forloop.last %},{% endif %}
-          {% endfor %}
-        ]
-      }{% endif %}
-    ]
-  }
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    html, body { max-width: 100%; overflow-x: hidden; }
-    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: #15140F; background: #F7F4EE; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-    ::selection { background: #6378FF; color: #fff; }
-    a { color: inherit; text-decoration: none; }
-    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+{% block head %}
+<!-- OpenGraph -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SEOdyssey">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="{{ post.title }} — SEOdyssey">
+<meta property="og:description" content="{{ post.description }}">
+<meta property="og:url" content="https://seodyssey.ru/blog/{{ post.slug }}/">
+{% if post.cover %}<meta property="og:image" content="https://seodyssey.ru{{ post.cover.url }}">{% endif %}
 
-    .art { max-width: 760px; margin: 0 auto; padding: clamp(32px,4vw,52px) 24px clamp(60px,7vw,90px); }
-    .art-back { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: #6378FF; margin-bottom: 28px; }
-    .art-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #9A958B; margin-bottom: 16px; }
-    .art-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #9A958B; }
-    .art h1 { font-size: clamp(30px,4.2vw,48px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 700; margin: 0 0 26px; }
-    .art-cover { height: clamp(180px,26vw,300px); border-radius: 20px; background: linear-gradient(135deg,#15140F 0%,#2A2F5C 55%,#6378FF 130%); margin-bottom: 38px; overflow: hidden; }
-    .art-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ post.title }} — SEOdyssey">
+<meta name="twitter:description" content="{{ post.description }}">
+<meta name="twitter:url" content="https://seodyssey.ru/blog/{{ post.slug }}/">
+{% if post.cover %}<meta name="twitter:image" content="https://seodyssey.ru{{ post.cover.url }}">{% endif %}
 
-    /* PROSE */
-    .prose { font-size: 17px; color: #2A2822; line-height: 1.75; }
-    .prose > * + * { margin-top: 1.15em; }
-    .prose h2 { font-size: 26px; font-weight: 700; color: #15140F; letter-spacing: -0.02em; line-height: 1.2; margin-top: 2em; margin-bottom: 0.1em; }
-    .prose h3 { font-size: 20px; font-weight: 700; color: #15140F; letter-spacing: -0.01em; line-height: 1.3; margin-top: 1.6em; margin-bottom: 0.1em; }
-    .prose a { color: #4F5BE0; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(99,120,255,0.35); text-underline-offset: 3px; }
-    .prose a:hover { text-decoration-color: #6378FF; }
-    .prose strong { font-weight: 700; color: #15140F; }
-    .prose ul, .prose ol { padding-left: 1.3em; }
-    .prose li { margin-top: 0.5em; padding-left: 0.3em; }
-    .prose li::marker { color: #4F5BE0; }
-    .prose img { max-width: 100%; border-radius: 14px; border: 1px solid rgba(21,20,15,0.1); display: block; }
-    .prose blockquote { border-left: 3px solid #6378FF; background: #EEF0FF; padding: 14px 20px; border-radius: 0 12px 12px 0; color: #2A2822; font-size: 16.5px; }
-    .prose blockquote p { margin: 0; }
-    .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: #EDEBE3; border: 1px solid rgba(21,20,15,0.1); border-radius: 6px; padding: 1px 6px; color: #15140F; }
-    .prose pre { background: #15140F; color: #EDEBE3; padding: 18px 20px; overflow: auto; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6; }
-    .prose pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
-    .prose hr { border: none; border-top: 1px solid rgba(21,20,15,0.1); margin: 2em 0; }
-    .prose table { width: 100%; border-collapse: collapse; font-size: 15px; }
-    .prose thead tr { background: #15140F; color: #F2EFE8; }
-    .prose th { text-align: left; padding: 13px 16px; font-weight: 600; }
-    .prose td { padding: 12px 16px; color: #4A463E; border-top: 1px solid rgba(21,20,15,0.08); }
+<!-- JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://seodyssey.ru/blog/{{ post.slug }}/#article",
+      "headline": "{{ post.title|escapejs }}",
+      "description": "{{ post.description|escapejs }}",
+      "url": "https://seodyssey.ru/blog/{{ post.slug }}/",
+      "mainEntityOfPage": "https://seodyssey.ru/blog/{{ post.slug }}/",
+      {% if post.cover %}"image": "https://seodyssey.ru{{ post.cover.url }}",{% endif %}
+      {% if post.published_at %}"datePublished": "{{ post.published_at|date:'c' }}",
+      "dateModified": "{{ post.published_at|date:'c' }}",{% endif %}
+      "author": { "@type": "Organization", "name": "SEOdyssey", "url": "https://seodyssey.ru/" },
+      "publisher": { "@id": "https://seodyssey.ru/#organization" }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://seodyssey.ru/#organization",
+      "name": "SEOdyssey",
+      "url": "https://seodyssey.ru/",
+      "description": "SEOdyssey — сервис мониторинга видимости брендов в ответах нейросетей и GEO/SEO-аудита сайтов. Работаем в России.",
+      "areaServed": { "@type": "Country", "name": "Россия" },
+      "logo": "https://seodyssey.ru/static/img/spiral-icon.svg"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://seodyssey.ru/" },
+        { "@type": "ListItem", "position": 2, "name": "Блог", "item": "https://seodyssey.ru/blog/" },
+        { "@type": "ListItem", "position": 3, "name": "{{ post.title|escapejs }}", "item": "https://seodyssey.ru/blog/{{ post.slug }}/" }
+      ]
+    }{% if post.faq_items.all %},
+    {
+      "@type": "FAQPage",
+      "@id": "https://seodyssey.ru/blog/{{ post.slug }}/#faq",
+      "mainEntity": [
+        {% for item in post.faq_items.all %}{
+          "@type": "Question",
+          "name": "{{ item.question|escapejs }}",
+          "acceptedAnswer": { "@type": "Answer", "text": "{{ item.answer|escapejs }}" }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% endif %}
+  ]
+}
+</script>
 
-    /* CTA */
-    .art-cta { margin: 44px 0; background: #15140F; border-radius: 22px; padding: clamp(28px,4vw,40px); position: relative; overflow: hidden; }
-    .art-cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 85% 120%, rgba(99,120,255,0.4), transparent 60%); }
-    .art-cta-inner { position: relative; }
-    .art-cta-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,120,255,0.18); border: 1px solid rgba(99,120,255,0.3); color: #B7C0FF; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; margin-bottom: 16px; }
-    .art-cta h3 { font-size: clamp(22px,2.6vw,28px); font-weight: 700; letter-spacing: -0.02em; color: #F7F4EE; margin: 0 0 10px; }
-    .art-cta p { font-size: 16px; line-height: 1.55; color: #B6B1A6; margin: 0 0 22px; max-width: 440px; }
-    .art-cta-btn { display: inline-block; background: #6378FF; color: #fff; padding: 14px 28px; border-radius: 13px; font-weight: 600; font-size: 16px; box-shadow: 0 14px 34px -14px rgba(99,120,255,0.8); transition: transform .15s; }
-    .art-cta-btn:hover { transform: translateY(-2px); }
+<style>
+  .art { max-width: 760px; margin: 0 auto; padding: clamp(32px,4vw,52px) 24px clamp(60px,7vw,90px); }
+  .art-back { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 28px; }
+  .art-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #9A958B; margin-bottom: 16px; }
+  .art-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #9A958B; }
+  .art h1 { font-family: 'Unbounded', 'Inter', sans-serif; font-weight: 500; font-size: clamp(25px,3.4vw,38px); line-height: 1.18; letter-spacing: -0.01em; margin: 0 0 26px; text-wrap: balance; }
+  .art-cover { height: clamp(180px,26vw,300px); border-radius: 20px; background: linear-gradient(135deg,#15140F 0%,#2A2F5C 55%,#6378FF 130%); margin-bottom: 38px; overflow: hidden; }
+  .art-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* FAQ */
-    .art-faq { margin-top: 44px; }
-    .art-faq h2 { font-size: 26px; font-weight: 700; color: #15140F; letter-spacing: -0.02em; margin: 0 0 14px; }
-    .art-faq-item { background: #fff; border: 1px solid rgba(21,20,15,0.1); border-radius: 14px; padding: 4px 20px; margin-top: 10px; }
-    .art-faq-item summary { list-style: none; cursor: pointer; font-weight: 600; font-size: 16.5px; padding: 16px 0; color: #15140F; }
-    .art-faq-item summary::-webkit-details-marker { display: none; }
-    .art-faq-item p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0 0 16px; }
+  /* PROSE */
+  .prose { font-size: 17px; color: #2A2822; line-height: 1.75; }
+  .prose > * + * { margin-top: 1.15em; }
+  .prose h2 { font-size: 25px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; line-height: 1.2; margin-top: 2em; margin-bottom: 0.1em; text-wrap: balance; }
+  .prose h3 { font-size: 20px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; line-height: 1.3; margin-top: 1.6em; margin-bottom: 0.1em; }
+  .prose a { color: var(--accent-ink); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(99,120,255,0.35); text-underline-offset: 3px; }
+  .prose a:hover { text-decoration-color: var(--accent); }
+  .prose strong { font-weight: 700; color: var(--ink); }
+  .prose ul, .prose ol { padding-left: 1.3em; }
+  .prose li { margin-top: 0.5em; padding-left: 0.3em; }
+  .prose li::marker { color: var(--accent-ink); }
+  .prose img { max-width: 100%; border-radius: 14px; border: 1px solid rgba(21,20,15,0.1); display: block; }
+  .prose blockquote { border: 1px solid var(--accent-line); background: var(--accent-bg); padding: 14px 20px; border-radius: 12px; color: #2A2822; font-size: 16.5px; }
+  .prose blockquote p { margin: 0; }
+  .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: #EDEBE3; border: 1px solid rgba(21,20,15,0.1); border-radius: 6px; padding: 1px 6px; color: var(--ink); }
+  .prose pre { background: var(--ink); color: #EDEBE3; padding: 18px 20px; overflow: auto; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6; }
+  .prose pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+  .prose hr { border: none; border-top: 1px solid rgba(21,20,15,0.1); margin: 2em 0; }
+  .prose table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .prose thead tr { background: var(--ink); color: #F2EFE8; }
+  .prose th { text-align: left; padding: 13px 16px; font-weight: 600; }
+  .prose td { padding: 12px 16px; color: #4A463E; border-top: 1px solid rgba(21,20,15,0.08); }
 
-    /* ABOUT */
-    .art-about { margin-top: 44px; padding: 26px 28px; background: #FAF8F4; border: 1px solid rgba(21,20,15,0.08); border-radius: 16px; }
-    .art-about-label { font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #9A958B; margin-bottom: 12px; }
-    .art-about p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0; }
+  /* CTA */
+  .art-cta { margin: 44px 0; background: var(--dark); border-radius: 22px; padding: clamp(28px,4vw,40px); position: relative; overflow: hidden; }
+  .art-cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 85% 120%, rgba(99,120,255,0.4), transparent 60%); }
+  .art-cta-inner { position: relative; }
+  .art-cta-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,120,255,0.18); border: 1px solid rgba(99,120,255,0.3); color: #B7C0FF; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; margin-bottom: 16px; }
+  .art-cta h3 { font-family: 'Unbounded', 'Inter', sans-serif; font-size: clamp(19px,2.2vw,24px); font-weight: 500; letter-spacing: -0.01em; color: var(--bg); margin: 0 0 10px; }
+  .art-cta p { font-size: 16px; line-height: 1.55; color: var(--dark-body); margin: 0 0 22px; max-width: 440px; }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
-      html { scroll-behavior: auto; }
-    }
-  </style>
-</head>
-<body>
-<!-- ===== NAV ===== -->
-<nav style="position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(14px);background:rgba(247,244,238,0.72);border-bottom:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-    <a href="/" style="display:flex;align-items:center;gap:11px;margin-right:auto;">
-      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
-      <span style="display:flex;flex-direction:column;line-height:1.05;">
-        <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span>
-        <span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span>
-      </span>
-    </a>
-    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:14.5px;color:#4A463E;font-weight:500;">
-      <a href="/#audit" style="transition:color .15s;">Возможности</a>
-      <a href="/#audit" style="transition:color .15s;">Аудит</a>
-      <a href="https://seodyssey.ru/geo-check/" style="transition:color .15s;">GEO-проверка</a>
-      <a href="/#pricing" style="transition:color .15s;">Тарифы</a>
-      <a href="/blog/" style="color:#6378FF;font-weight:600;transition:color .15s;">Блог</a>
-    </div>
-    <a href="https://app.seodyssey.ru/" style="background:#15140F;color:#F7F4EE;padding:10px 18px;border-radius:11px;font-weight:600;font-size:14.5px;transition:transform .15s,background .15s;">Перейти в сервис</a>
-  </div>
-</nav>
+  /* FAQ */
+  .art-faq { margin-top: 44px; }
+  .art-faq h2 { font-size: 25px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; margin: 0 0 14px; }
+  .art-faq-item { background: var(--surface); border: 1px solid rgba(21,20,15,0.1); border-radius: 14px; padding: 4px 20px; margin-top: 10px; }
+  .art-faq-item summary { list-style: none; cursor: pointer; font-weight: 600; font-size: 16.5px; padding: 16px 0; color: var(--ink); }
+  .art-faq-item summary::-webkit-details-marker { display: none; }
+  .art-faq-item p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0 0 16px; }
 
-<!-- ===== ARTICLE ===== -->
+  /* ABOUT */
+  .art-about { margin-top: 44px; padding: 26px 28px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; }
+  .art-about-label { font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #9A958B; margin-bottom: 12px; }
+  .art-about p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
 <main>
   <article class="art">
     <a class="art-back" href="{% url 'blog_index' %}">
@@ -197,7 +158,7 @@
         <div class="art-cta-eyebrow"><span style="width:6px;height:6px;border-radius:50%;background:#9FB0FF;"></span>Бесплатно · GEO-аудит</div>
         <h3>Проверьте свой сайт за пару минут</h3>
         <p>Узнайте, готова ли ваша страница попадать в ответы нейросетей. Без регистрации.</p>
-        <a class="art-cta-btn" href="/geo-check/">Проверить сайт →</a>
+        <a class="btn btn-primary" style="padding:14px 28px;" href="/geo-check/">Проверить сайт →</a>
       </div>
     </div>
 
@@ -221,39 +182,4 @@
     </section>
   </article>
 </main>
-
-<!-- ===== FOOTER ===== -->
-<footer style="border-top:1px solid rgba(21,20,15,0.08);">
-  <div style="max-width:1200px;margin:0 auto;padding:54px 24px 40px;display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;">
-    <div style="flex:1 1 280px;min-width:240px;">
-      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
-        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
-        <div style="display:flex;flex-direction:column;line-height:1.05;"><span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span><span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span></div>
-      </div>
-      <p style="font-size:14px;color:#8A857A;line-height:1.55;margin:0;max-width:300px;">Инженерный GEO/AI-аудит с готовым кодом. Не оценка, а конкретные строки, которые копируете и вставляете.</p>
-    </div>
-    <div style="display:flex;gap:54px;flex-wrap:wrap;">
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Продукт</span>
-        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Возможности</a>
-        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Аудит</a>
-        <a href="/#pricing" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Тарифы</a>
-        <a href="/blog/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Блог</a>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Документы</span>
-        <a href="/requisites/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Реквизиты</a>
-        <a href="/offer/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Оферта</a>
-        <a href="https://t.me/seodyssey" target="_blank" rel="noopener" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Поддержка</a>
-      </div>
-    </div>
-  </div>
-  <div style="border-top:1px solid rgba(21,20,15,0.08);">
-    <div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9A958B;">
-      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
-      <span>Сделано для рунета · Яндекс Нейро + ChatGPT</span>
-    </div>
-  </div>
-</footer>
-</body>
-</html>
+{% endblock %}

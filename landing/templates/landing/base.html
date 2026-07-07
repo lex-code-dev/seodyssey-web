@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}SEOdyssey — SEO-аудит, видимость в нейросетях и мониторинг сайта{% endblock %}</title>
+<meta name="description" content="{% block description %}Единая система под ваш сайт: SEO-аудит, проверка видимости в нейросетях и ежедневный мониторинг. Не общие советы, а готовый код и решения под вашу страницу.{% endblock %}">
+{% block canonical %}{% endblock %}
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<link rel="icon" href="/static/img/spiral-icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/landing.css?v=1">
+{% block head %}{% endblock %}
+<script type="text/javascript">
+  (function(m,e,t,r,i,k,a){
+    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108669492','ym');
+  ym(108669492,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/108669492" style="position:absolute;left:-9999px;" alt="" /></div></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey">
+      <span class="nav-logo-name">
+        <b>SEOdyssey</b>
+        <small>аудит · нейросети · мониторинг</small>
+      </span>
+    </a>
+    <div class="nav-links">
+      <a href="/#how" {% if nav_active == 'how' %}class="active"{% endif %}>Возможности</a>
+      <a href="/#audit">Аудит</a>
+      <a href="/geo-check/" {% block nav_geo %}{% endblock %}>GEO-проверка</a>
+      <a href="/#pricing">Тарифы</a>
+      <a href="/blog/" {% block nav_blog %}{% endblock %}>Блог</a>
+    </div>
+    <a class="nav-cta" href="https://app.seodyssey.ru/">{% block nav_cta_label %}Начать{% endblock %}</a>
+    <button class="nav-burger" type="button" data-action="toggle-menu" aria-label="Открыть меню" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+  <div class="nav-mobile">
+    <a href="/#how" data-action="close-menu">Возможности</a>
+    <a href="/#audit" data-action="close-menu">Аудит</a>
+    <a href="/geo-check/" data-action="close-menu">GEO-проверка</a>
+    <a href="/#pricing" data-action="close-menu">Тарифы</a>
+    <a href="/blog/" data-action="close-menu">Блог</a>
+    <a class="nav-cta" href="https://app.seodyssey.ru/">Начать</a>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
+        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+        <span class="nav-logo-name">
+          <b>SEOdyssey</b>
+          <small>аудит · нейросети · мониторинг</small>
+        </span>
+      </div>
+      <p>Система под ваш сайт: SEO-аудит, видимость в нейросетях и мониторинг. Не советы, а готовые решения.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <span class="footer-col-title">Продукт</span>
+        <a href="/#how">Возможности</a>
+        <a href="/#audit">Аудит</a>
+        <a href="/#pricing">Тарифы</a>
+        <a href="/blog/">Блог</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">Связь</span>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener">Поддержка</a>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener">Telegram</a>
+        <a href="/geo-check/">GEO-проверка</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">Документы</span>
+        <a href="/offer/">Оферта</a>
+        <a href="/requisites/">Реквизиты</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Копирование кода из блоков [data-codeblock]
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action="copy"]');
+    if (btn){
+      var block = btn.closest('[data-codeblock]');
+      if (block){
+        var code = block.querySelector('code');
+        if (code && navigator.clipboard){ try{ navigator.clipboard.writeText(code.innerText); }catch(_){}}
+        var label = btn.querySelector('[data-copy-label]');
+        if (label){ var prev = label.textContent; label.textContent = 'Скопировано ✓'; setTimeout(function(){ label.textContent = prev; }, 1600); }
+      }
+      return;
+    }
+    var burger = e.target.closest('[data-action="toggle-menu"]');
+    if (burger){
+      var m = document.querySelector('.nav-mobile');
+      if (m){
+        var open = m.style.display === 'flex';
+        m.style.display = open ? 'none' : 'flex';
+        burger.setAttribute('aria-expanded', open ? 'false' : 'true');
+      }
+      return;
+    }
+    var closer = e.target.closest('[data-action="close-menu"]');
+    if (closer){ var mm = document.querySelector('.nav-mobile'); if (mm){ mm.style.display = 'none'; } return; }
+  });
+  // Scroll-reveal: элементы видимы по умолчанию, скрываются только при поддержке IO
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && 'IntersectionObserver' in window){
+    var targets = [];
+    document.querySelectorAll('[data-reveal-group]').forEach(function(g){
+      Array.prototype.slice.call(g.children).forEach(function(c,i){ c.__d = Math.min(i,8)*85; targets.push(c); });
+    });
+    document.querySelectorAll('[data-reveal]').forEach(function(s){ s.__d = 0; targets.push(s); });
+    targets.forEach(function(el){ el.style.opacity='0'; el.style.transform='translateY(26px)'; el.style.transition='opacity .55s ease-out, transform .55s ease-out'; });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(!en.isIntersecting) return; var el=en.target; setTimeout(function(){ el.style.opacity='1'; el.style.transform='none'; }, el.__d||0); io.unobserve(el); });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    targets.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

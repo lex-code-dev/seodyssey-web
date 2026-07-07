@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "reason": "Inter — существующая идентичность бренда SEOdyssey, подтверждена пользователем (единый бренд на основе текущего стиля лендинга); характер несёт дисплей-шрифт Unbounded",
+        "createdAt": "2026-07-06T18:29:32.588Z"
+      }
+    ]
+  }
+}

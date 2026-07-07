@@ -1,118 +1,242 @@
-{% load money %}<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SEOdyssey — SEO-аудит, видимость в нейросетях и мониторинг сайта</title>
-<meta name="description" content="Единая система под ваш сайт: SEO-аудит, проверка видимости в нейросетях и ежедневный мониторинг. Не общие советы, а готовый код и решения под вашу страницу.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  html, body { max-width: 100%; overflow-x: hidden; }
-  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: #15140F; background: #F7F4EE; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-  ::selection { background: #6378FF; color: #fff; }
-  a { color: inherit; text-decoration: none; }
-  @keyframes scfloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-  .nav-burger { display: none; }
-  @media (max-width: 920px) {
-    .nav-desktop { display: none !important; }
-    .nav-cta-desktop { display: none !important; }
-    .nav-burger { display: inline-flex !important; }
-  }
-  @media (min-width: 921px) { .nav-mobile { display: none !important; } }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
-    html { scroll-behavior: auto; }
-  }
-  [data-reveal], [data-reveal-group] > * { will-change: opacity, transform; }
-</style>
-</head>
-<body>
-<!-- ===== NAV ===== -->
-<nav style="position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(14px);background:rgba(247,244,238,0.72);border-bottom:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-    <a href="#top" style="display:flex;align-items:center;gap:11px;margin-right:auto;">
-      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
-      <span style="display:flex;flex-direction:column;line-height:1.05;">
-        <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span>
-        <span style="font-size:11px;color:#8A857A;font-weight:500;">аудит · нейросети · мониторинг</span>
-      </span>
-    </a>
-    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:14.5px;color:#4A463E;font-weight:500;">
-      <a href="#audit" style="transition:color .15s;">Возможности</a>
-      <a href="#audit" style="transition:color .15s;">Аудит</a>
-      <a href="https://seodyssey.ru/geo-check/" style="transition:color .15s;">GEO-проверка</a>
-      <a href="#pricing" style="transition:color .15s;">Тарифы</a>
-      <a href="/blog/" style="transition:color .15s;">Блог</a>
-    </div>
-    <a href="https://app.seodyssey.ru/" style="background:#15140F;color:#F7F4EE;padding:10px 18px;border-radius:11px;font-weight:600;font-size:14.5px;transition:transform .15s,background .15s;">Начать</a>
-  </div>
-</nav>
+{% extends "landing/base.html" %}
+{% load money %}
 
+{% block title %}SEOdyssey — SEO-аудит, видимость в нейросетях и мониторинг сайта{% endblock %}
+{% block canonical %}<link rel="canonical" href="https://seodyssey.ru/">{% endblock %}
+
+{% block head %}
+<style>
+  /* ===== hero ===== */
+  .hero { max-width: 1200px; margin: 0 auto; padding: clamp(52px,6.5vw,88px) 24px clamp(48px,6vw,80px); }
+  .hero-grid { display: flex; flex-wrap: wrap; gap: clamp(36px,5vw,64px); align-items: center; }
+  .hero-copy { flex: 1 1 440px; min-width: 300px; }
+  .hero-sub { font-size: clamp(17px,1.5vw,20px); line-height: 1.55; color: var(--body); margin: 22px 0 30px; max-width: 560px; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 13px; }
+  .hero-notes { display: flex; align-items: center; gap: 22px; margin-top: 30px; flex-wrap: wrap; font-size: 13.5px; color: var(--faint); font-weight: 500; }
+  .hero-notes span { display: flex; align-items: center; gap: 7px; }
+  .hero-visual { flex: 1 1 400px; min-width: 300px; position: relative; }
+  .hero-score {
+    position: absolute; top: -18px; right: 14px; z-index: 3;
+    display: flex; align-items: center; gap: 9px;
+    background: var(--ink); color: #fff; padding: 9px 15px; border-radius: 13px;
+    box-shadow: 0 16px 34px -14px rgba(21,20,15,0.55);
+    animation: scfloat 5.5s ease-in-out infinite;
+  }
+  .hero-score b { font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600; color: var(--ok-soft); }
+  .hero-score small { font-size: 12px; line-height: 1.15; color: #C9C5BC; }
+  .hero-window { background: var(--surface); border-radius: var(--radius-l); border: 1px solid var(--line); box-shadow: 0 30px 70px -34px rgba(21,20,15,0.4); overflow: hidden; }
+  .hero-window-bar { display: flex; align-items: center; gap: 9px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .hero-window-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .hero-finding { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--radius-m); background: var(--fail-bg); border: 1px solid var(--fail-line); margin-bottom: 14px; }
+  .hero-finding .mark { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--fail-dot); color: #fff; font-weight: 700; }
+
+  /* ===== providers strip ===== */
+  .providers { margin-top: clamp(44px,5vw,68px); padding-top: 30px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 14px 40px; align-items: center; font-size: 13.5px; color: var(--faint); font-weight: 500; }
+  .providers b { font-weight: 600; color: #4A463E; }
+
+  /* ===== trend (dark) ===== */
+  .trend-grid { display: flex; flex-wrap: wrap; gap: clamp(34px,5vw,72px); align-items: flex-start; }
+  .trend-bar-track { height: 9px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .trend-bar { height: 100%; border-radius: 999px; }
+  .trend-example { display: flex; gap: 12px; align-items: flex-start; background: rgba(99,120,255,0.12); border: 1px solid rgba(99,120,255,0.32); border-radius: 14px; padding: 16px 18px; margin-top: 26px; }
+  .trend-example p { margin: 0; font-size: 15px; line-height: 1.55; color: #DAD6CC; }
+  .trend-example b { font-weight: 600; color: #fff; }
+
+  /* ===== journey (how it works) ===== */
+  .journey { counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; margin-top: 44px; }
+  .journey-step { position: relative; padding: 0 28px 8px 0; }
+  .journey-step + .journey-step { padding-left: 28px; }
+  .journey-num {
+    display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
+    font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 600;
+    background: var(--accent); color: #fff; margin-bottom: 20px; position: relative; z-index: 1;
+  }
+  .journey-step:nth-child(2) .journey-num { background: var(--ink); }
+  .journey-step:nth-child(3) .journey-num { background: #9FB0FF; color: var(--ink); }
+  .journey-step:nth-child(4) .journey-num { background: var(--accent); }
+  .journey-step::before {
+    content: ""; position: absolute; top: 23px; left: 0; right: 0; height: 1px;
+    border-top: 2px dashed rgba(99,120,255,0.35);
+  }
+  .journey-step:first-child::before { left: 46px; }
+  .journey-step:last-child::before { right: calc(100% - 46px - 28px); }
+  .journey-step h3 { font-size: 18.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
+  .journey-step p { font-size: 14.5px; line-height: 1.55; color: #6B675E; margin: 0; }
+  @media (max-width: 700px) {
+    .journey { grid-template-columns: 1fr; gap: 26px; }
+    .journey-step, .journey-step + .journey-step { padding: 0; }
+    .journey-step::before { display: none; }
+    .journey-num { margin-bottom: 14px; }
+  }
+
+  /* ===== for whom: колонки без карточек ===== */
+  .whom { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border-top: 1px solid var(--line); margin-top: 40px; }
+  .whom-col { padding: 30px 30px 6px 0; }
+  .whom-col + .whom-col { border-left: 1px solid var(--line); padding-left: 30px; }
+  .whom-col h3 { display: flex; align-items: center; gap: 12px; font-size: 18.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 12px; }
+  .whom-col h3 svg { color: var(--accent); flex: none; }
+  .whom-col p { font-size: 14.5px; line-height: 1.6; color: #6B675E; margin: 0; }
+  @media (max-width: 880px) {
+    .whom { grid-template-columns: 1fr; }
+    .whom-col + .whom-col { border-left: none; border-top: 1px solid var(--line); padding-left: 0; }
+    .whom-col { padding-right: 0; }
+  }
+
+  /* ===== audit: две линии ===== */
+  .audit-lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 40px; }
+  .audit-lane { border-radius: 20px; padding: clamp(24px,3vw,34px); }
+  .audit-lane-light { background: var(--surface); border: 1px solid var(--line); }
+  .audit-lane-dark { background: var(--dark); color: #F2EFE8; box-shadow: 0 30px 64px -34px rgba(99,120,255,0.4); }
+  .audit-lane-tag { display: inline-flex; padding: 7px 15px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 26px; }
+  .audit-lane-light .audit-lane-tag { background: #F1F0EC; color: var(--ink); }
+  .audit-lane-dark .audit-lane-tag { background: var(--accent); color: #fff; }
+  .audit-item { display: flex; gap: 15px; align-items: flex-start; padding: 17px 0; }
+  .audit-item + .audit-item { border-top: 1px solid var(--line); }
+  .audit-lane-dark .audit-item + .audit-item { border-top-color: var(--dark-line); }
+  .audit-item .ic { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px; }
+  .audit-lane-light .audit-item .ic { background: #F1F0EC; color: var(--ink); }
+  .audit-lane-dark .audit-item .ic { background: var(--accent); color: #fff; }
+  .audit-item h3 { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 6px; }
+  .audit-item p { font-size: 14px; line-height: 1.55; margin: 0; color: #6B675E; }
+  .audit-lane-dark .audit-item p { color: var(--dark-body); }
+  @media (max-width: 880px) { .audit-lanes { grid-template-columns: 1fr; } }
+
+  /* ===== monitoring ===== */
+  .mon-grid { display: flex; flex-wrap: wrap; gap: clamp(34px,5vw,64px); align-items: center; }
+  .mon-list { display: flex; flex-direction: column; }
+  .mon-item { display: flex; gap: 15px; align-items: flex-start; padding: 18px 0; }
+  .mon-item + .mon-item { border-top: 1px solid var(--dark-line); }
+  .mon-item .ic { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 11px; background: var(--accent); color: #fff; }
+  .mon-item h3 { font-size: 17.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 6px; }
+  .mon-item p { font-size: 14.5px; line-height: 1.55; color: var(--dark-body); margin: 0; }
+  .tg-alert { background: var(--dark-2); border: 1px solid var(--dark-line); border-radius: 18px; padding: 22px; }
+  .tg-alert-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .tg-alert-head .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; }
+  .tg-alert-head b { font-size: 14.5px; }
+  .tg-alert-head small { display: block; font-size: 12px; color: var(--dark-faint); }
+  .tg-alert-body { background: #23242B; border-radius: 13px; padding: 15px 16px; font-size: 13.5px; line-height: 1.65; color: #DAD6CC; }
+  .tg-alert-body .fail { color: var(--fail-dot); font-weight: 600; }
+  .tg-alert-body .ok { color: var(--ok-soft); font-weight: 600; }
+  .tg-alert-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .tg-alert-actions span { flex: 1; text-align: center; font-size: 12.5px; font-weight: 600; color: #A9B4FF; background: rgba(99,120,255,0.14); border: 1px solid rgba(99,120,255,0.3); border-radius: 9px; padding: 8px 6px; }
+
+  /* ===== before / after ===== */
+  .ba-grid { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; }
+  .ba-col { flex: 1 1 340px; min-width: 290px; display: flex; flex-direction: column; }
+  .ba-head { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .ba-head i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .ba-quote { font-size: 15px; line-height: 1.6; margin: 0 0 14px; font-family: 'JetBrains Mono', monospace; border-radius: var(--radius-s); padding: 14px; }
+  .ba-list { margin: auto 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+  .ba-list li { display: flex; gap: 8px; }
+  .ba-arrow { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+  @media (max-width: 740px) { .ba-arrow { width: 100%; transform: rotate(90deg); } }
+
+  /* ===== code showcase ===== */
+  .code-steps { display: flex; flex-direction: column; gap: 16px; }
+  .code-step { display: flex; gap: 13px; }
+  .code-step b { flex: none; font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; color: var(--accent); font-weight: 600; }
+  .code-step h3 { font-weight: 600; font-size: 15.5px; margin: 0 0 2px; }
+  .code-step p { font-size: 14px; color: #6B675E; line-height: 1.5; margin: 0; }
+
+  /* ===== comparison ===== */
+  .cmp-grid { display: flex; flex-wrap: wrap; gap: 18px; }
+  .cmp-col { flex: 1 1 360px; min-width: 290px; border-radius: 18px; padding: 30px; }
+  .cmp-col-them { background: var(--dark-2); border: 1px solid var(--dark-line); }
+  .cmp-col-us { background: linear-gradient(160deg, #2A2F5C, #1B1D2E); border: 1px solid rgba(99,120,255,0.4); box-shadow: 0 30px 70px -34px rgba(99,120,255,0.55); }
+  .cmp-title { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 22px; }
+  .cmp-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .cmp-list li { display: flex; gap: 12px; font-size: 15.5px; line-height: 1.5; }
+
+  /* ===== pricing ===== */
+  .price-hero { background: var(--dark); color: #F2EFE8; border-radius: var(--radius-xl); padding: clamp(28px,4vw,44px); margin-bottom: 30px; box-shadow: 0 34px 80px -40px rgba(21,20,15,0.6); }
+  .price-hero-grid { display: flex; flex-wrap: wrap; gap: 34px; align-items: center; justify-content: space-between; }
+  .price-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 11px 22px; max-width: 560px; }
+  .price-features span { display: flex; gap: 9px; font-size: 14.5px; color: #DAD6CC; }
+  .price-box { flex: 0 1 280px; min-width: 240px; background: var(--dark-2); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 28px; text-align: center; }
+  .price-num { font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: clamp(34px,4.4vw,46px); font-weight: 600; line-height: 1; }
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .plan { border-radius: 18px; padding: 26px; display: flex; flex-direction: column; }
+  .plan-light { background: var(--surface); border: 1px solid rgba(21,20,15,0.1); }
+  .plan-dark { background: var(--dark); color: #F2EFE8; border: 1px solid var(--dark); position: relative; box-shadow: 0 30px 64px -34px rgba(99,120,255,0.5); }
+  .plan-tag { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; }
+  .plan-price { display: flex; align-items: baseline; gap: 5px; margin-bottom: 4px; }
+  .plan-price b { font-family: 'Unbounded', sans-serif; font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 600; }
+  .plan-note { font-size: 13px; margin-bottom: 22px; }
+  .plan-list { margin: 0 0 24px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; font-size: 14px; }
+  .plan-list li { display: flex; gap: 9px; }
+  .plan-cta { margin-top: auto; text-align: center; padding: 12px; border-radius: 11px; font-weight: 600; font-size: 14.5px; transition: background .15s, transform .15s; }
+  .plan-cta:hover { transform: translateY(-1px); }
+  .plan-popular {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 999px; white-space: nowrap;
+  }
+
+  /* ===== blog ===== */
+  .posts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .post-card { display: block; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .post-cover { aspect-ratio: 16/9; background: var(--accent-bg); overflow: hidden; }
+  .post-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .post-body { padding: 22px; }
+  .post-meta { font-size: 12.5px; color: #9A958B; margin-bottom: 10px; }
+  .post-title { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.3; margin: 0 0 9px; }
+  .post-desc { font-size: 14px; color: #6B675E; line-height: 1.5; margin: 0; }
+
+  /* ===== final cta ===== */
+  .final-cta { background: var(--dark); border-radius: var(--radius-xl); padding: clamp(40px,6vw,80px) clamp(28px,5vw,64px); text-align: center; position: relative; overflow: hidden; }
+  .final-cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 120%, rgba(99,120,255,0.35), transparent 60%); }
+  .final-cta > div { position: relative; }
+</style>
+{% endblock %}
+
+{% block content %}
 <a id="top"></a>
 
 <!-- ===== HERO ===== -->
-<header style="max-width:1200px;margin:0 auto;padding:clamp(56px,7vw,96px) 24px clamp(48px,6vw,80px);">
-  <div style="display:flex;flex-wrap:wrap;gap:clamp(36px,5vw,64px);align-items:center;">
-    <div style="flex:1 1 440px;min-width:300px;">
-      <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px;border-radius:999px;background:#EEF0FF;border:1px solid rgba(99,120,255,0.22);font-size:13px;font-weight:600;color:#4F5BE0;margin-bottom:26px;">
-        <span style="width:7px;height:7px;border-radius:50%;background:#6378FF;display:inline-block;"></span>
-        SEO-аудит · видимость в нейросетях · мониторинг
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <h1 class="display">Разбор вашего сайта с готовым кодом, <span class="acc">а не общими советами</span></h1>
+      <p class="hero-sub">SEO-аудит, видимость в нейросетях и ежедневный мониторинг в одной системе. Она показывает, что чинить именно у вас, и даёт готовое решение.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="/geo-check/">Проверить сайт бесплатно</a>
+        <a class="btn btn-ghost" href="#audit">Как это работает →</a>
       </div>
-      <h1 style="font-size:clamp(38px,5.2vw,62px);line-height:1.04;letter-spacing:-0.03em;font-weight:700;margin:0 0 22px;">
-        Разбор вашего сайта с готовым кодом, <span style="color:#6378FF;">а не общими советами</span>
-      </h1>
-      <p style="font-size:clamp(17px,1.5vw,20px);line-height:1.55;color:#5C584F;margin:0 0 18px;max-width:560px;">
-        SEO-аудит, видимость в нейросетях и ежедневный мониторинг в одной системе. Она показывает, что чинить именно у вас, и даёт готовое решение.
-      </p>
-      <div style="display:flex;gap:12px;align-items:flex-start;background:#EEF0FF;border:1px solid rgba(99,120,255,0.20);border-radius:14px;padding:15px 17px;margin:0 0 32px;max-width:560px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
-        <p style="margin:0;font-size:15px;line-height:1.5;color:#3D3A33;"><b style="font-weight:600;color:#15140F;">Например:</b> клиент спрашивает у Алисы, где заказать ваш товар. Она называет три компании. Нет вас в списке — заказ ушёл к конкуренту, а вы об этом даже не узнали.</p>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:13px;">
-        <a href="https://seodyssey.ru/geo-check/" style="background:#6378FF;color:#fff;padding:15px 26px;border-radius:13px;font-weight:600;font-size:16px;box-shadow:0 10px 26px -10px rgba(99,120,255,0.7);transition:transform .15s,box-shadow .15s;">Проверить сайт бесплатно</a>
-        <a href="#audit" style="background:transparent;color:#15140F;padding:15px 24px;border-radius:13px;font-weight:600;font-size:16px;border:1px solid rgba(21,20,15,0.16);transition:background .15s,border-color .15s;">Как это работает →</a>
-      </div>
-      <div style="display:flex;align-items:center;gap:22px;margin-top:34px;flex-wrap:wrap;font-size:13.5px;color:#8A857A;font-weight:500;">
-        <span style="display:flex;align-items:center;gap:7px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Без регистрации</span>
-        <span style="display:flex;align-items:center;gap:7px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Результат за пару минут</span>
-        <span style="display:flex;align-items:center;gap:7px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Готовый код, а не советы</span>
+      <div class="hero-notes">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Без регистрации</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Результат за пару минут</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Готовый код, а не советы</span>
       </div>
     </div>
 
-    <!-- Hero visual: report fragment -->
-    <div style="flex:1 1 400px;min-width:300px;position:relative;">
-      <div style="position:absolute;top:-18px;right:14px;z-index:3;display:flex;align-items:center;gap:9px;background:#15140F;color:#fff;padding:9px 15px;border-radius:13px;box-shadow:0 16px 34px -14px rgba(21,20,15,0.55);animation:scfloat 5.5s ease-in-out infinite;">
-        <span style="font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:21px;font-weight:600;color:#9FE6B8;">65%</span>
-        <span style="font-size:12px;line-height:1.15;color:#C9C5BC;">GEO<br>Score</span>
+    <!-- Фрагмент реального отчёта -->
+    <div class="hero-visual">
+      <div class="hero-score">
+        <b>65%</b>
+        <small>GEO<br>Score</small>
       </div>
-      <div style="background:#fff;border-radius:18px;border:1px solid rgba(21,20,15,0.09);box-shadow:0 30px 70px -34px rgba(21,20,15,0.4);overflow:hidden;">
-        <div style="display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid rgba(21,20,15,0.07);">
-          <span style="width:11px;height:11px;border-radius:50%;background:#FF6058;"></span>
-          <span style="width:11px;height:11px;border-radius:50%;background:#FEBC2E;"></span>
-          <span style="width:11px;height:11px;border-radius:50%;background:#28C840;"></span>
-          <span style="margin-left:8px;font-size:12.5px;color:#8A857A;font-family:'JetBrains Mono',monospace;">отчёт · /shop/dostavka</span>
+      <div class="hero-window">
+        <div class="hero-window-bar">
+          <i style="background:#FF6058;"></i><i style="background:#FEBC2E;"></i><i style="background:#28C840;"></i>
+          <span class="mono" style="margin-left:8px;font-size:12.5px;color:#8A857A;">отчёт · /shop/dostavka</span>
         </div>
         <div style="padding:18px;">
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:13px;background:#FFF4F2;border:1px solid rgba(255,96,88,0.22);margin-bottom:14px;">
-            <span style="flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#FF6058;color:#fff;font-weight:700;">!</span>
+          <div class="hero-finding">
+            <span class="mark">!</span>
             <div>
               <div style="font-weight:600;font-size:14.5px;margin-bottom:3px;">Не найдена FAQPage-разметка</div>
               <div style="font-size:13px;color:#7A756B;line-height:1.45;">Нейросети не находят прямых ответов на странице — и берут их у конкурента.</div>
             </div>
           </div>
-          <div data-codeblock="1" style="background:#121316;border-radius:13px;overflow:hidden;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);">
-              <span style="font-size:12px;color:#7E8AB0;font-family:'JetBrains Mono',monospace;">JSON-LD · вставить в &lt;head&gt;</span>
-              <button data-action="copy" style="display:flex;align-items:center;gap:6px;background:#262833;color:#C9D2F0;border:none;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;">
+          <div data-codeblock="1" class="codeblock" style="border-radius:13px;">
+            <div class="codeblock-head">
+              <span class="filename">JSON-LD · вставить в &lt;head&gt;</span>
+              <button data-action="copy" class="copy-btn muted">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 <span data-copy-label="1">Копировать</span>
               </button>
             </div>
-            <pre style="margin:0;padding:15px 16px;overflow-x:auto;"><code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:#D6DBE8;white-space:pre;">{
+            <pre><code>{
   <span style="color:#7FD6A6;">"@context"</span>: <span style="color:#E2B589;">"https://schema.org"</span>,
   <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"FAQPage"</span>,
   <span style="color:#7FD6A6;">"mainEntity"</span>: [{
@@ -129,222 +253,245 @@
       </div>
     </div>
   </div>
-  <div style="margin-top:clamp(44px,5vw,68px);padding-top:30px;border-top:1px solid rgba(21,20,15,0.08);display:flex;flex-wrap:wrap;gap:14px 40px;align-items:center;font-size:13.5px;color:#8A857A;font-weight:500;">
+
+  <div class="providers">
     <span style="text-transform:uppercase;letter-spacing:0.08em;font-size:12px;">Проверяем видимость в</span>
-    <span style="font-weight:600;color:#4A463E;">Яндекс Нейро</span>
-    <span style="font-weight:600;color:#4A463E;">ChatGPT</span>
-
-      <span style="font-weight:600;color:#4A463E;display:inline-flex;align-items:center;gap:7px;">Google AI <span style="font-size:11px;font-weight:600;color:#6378FF;background:#EEF0FF;padding:2px 8px;border-radius:999px;">скоро</span></span>
-
+    <b>Яндекс Нейро</b>
+    <b>ChatGPT</b>
+    <b style="display:inline-flex;align-items:center;gap:7px;">Google AI <span style="font-size:11px;font-weight:600;color:#6378FF;background:#EEF0FF;padding:2px 8px;border-radius:999px;">скоро</span></b>
   </div>
 </header>
 
 <!-- ===== TREND ===== -->
-<section style="background:#15140F;color:#F2EFE8;">
-  <div style="max-width:1100px;margin:0 auto;padding:clamp(72px,8vw,110px) 24px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#7E8AB0;letter-spacing:0.06em;margin-bottom:18px;">// 01 — тренд рынка</div>
-    <div style="display:flex;flex-wrap:wrap;gap:clamp(34px,5vw,72px);align-items:flex-start;">
-      <div style="flex:1 1 420px;min-width:300px;">
-        <h2 style="font-size:clamp(30px,3.6vw,46px);line-height:1.08;letter-spacing:-0.025em;font-weight:700;margin:0 0 22px;">Поиск изменился.<br>Вопрос — видят ли в нём вас</h2>
-        <p style="font-size:clamp(16px,1.4vw,18.5px);line-height:1.6;color:#B6B1A6;margin:0 0 18px;">Классическая выдача отдаёт всё меньше переходов: нейросеть забирает ответ прямо на странице результатов. Пользователь читает готовый ответ — и не кликает дальше.</p>
-        <p style="font-size:clamp(16px,1.4vw,18.5px);line-height:1.6;color:#B6B1A6;margin:0;">Если вашего бренда нет в этом ответе — клиент уходит к тому, кто там есть. Видимость в нейросетях становится новым первым экраном.</p>
+<section class="section-dark">
+  <div class="wrap-narrow section">
+    <div class="trend-grid">
+      <div style="flex:1 1 420px;min-width:300px;" data-reveal>
+        <h2 class="display">Поиск изменился. Вопрос — видят ли в нём вас</h2>
+        <p class="lead" style="margin:22px 0 18px;">Классическая выдача отдаёт всё меньше переходов: нейросеть забирает ответ прямо на странице результатов. Пользователь читает готовый ответ — и не кликает дальше.</p>
+        <p class="lead" style="margin:0;">Если вашего бренда нет в этом ответе — клиент уходит к тому, кто там есть. Видимость в нейросетях становится новым первым экраном.</p>
+        <div class="trend-example">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A9B4FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
+          <p><b>Например:</b> клиент спрашивает у Алисы, где заказать ваш товар. Она называет три компании. Нет вас в списке — заказ ушёл к конкуренту, а вы об этом даже не узнали.</p>
+        </div>
       </div>
-      <div style="flex:1 1 360px;min-width:300px;background:#1C1D21;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px;">
+      <div class="card-dark" style="flex:1 1 360px;min-width:300px;" data-reveal>
         <div style="font-size:13px;color:#8E8A80;margin-bottom:24px;text-transform:uppercase;letter-spacing:0.07em;">Куда уходит трафик</div>
         <div style="display:flex;flex-direction:column;gap:20px;">
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:#DAD6CC;"><span>Ответ нейросети на странице</span><span style="font-family:'Fraunces',serif;color:#9FE6B8;font-weight:600;">растёт</span></div>
-            <div style="height:9px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;"><div style="height:100%;width:74%;border-radius:999px;background:linear-gradient(90deg,#6378FF,#9FE6B8);"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:#DAD6CC;"><span>Ответ нейросети на странице</span><span style="color:var(--ok-soft);font-weight:600;">растёт</span></div>
+            <div class="trend-bar-track"><div class="trend-bar" style="width:74%;background:linear-gradient(90deg,#6378FF,#9FE6B8);"></div></div>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:#DAD6CC;"><span>Переходы из классической выдачи</span><span style="font-family:'Fraunces',serif;color:#E2B589;font-weight:600;">падает</span></div>
-            <div style="height:9px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;"><div style="height:100%;width:38%;border-radius:999px;background:#5A5C66;"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:#DAD6CC;"><span>Переходы из классической выдачи</span><span style="color:var(--warn-soft);font-weight:600;">падает</span></div>
+            <div class="trend-bar-track"><div class="trend-bar" style="width:38%;background:#5A5C66;"></div></div>
           </div>
-          <div style="margin-top:6px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-size:13.5px;color:#9A958B;line-height:1.5;">Чем чаще нейросеть отвечает за вас, тем важнее, чтобы она называла именно ваш бренд.</div>
+          <div style="margin-top:6px;padding-top:18px;border-top:1px solid var(--dark-line);font-size:13.5px;color:#9A958B;line-height:1.5;">Чем чаще нейросеть отвечает за вас, тем важнее, чтобы она называла именно ваш бренд.</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== HOW IT WORKS ===== -->
-<section style="background:#fff;border-top:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 02 — как работает система</div>
-    <div style="max-width:760px;margin-bottom:40px;">
-      <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 18px;">Не один инструмент, а система под ваш сайт</h2>
-      <p style="font-size:clamp(16px,1.4vw,19px);line-height:1.55;color:#5C584F;margin:0;">Начинаете с бесплатной проверки. Дальше сайт под постоянным присмотром: аудит, нейросети, мониторинг — всё в одном месте.</p>
+<!-- ===== HOW IT WORKS: маршрут ===== -->
+<section id="how" class="section-white">
+  <div class="wrap section">
+    <div style="max-width:760px;" data-reveal>
+      <h2 class="display">Не один инструмент, а система под ваш сайт</h2>
+      <p class="lead" style="margin:18px 0 0;">Начинаете с бесплатной проверки. Дальше сайт под постоянным присмотром: аудит, нейросети, мониторинг — всё в одном месте.</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;">
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:18px;font-weight:600;">1</span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Бесплатная проверка</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Вводите адрес, без регистрации. Смотрите, что нейросети думают о вашем бренде, и получаете первый готовый код.</p>
+    <div class="journey" data-reveal-group>
+      <div class="journey-step">
+        <span class="journey-num">1</span>
+        <h3>Бесплатная проверка</h3>
+        <p>Вводите адрес, без регистрации. Смотрите, что нейросети думают о вашем бренде, и получаете первый готовый код.</p>
       </div>
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#15140F;color:#fff;margin-bottom:18px;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:18px;font-weight:600;">2</span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Полный аудит</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Заводите аккаунт — и сайт проходит 80+ проверок: техника, индексация, мета, доверие, видимость в ИИ.</p>
+      <div class="journey-step">
+        <span class="journey-num">2</span>
+        <h3>Полный аудит</h3>
+        <p>Заводите аккаунт — и сайт проходит 80+ проверок: техника, индексация, мета, доверие, видимость в ИИ.</p>
       </div>
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#9FB0FF;color:#15140F;margin-bottom:18px;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:18px;font-weight:600;">3</span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">ИИ-рекомендации</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Каждая проблема с готовым кодом и переписанным текстом под реальные данные вашей страницы, а не шаблон.</p>
+      <div class="journey-step">
+        <span class="journey-num">3</span>
+        <h3>ИИ-рекомендации</h3>
+        <p>Каждая проблема с готовым кодом и переписанным текстом под реальные данные вашей страницы, а не шаблон.</p>
       </div>
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:18px;font-weight:600;">4</span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Постоянный мониторинг</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Система проверяет сайт по расписанию и пишет в Telegram, если что-то упало. Узнаёте первым, а не от клиента.</p>
+      <div class="journey-step">
+        <span class="journey-num">4</span>
+        <h3>Постоянный мониторинг</h3>
+        <p>Система проверяет сайт по расписанию и пишет в Telegram, если что-то упало. Узнаёте первым, а не от клиента.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ===== FOR WHOM ===== -->
-<section style="background:#fff;border-top:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 03 — кому это нужно</div>
-    <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 40px;max-width:620px;">Кому это нужно</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">SEO-специалисты и фрилансеры</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Аудит клиентского сайта за минуты вместо часов ручной работы — с технической глубиной, которой можно доверять.</p>
+<section class="section-white">
+  <div class="wrap section">
+    <h2 class="display" data-reveal>Кому это нужно</h2>
+    <div class="whom" data-reveal-group>
+      <div class="whom-col">
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>SEO-специалисты и фрилансеры</h3>
+        <p>Аудит клиентского сайта за минуты вместо часов ручной работы — с технической глубиной, которой можно доверять.</p>
       </div>
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#15140F;color:#fff;margin-bottom:18px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 4v16"></path></svg></span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Небольшие агентства</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Готовые отчёты для клиентов и код, который экономит часы разработки. Один разбор — понятный результат для заказчика.</p>
+      <div class="whom-col">
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 4v16"></path></svg>Небольшие агентства</h3>
+        <p>Готовые отчёты для клиентов и код, который экономит часы разработки. Один разбор — понятный результат для заказчика.</p>
       </div>
-      <div style="background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#9FB0FF;color:#15140F;margin-bottom:18px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg></span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Владельцы сайтов и магазинов</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Попасть в ответы нейросетей без штатного SEO. Простой вход через бесплатную проверку, дальше — понятные шаги.</p>
+      <div class="whom-col">
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>Владельцы сайтов и магазинов</h3>
+        <p>Попасть в ответы нейросетей без штатного SEO. Простой вход через бесплатную проверку, дальше — понятные шаги.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== AUDIT CORE ===== -->
-<section id="audit" style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-  <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 04 — ядро продукта</div>
-  <div style="max-width:760px;margin-bottom:14px;">
-    <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 18px;">Не просто оценка — инженерный разбор и готовый код</h2>
-    <p style="font-size:clamp(16px,1.4vw,19px);line-height:1.55;color:#5C584F;margin:0;">Два аудита в одном отчёте: классический технический SEO и видимость бренда в нейросетях. Каждый модуль — это конкретные находки на вашей странице, а не общая цифра.</p>
+<!-- ===== AUDIT CORE: две линии ===== -->
+<section id="audit" class="wrap section">
+  <div style="max-width:760px;" data-reveal>
+    <h2 class="display">Не просто оценка — инженерный разбор и готовый код</h2>
+    <p class="lead" style="margin:18px 0 0;">Два аудита в одном отчёте: классический технический SEO и видимость бренда в нейросетях. Каждый модуль — это конкретные находки на вашей странице, а не общая цифра.</p>
   </div>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:32px 0 38px;">
-    <span style="font-size:13.5px;font-weight:600;color:#15140F;background:#fff;border:1px solid rgba(21,20,15,0.12);padding:9px 16px;border-radius:999px;">SEO-аудит — техническое здоровье</span>
-    <span style="font-size:13.5px;font-weight:600;color:#fff;background:#6378FF;padding:9px 16px;border-radius:999px;">GEO/AI-аудит — видимость в нейросетях</span>
-  </div>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
-
-    <div style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:26px;transition:transform .18s,box-shadow .18s;">
-      <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#F1F0EC;color:#15140F;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></span>
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9A958B;text-transform:uppercase;margin-bottom:8px;">SEO</div>
-      <h3 style="font-size:18.5px;font-weight:600;letter-spacing:-0.015em;margin:0 0 9px;">Техническое здоровье</h3>
-      <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Скорость, ошибки рендера, доступность для ботов, корректность robots.txt — включая правила для AI-краулеров.</p>
-    </div>
-
-    <div style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:26px;transition:transform .18s,box-shadow .18s;">
-      <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#F1F0EC;color:#15140F;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9A958B;text-transform:uppercase;margin-bottom:8px;">SEO</div>
-      <h3 style="font-size:18.5px;font-weight:600;letter-spacing:-0.015em;margin:0 0 9px;">Индексируемость и структура</h3>
-      <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Видят ли поисковики страницу, логична ли иерархия заголовков, нет ли каннибализации и дублей.</p>
-    </div>
-
-    <div style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:26px;transition:transform .18s,box-shadow .18s;">
-      <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#F1F0EC;color:#15140F;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9A958B;text-transform:uppercase;margin-bottom:8px;">SEO</div>
-      <h3 style="font-size:18.5px;font-weight:600;letter-spacing:-0.015em;margin:0 0 9px;">Мета-теги и E-E-A-T</h3>
-      <p style="font-size:14.5px;line-height:1.55;color:#6B675E;margin:0;">Качество title / description / H1 конкретной страницы, сигналы экспертности и доверия — не главной, а той, что продвигаете.</p>
-    </div>
-
-    <div style="background:#15140F;color:#F2EFE8;border:1px solid #15140F;border-radius:16px;padding:26px;transition:transform .18s,box-shadow .18s;">
-      <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"></path></svg></span>
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9FE6B8;text-transform:uppercase;margin-bottom:8px;">GEO / AI</div>
-      <h3 style="font-size:18.5px;font-weight:600;letter-spacing:-0.015em;margin:0 0 9px;">Видимость и цитируемость</h3>
-      <p style="font-size:14.5px;line-height:1.55;color:#B6B1A6;margin:0;">Называет ли вас Яндекс Нейро и ChatGPT в ответах по вашим темам, как часто и в каком контексте.</p>
-    </div>
-
-    <div style="background:#15140F;color:#F2EFE8;border:1px solid #15140F;border-radius:16px;padding:26px;transition:transform .18s,box-shadow .18s;">
-      <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"></path><path d="M5 9h14l1 12H4z"></path><path d="M9 13v3M15 13v3"></path></svg></span>
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9FE6B8;text-transform:uppercase;margin-bottom:8px;">GEO / AI</div>
-      <h3 style="font-size:18.5px;font-weight:600;letter-spacing:-0.015em;margin:0 0 9px;">Классификация источников</h3>
-      <p style="font-size:14.5px;line-height:1.55;color:#B6B1A6;margin:0;">Кто вас цитирует: свой сайт, агрегаторы, СМИ или соцсети. Видно, на чьих словах нейросеть строит мнение о бренде.</p>
-    </div>
-
-    <div style="background:#15140F;color:#F2EFE8;border:1px solid #15140F;border-radius:16px;padding:26px;transition:transform .18s,box-shadow .18s;">
-      <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3-3 6-4 9-4s6 1 9 4"></path><path d="M12 3v8"></path><path d="m8 7 4-4 4 4"></path></svg></span>
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9FE6B8;text-transform:uppercase;margin-bottom:8px;">GEO / AI</div>
-      <h3 style="font-size:18.5px;font-weight:600;letter-spacing:-0.015em;margin:0 0 9px;">Earned media gap</h3>
-      <p style="font-size:14.5px;line-height:1.55;color:#B6B1A6;margin:0;">Нейросеть знает вас только с ваших слов — без подтверждений в СМИ. Показываем разрыв и где его закрывать.</p>
-    </div>
-
-  </div>
-</section>
-
-<!-- ===== MONITORING ===== -->
-<section style="background:#15140F;color:#F2EFE8;">
-  <div style="max-width:1100px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#7E8AB0;letter-spacing:0.06em;margin-bottom:18px;">// 05 — мониторинг</div>
-    <div style="max-width:740px;margin-bottom:40px;">
-      <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 18px;">Сайт под присмотром 24/7</h2>
-      <p style="font-size:clamp(16px,1.4vw,18.5px);line-height:1.6;color:#B6B1A6;margin:0;">Проблемы с индексацией, скоростью или доступностью возникают внезапно. Система ловит их первой.</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
-      <div style="background:#1C1D21;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Автоаудит по расписанию</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#B6B1A6;margin:0;">Ежедневно или еженедельно, зависит от тарифа. Не нужно помнить о проверках.</p>
+  <div class="audit-lanes" data-reveal-group>
+    <div class="audit-lane audit-lane-light">
+      <span class="audit-lane-tag">SEO-аудит — техническое здоровье</span>
+      <div class="audit-item">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></span>
+        <div>
+          <h3>Техническое здоровье</h3>
+          <p>Скорость, ошибки рендера, доступность для ботов, корректность robots.txt — включая правила для AI-краулеров.</p>
+        </div>
       </div>
-      <div style="background:#1C1D21;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">Telegram-алерты</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#B6B1A6;margin:0;">Упала страница, слетел SSL, выросли ошибки индексации — приходит уведомление с причиной и решением.</p>
+      <div class="audit-item">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
+        <div>
+          <h3>Индексируемость и структура</h3>
+          <p>Видят ли поисковики страницу, логична ли иерархия заголовков, нет ли каннибализации и дублей.</p>
+        </div>
       </div>
-      <div style="background:#1C1D21;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px;">
-        <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#6378FF;color:#fff;margin-bottom:18px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg></span>
-        <h3 style="font-size:19px;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px;">История и динамика</h3>
-        <p style="font-size:14.5px;line-height:1.55;color:#B6B1A6;margin:0;">Видно, как показатели меняются со временем: лучше или хуже после правок.</p>
+      <div class="audit-item">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+        <div>
+          <h3>Мета-теги и E-E-A-T</h3>
+          <p>Качество title / description / H1 конкретной страницы, сигналы экспертности и доверия — не главной, а той, что продвигаете.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="audit-lane audit-lane-dark">
+      <span class="audit-lane-tag">GEO/AI-аудит — видимость в нейросетях</span>
+      <div class="audit-item">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"></path></svg></span>
+        <div>
+          <h3>Видимость и цитируемость</h3>
+          <p>Называет ли вас Яндекс Нейро и ChatGPT в ответах по вашим темам, как часто и в каком контексте.</p>
+        </div>
+      </div>
+      <div class="audit-item">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"></path><path d="M5 9h14l1 12H4z"></path><path d="M9 13v3M15 13v3"></path></svg></span>
+        <div>
+          <h3>Классификация источников</h3>
+          <p>Кто вас цитирует: свой сайт, агрегаторы, СМИ или соцсети. Видно, на чьих словах нейросеть строит мнение о бренде.</p>
+        </div>
+      </div>
+      <div class="audit-item">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3-3 6-4 9-4s6 1 9 4"></path><path d="M12 3v8"></path><path d="m8 7 4-4 4 4"></path></svg></span>
+        <div>
+          <h3>Earned media gap</h3>
+          <p>Нейросеть знает вас только с ваших слов — без подтверждений в СМИ. Показываем разрыв и где его закрывать.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== PERSONALIZATION ===== -->
-<section style="background:#fff;border-top:1px solid rgba(21,20,15,0.07);border-bottom:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 06 — персонализация</div>
-    <div style="max-width:760px;margin-bottom:40px;">
-      <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 18px;">Разбор под вашу страницу, а не шаблон</h2>
-      <p style="font-size:clamp(16px,1.4vw,19px);line-height:1.55;color:#5C584F;margin:0;">Правки и код генерирует AI на основе реальных данных вашей страницы: берёт ваш настоящий первый абзац, ваши мета-теги, ваше название компании — и переписывает их. Никаких «вставьте сюда название» — всё уже подставлено.</p>
+<!-- ===== MONITORING ===== -->
+<section class="section-dark">
+  <div class="wrap-narrow section">
+    <div class="mon-grid">
+      <div style="flex:1 1 420px;min-width:300px;" data-reveal>
+        <h2 class="display">Сайт под присмотром 24/7</h2>
+        <p class="lead" style="margin:18px 0 28px;">Проблемы с индексацией, скоростью или доступностью возникают внезапно. Система ловит их первой.</p>
+        <div class="mon-list">
+          <div class="mon-item">
+            <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+            <div>
+              <h3>Автоаудит по расписанию</h3>
+              <p>Ежедневно или еженедельно, зависит от тарифа. Не нужно помнить о проверках.</p>
+            </div>
+          </div>
+          <div class="mon-item">
+            <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></span>
+            <div>
+              <h3>Telegram-алерты</h3>
+              <p>Упала страница, слетел SSL, выросли ошибки индексации — приходит уведомление с причиной и решением.</p>
+            </div>
+          </div>
+          <div class="mon-item">
+            <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg></span>
+            <div>
+              <h3>История и динамика</h3>
+              <p>Видно, как показатели меняются со временем: лучше или хуже после правок.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- превью реального алерта из продукта -->
+      <div style="flex:1 1 340px;min-width:300px;" data-reveal>
+        <div class="tg-alert">
+          <div class="tg-alert-head">
+            <span class="avatar"><img src="/static/img/spiral-icon.svg" width="20" height="20" alt=""></span>
+            <div>
+              <b>SEOdyssey</b>
+              <small>Telegram · сегодня, 08:00</small>
+            </div>
+          </div>
+          <div class="tg-alert-body">
+            <span class="fail">✕ SSL-сертификат истекает через 3 дня</span><br>
+            site.ru · проверка от 08:00<br><br>
+            Продлите сертификат у хостера или включите автопродление. После продления запустите проверку заново.<br><br>
+            <span class="ok">✓ Остальные 79 проверок в порядке</span>
+          </div>
+          <div class="tg-alert-actions">
+            <span>Открыть отчёт</span>
+            <span>Перепроверить</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PERSONALIZATION: было / стало ===== -->
+<section class="section-white">
+  <div class="wrap section">
+    <div style="max-width:760px;margin-bottom:40px;" data-reveal>
+      <h2 class="display">Разбор под вашу страницу, а не шаблон</h2>
+      <p class="lead" style="margin:18px 0 0;">Правки и код генерирует AI на основе реальных данных вашей страницы: берёт ваш настоящий первый абзац, ваши мета-теги, ваше название компании — и переписывает их. Никаких «вставьте сюда название» — всё уже подставлено.</p>
     </div>
 
-    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:stretch;">
-      <!-- before -->
-      <div style="flex:1 1 340px;min-width:290px;background:#FAF8F4;border:1px solid rgba(21,20,15,0.09);border-radius:16px;padding:24px;display:flex;flex-direction:column;">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;"><span style="width:9px;height:9px;border-radius:50%;background:#B9B4A8;"></span><span style="font-size:12.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#9A958B;">Было — ваш текст сейчас</span></div>
-        <p style="font-size:15px;line-height:1.6;color:#6B675E;margin:0 0 14px;font-family:'JetBrains Mono',monospace;background:#fff;border:1px solid rgba(21,20,15,0.07);border-radius:10px;padding:14px;">«Мы молодая компания, которая занимается доставкой. У нас выгодные цены и хороший сервис.»</p>
-        <ul style="margin:auto 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:#8A857A;">
-          <li style="display:flex;gap:8px;"><span style="color:#FF6058;">✕</span> нет фактов, которые нейросеть может процитировать</li>
-          <li style="display:flex;gap:8px;"><span style="color:#FF6058;">✕</span> нет географии, цифр, условий</li>
+    <div class="ba-grid" data-reveal-group>
+      <div class="ba-col card-tinted">
+        <div class="ba-head" style="color:#9A958B;"><i style="background:#B9B4A8;"></i>Было — ваш текст сейчас</div>
+        <p class="ba-quote" style="color:#6B675E;background:#fff;border:1px solid var(--line);">«Мы молодая компания, которая занимается доставкой. У нас выгодные цены и хороший сервис.»</p>
+        <ul class="ba-list" style="color:#8A857A;">
+          <li><span style="color:var(--fail-dot);">✕</span> нет фактов, которые нейросеть может процитировать</li>
+          <li><span style="color:var(--fail-dot);">✕</span> нет географии, цифр, условий</li>
         </ul>
       </div>
 
-      <!-- arrow -->
-      <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#6378FF;">
+      <div class="ba-arrow">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
       </div>
 
-      <!-- after -->
-      <div style="flex:1 1 340px;min-width:290px;background:#15140F;color:#F2EFE8;border-radius:16px;padding:24px;display:flex;flex-direction:column;box-shadow:0 28px 60px -32px rgba(21,20,15,0.55);">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;"><span style="width:9px;height:9px;border-radius:50%;background:#9FE6B8;"></span><span style="font-size:12.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#9FE6B8;">Стало — переписал AI</span></div>
-        <p style="font-size:15px;line-height:1.6;color:#E6E2D9;margin:0 0 14px;font-family:'JetBrains Mono',monospace;background:#1C1D21;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">«Служба доставки X работает в Москве с 2019 года. Бесплатная доставка от 3000 ₽, среднее время — 90 минут, более 12 000 заказов в месяц.»</p>
-        <ul style="margin:auto 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:#B6B1A6;">
-          <li style="display:flex;gap:8px;"><span style="color:#9FE6B8;">✓</span> конкретные факты — нейросети есть что цитировать</li>
-          <li style="display:flex;gap:8px;"><span style="color:#9FE6B8;">✓</span> готово к вставке + сгенерирован код разметки</li>
+      <div class="ba-col" style="background:var(--dark);color:#F2EFE8;border-radius:16px;padding:24px;box-shadow:0 28px 60px -32px rgba(21,20,15,0.55);">
+        <div class="ba-head" style="color:var(--ok-soft);"><i style="background:var(--ok-soft);"></i>Стало — переписал AI</div>
+        <p class="ba-quote" style="color:#E6E2D9;background:var(--dark-2);border:1px solid var(--dark-line);">«Служба доставки X работает в Москве с 2019 года. Бесплатная доставка от 3000 ₽, среднее время — 90 минут, более 12 000 заказов в месяц.»</p>
+        <ul class="ba-list" style="color:var(--dark-body);">
+          <li><span style="color:var(--ok-soft);">✓</span> конкретные факты — нейросети есть что цитировать</li>
+          <li><span style="color:var(--ok-soft);">✓</span> готово к вставке + сгенерирован код разметки</li>
         </ul>
       </div>
     </div>
@@ -352,34 +499,33 @@
 </section>
 
 <!-- ===== CODE SHOWCASE ===== -->
-<section style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-  <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 07 — готовый код</div>
+<section class="wrap section">
   <div style="display:flex;flex-wrap:wrap;gap:clamp(34px,5vw,64px);align-items:center;">
-    <div style="flex:1 1 360px;min-width:300px;">
-      <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 20px;">Готовый код — копируете и вставляете</h2>
-      <p style="font-size:clamp(16px,1.4vw,19px);line-height:1.6;color:#5C584F;margin:0 0 26px;">К каждой проблеме — не абстрактная рекомендация, а конкретный блок кода под вашу страницу. Скопировали, вставили в шаблон — проблема закрыта.</p>
-      <div style="display:flex;flex-direction:column;gap:16px;">
-        <div style="display:flex;gap:13px;"><span style="flex:none;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:20px;color:#6378FF;font-weight:600;">01</span><div><div style="font-weight:600;font-size:15.5px;margin-bottom:2px;">Находим проблему</div><div style="font-size:14px;color:#6B675E;line-height:1.5;">«Не найдена FAQPage-разметка» — с объяснением, почему это мешает попасть в ответы нейросетей.</div></div></div>
-        <div style="display:flex;gap:13px;"><span style="flex:none;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:20px;color:#6378FF;font-weight:600;">02</span><div><div style="font-weight:600;font-size:15.5px;margin-bottom:2px;">Генерируем код под вас</div><div style="font-size:14px;color:#6B675E;line-height:1.5;">JSON-LD с вашими реальными вопросами и ответами — не пустой шаблон.</div></div></div>
-        <div style="display:flex;gap:13px;"><span style="flex:none;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:20px;color:#6378FF;font-weight:600;">03</span><div><div style="font-weight:600;font-size:15.5px;margin-bottom:2px;">Вставляете — и всё</div><div style="font-size:14px;color:#6B675E;line-height:1.5;">Одна кнопка «Копировать». Без правок руками и без обращения к разработчику.</div></div></div>
+    <div style="flex:1 1 360px;min-width:300px;" data-reveal>
+      <h2 class="display">Готовый код — копируете и вставляете</h2>
+      <p class="lead" style="margin:20px 0 26px;">К каждой проблеме — не абстрактная рекомендация, а конкретный блок кода под вашу страницу. Скопировали, вставили в шаблон — проблема закрыта.</p>
+      <div class="code-steps">
+        <div class="code-step"><b>01</b><div><h3>Находим проблему</h3><p>«Не найдена FAQPage-разметка» — с объяснением, почему это мешает попасть в ответы нейросетей.</p></div></div>
+        <div class="code-step"><b>02</b><div><h3>Генерируем код под вас</h3><p>JSON-LD с вашими реальными вопросами и ответами — не пустой шаблон.</p></div></div>
+        <div class="code-step"><b>03</b><div><h3>Вставляете — и всё</h3><p>Одна кнопка «Копировать». Без правок руками и без обращения к разработчику.</p></div></div>
       </div>
     </div>
 
-    <div style="flex:1 1 420px;min-width:300px;">
-      <div style="background:#FFF4F2;border:1px solid rgba(255,96,88,0.22);border-radius:14px;padding:15px 18px;display:flex;gap:11px;align-items:center;margin-bottom:14px;">
-        <span style="flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#FF6058;color:#fff;font-weight:700;">!</span>
+    <div style="flex:1 1 420px;min-width:300px;" data-reveal>
+      <div style="background:var(--fail-bg);border:1px solid var(--fail-line);border-radius:14px;padding:15px 18px;display:flex;gap:11px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--fail-dot);color:#fff;font-weight:700;">!</span>
         <span style="font-weight:600;font-size:15px;">Не найдена FAQPage-разметка</span>
         <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C0463F;background:#FFE3DF;padding:4px 10px;border-radius:999px;">высокий приоритет</span>
       </div>
-      <div data-codeblock="2" style="background:#121316;border-radius:16px;overflow:hidden;box-shadow:0 28px 60px -30px rgba(21,20,15,0.5);">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.08);">
-          <span style="font-size:12.5px;color:#7E8AB0;font-family:'JetBrains Mono',monospace;">faq.schema.json</span>
-          <button data-action="copy" style="display:flex;align-items:center;gap:6px;background:#6378FF;color:#fff;border:none;padding:7px 14px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;">
+      <div data-codeblock="2" class="codeblock" style="box-shadow:0 28px 60px -30px rgba(21,20,15,0.5);">
+        <div class="codeblock-head" style="padding:13px 16px;">
+          <span class="filename">faq.schema.json</span>
+          <button data-action="copy" class="copy-btn">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             <span data-copy-label="2">Копировать</span>
           </button>
         </div>
-        <pre style="margin:0;padding:18px;overflow-x:auto;"><code style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#D6DBE8;white-space:pre;"><span style="color:#7E8AB0;">&lt;script type=</span><span style="color:#E2B589;">"application/ld+json"</span><span style="color:#7E8AB0;">&gt;</span>
+        <pre style="padding:18px;"><code style="font-size:13px;"><span style="color:#7E8AB0;">&lt;script type=</span><span style="color:#E2B589;">"application/ld+json"</span><span style="color:#7E8AB0;">&gt;</span>
 {
   <span style="color:#7FD6A6;">"@context"</span>: <span style="color:#E2B589;">"https://schema.org"</span>,
   <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"FAQPage"</span>,
@@ -396,34 +542,33 @@
 }
 <span style="color:#7E8AB0;">&lt;/script&gt;</span></code></pre>
       </div>
-      <p style="display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:#5C584F;margin:13px 4px 0;line-height:1.5;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 6 9 17l-5-5"></path></svg><span>Разбираться в коде не нужно — вставляется одной кнопкой. А если не ведёте сайт сами, просто перешлите этот блок своему разработчику.</span></p>
-      <p style="font-size:13px;color:#8A857A;margin:8px 4px 0;line-height:1.5;">Зачем: FAQPage-разметка даёт нейросетям готовые пары «вопрос-ответ» — и они охотнее цитируют вас напрямую.</p>
+      <p style="display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--body);margin:13px 4px 0;line-height:1.5;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 6 9 17l-5-5"></path></svg><span>Разбираться в коде не нужно — вставляется одной кнопкой. А если не ведёте сайт сами, просто перешлите этот блок своему разработчику.</span></p>
+      <p style="font-size:13px;color:var(--faint);margin:8px 4px 0;line-height:1.5;">Зачем: FAQPage-разметка даёт нейросетям готовые пары «вопрос-ответ» — и они охотнее цитируют вас напрямую.</p>
     </div>
   </div>
 </section>
 
 <!-- ===== COMPARISON ===== -->
-<section style="background:#15140F;color:#F2EFE8;">
-  <div style="max-width:1100px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#7E8AB0;letter-spacing:0.06em;margin-bottom:18px;">// 08 — отстройка</div>
-    <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 40px;max-width:740px;">Другие говорят, <span style="color:#E2B589;">что случилось</span>.<br>Мы говорим, <span style="color:#9FE6B8;">что делать</span></h2>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;">
-      <div style="flex:1 1 360px;min-width:290px;background:#1C1D21;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px;">
-        <div style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#8E8A80;margin-bottom:22px;">Обычные инструменты</div>
-        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:16px;">
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#B6B1A6;line-height:1.5;"><span style="color:#FF6058;flex:none;">✕</span> Показывают, что вас не цитируют</li>
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#B6B1A6;line-height:1.5;"><span style="color:#FF6058;flex:none;">✕</span> Дают оценку и красивый график</li>
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#B6B1A6;line-height:1.5;"><span style="color:#FF6058;flex:none;">✕</span> Список общих рекомендаций</li>
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#B6B1A6;line-height:1.5;"><span style="color:#FF6058;flex:none;">✕</span> Дальше разбирайтесь сами</li>
+<section class="section-dark">
+  <div class="wrap-narrow section">
+    <h2 class="display" style="max-width:740px;" data-reveal>Другие говорят, <span style="color:var(--warn-soft);">что случилось</span>. Мы говорим, <span style="color:var(--ok-soft);">что делать</span></h2>
+    <div class="cmp-grid" style="margin-top:40px;" data-reveal-group>
+      <div class="cmp-col cmp-col-them">
+        <div class="cmp-title" style="color:#8E8A80;">Обычные инструменты</div>
+        <ul class="cmp-list" style="color:var(--dark-body);">
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Показывают, что вас не цитируют</li>
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Дают оценку и красивый график</li>
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Список общих рекомендаций</li>
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Дальше разбирайтесь сами</li>
         </ul>
       </div>
-      <div style="flex:1 1 360px;min-width:290px;background:linear-gradient(160deg,#2A2F5C,#1B1D2E);border:1px solid rgba(99,120,255,0.4);border-radius:18px;padding:30px;box-shadow:0 30px 70px -34px rgba(99,120,255,0.55);">
-        <div style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A9B4FF;margin-bottom:22px;">SEOdyssey</div>
-        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:16px;">
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#EAE7E0;line-height:1.5;"><span style="color:#9FE6B8;flex:none;">✓</span> Точная причина, почему вас не цитируют</li>
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#EAE7E0;line-height:1.5;"><span style="color:#9FE6B8;flex:none;">✓</span> Готовый код для вставки под вашу страницу</li>
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#EAE7E0;line-height:1.5;"><span style="color:#9FE6B8;flex:none;">✓</span> Переписанные AI тексты с реальными фактами</li>
-          <li style="display:flex;gap:12px;font-size:15.5px;color:#EAE7E0;line-height:1.5;"><span style="color:#9FE6B8;flex:none;">✓</span> Чёткий план: что вставить и куда</li>
+      <div class="cmp-col cmp-col-us">
+        <div class="cmp-title" style="color:#A9B4FF;">SEOdyssey</div>
+        <ul class="cmp-list" style="color:#EAE7E0;">
+          <li><span style="color:var(--ok-soft);flex:none;">✓</span> Точная причина, почему вас не цитируют</li>
+          <li><span style="color:var(--ok-soft);flex:none;">✓</span> Готовый код для вставки под вашу страницу</li>
+          <li><span style="color:var(--ok-soft);flex:none;">✓</span> Переписанные AI тексты с реальными фактами</li>
+          <li><span style="color:var(--ok-soft);flex:none;">✓</span> Чёткий план: что вставить и куда</li>
         </ul>
       </div>
     </div>
@@ -431,86 +576,83 @@
 </section>
 
 <!-- ===== PRICING ===== -->
-<section id="pricing" style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-  <div style="text-align:center;margin-bottom:46px;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 09 — тарифы</div>
-    <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0 0 14px;">Простые цены — без скрытых платежей</h2>
-    <p style="font-size:clamp(16px,1.4vw,18px);color:#5C584F;margin:0;">Начните с одного разбора — без подписки. Нужно следить постоянно — переходите на тариф.</p>
+<section id="pricing" class="wrap section">
+  <div style="text-align:center;margin-bottom:46px;" data-reveal>
+    <h2 class="display">Простые цены — без скрытых платежей</h2>
+    <p class="lead" style="margin:16px 0 0;">Начните с одного разбора — без подписки. Нужно следить постоянно — переходите на тариф.</p>
   </div>
 
-  <!-- Tier 1: one-time report -->
-  <div style="background:#15140F;color:#F2EFE8;border-radius:22px;padding:clamp(28px,4vw,44px);margin-bottom:30px;box-shadow:0 34px 80px -40px rgba(21,20,15,0.6);">
-    <div style="display:flex;flex-wrap:wrap;gap:34px;align-items:center;justify-content:space-between;">
+  <!-- Разовый Pro-отчёт -->
+  <div class="price-hero" data-reveal>
+    <div class="price-hero-grid">
       <div style="flex:1 1 380px;min-width:280px;">
-        <div style="display:inline-flex;align-items:center;gap:8px;background:#6378FF;color:#fff;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:18px;">★ С чего начать</div>
-        <h3 style="font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-0.02em;margin:0 0 10px;">Pro-отчёт по вашей странице</h3>
-        <p style="font-size:15.5px;color:#B6B1A6;line-height:1.55;margin:0 0 24px;max-width:440px;">Разовая покупка, без подписки. Полный разбор одной страницы со всеми правками и кодом.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:11px 22px;max-width:560px;">
-          <span style="display:flex;gap:9px;font-size:14.5px;color:#DAD6CC;"><span style="color:#9FE6B8;">✓</span> Полный разбор всех проблем</span>
-          <span style="display:flex;gap:9px;font-size:14.5px;color:#DAD6CC;"><span style="color:#9FE6B8;">✓</span> Персонализированные правки</span>
-          <span style="display:flex;gap:9px;font-size:14.5px;color:#DAD6CC;"><span style="color:#9FE6B8;">✓</span> Готовый код для вставки</span>
-          <span style="display:flex;gap:9px;font-size:14.5px;color:#DAD6CC;"><span style="color:#9FE6B8;">✓</span> Переписанные тексты</span>
-          <span style="display:flex;gap:9px;font-size:14.5px;color:#DAD6CC;"><span style="color:#9FE6B8;">✓</span> Выгрузка в PDF</span>
-          <span style="display:flex;gap:9px;font-size:14.5px;color:#DAD6CC;"><span style="color:#9FE6B8;">✓</span> GEO + SEO в одном отчёте</span>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:18px;">★ С чего начать</div>
+        <h3 style="font-family:'Unbounded',sans-serif;font-size:clamp(21px,2.4vw,28px);font-weight:500;letter-spacing:-0.01em;margin:0 0 10px;">Pro-отчёт по вашей странице</h3>
+        <p style="font-size:15.5px;color:var(--dark-body);line-height:1.55;margin:0 0 24px;max-width:440px;">Разовая покупка, без подписки. Полный разбор одной страницы со всеми правками и кодом.</p>
+        <div class="price-features">
+          <span><span style="color:var(--ok-soft);">✓</span> Полный разбор всех проблем</span>
+          <span><span style="color:var(--ok-soft);">✓</span> Персонализированные правки</span>
+          <span><span style="color:var(--ok-soft);">✓</span> Готовый код для вставки</span>
+          <span><span style="color:var(--ok-soft);">✓</span> Переписанные тексты</span>
+          <span><span style="color:var(--ok-soft);">✓</span> Выгрузка в PDF</span>
+          <span><span style="color:var(--ok-soft);">✓</span> GEO + SEO в одном отчёте</span>
         </div>
       </div>
-      <div style="flex:0 1 280px;min-width:240px;background:#1C1D21;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:28px;text-align:center;">
+      <div class="price-box">
         <div style="display:flex;align-items:baseline;gap:10px;justify-content:center;margin-bottom:6px;">
-          <span style="font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:clamp(40px,5vw,56px);font-weight:600;line-height:1;">{% if geo_report %}{{ geo_report.price|thousands }}{% else %}990{% endif %}</span>
-          <span style="font-size:20px;color:#B6B1A6;">₽</span>
+          <span class="price-num">{% if geo_report %}{{ geo_report.price|thousands }}{% else %}990{% endif %}</span>
+          <span style="font-size:20px;color:var(--dark-body);">₽</span>
         </div>
-
-          {% if geo_report.old_price %}
-          <div style="font-size:15px;color:#8E8A80;text-decoration:line-through;margin-bottom:18px;">{{ geo_report.old_price|thousands }} ₽</div>
-          {% endif %}
-
-        <div style="font-size:13px;color:#8E8A80;margin-bottom:20px;">разово · одна страница</div>
-        <a href="https://seodyssey.ru/geo-check/" style="display:block;background:#6378FF;color:#fff;padding:14px;border-radius:12px;font-weight:600;font-size:15.5px;transition:background .15s;">Получить разбор</a>
+        {% if geo_report.old_price %}
+        <div style="font-size:15px;color:var(--dark-faint);text-decoration:line-through;margin-bottom:18px;">{{ geo_report.old_price|thousands }} ₽</div>
+        {% endif %}
+        <div style="font-size:13px;color:var(--dark-faint);margin-bottom:20px;">разово · одна страница</div>
+        <a href="/geo-check/" style="display:block;background:var(--accent);color:#fff;padding:14px;border-radius:12px;font-weight:600;font-size:15.5px;transition:background .15s;">Получить разбор</a>
       </div>
     </div>
   </div>
 
-  <!-- Tier 2: subscriptions -->
-  <div style="text-align:center;margin:48px 0 26px;">
-    <h3 style="font-size:clamp(20px,2.2vw,26px);font-weight:700;letter-spacing:-0.02em;margin:0 0 8px;">Подписки для постоянного мониторинга</h3>
+  <!-- Подписки -->
+  <div style="text-align:center;margin:48px 0 26px;" data-reveal>
+    <h3 style="font-family:'Unbounded',sans-serif;font-size:clamp(18px,2vw,23px);font-weight:500;letter-spacing:-0.01em;margin:0 0 8px;">Подписки для постоянного мониторинга</h3>
     <p style="font-size:15px;color:#6B675E;margin:0;">Нужно следить постоянно и вести несколько сайтов — выбирайте тариф.</p>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;">
+  <div class="plans" data-reveal-group>
 
     {% for plan in plans %}
     {% if plan.slug == 'pro' %}
     <!-- Pro — популярный (тёмная карточка) -->
-    <div style="background:#15140F;color:#F2EFE8;border:1px solid #15140F;border-radius:18px;padding:26px;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 64px -34px rgba(99,120,255,0.5);">
-      <span style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#6378FF;color:#fff;font-size:12px;font-weight:600;padding:5px 14px;border-radius:999px;white-space:nowrap;">Популярный</span>
-      <div style="font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#9FB0FF;margin-bottom:14px;">{{ plan.name }}</div>
-      <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:4px;"><span style="font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:34px;font-weight:600;">{{ plan.price_monthly|thousands }}</span><span style="font-size:14px;color:#B6B1A6;">{% if plan.price_monthly %}₽/мес{% endif %}</span></div>
-      <div style="font-size:13px;color:#8E8A80;margin-bottom:22px;">для тех, кто ведёт несколько проектов</div>
-      <ul style="margin:0 0 24px;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;font-size:14px;color:#DAD6CC;">
-        <li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> Проектов: {{ plan.max_projects }}</li>
-        <li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> Автоаудит: {{ plan.get_audit_frequency_display }}</li>
-        <li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> AI-проверок в месяц: {{ plan.ai_limit }}</li>
-        <li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> GEO-аудит видимости в ИИ</li>
-        <li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
-        {% if plan.telegram_alerts %}<li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> Telegram-алерты</li>{% endif %}
-        <li style="display:flex;gap:9px;"><span style="color:#9FE6B8;">✓</span> История: {% if plan.history_days is None %}без лимита{% else %}{{ plan.history_days }} дн.{% endif %}</li>
+    <div class="plan plan-dark">
+      <span class="plan-popular">Популярный</span>
+      <div class="plan-tag" style="color:#9FB0FF;">{{ plan.name }}</div>
+      <div class="plan-price"><b>{{ plan.price_monthly|thousands }}</b><span style="font-size:14px;color:var(--dark-body);">{% if plan.price_monthly %}₽/мес{% endif %}</span></div>
+      <div class="plan-note" style="color:var(--dark-faint);">для тех, кто ведёт несколько проектов</div>
+      <ul class="plan-list" style="color:#DAD6CC;">
+        <li><span style="color:var(--ok-soft);">✓</span> Проектов: {{ plan.max_projects }}</li>
+        <li><span style="color:var(--ok-soft);">✓</span> Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+        <li><span style="color:var(--ok-soft);">✓</span> AI-проверок в месяц: {{ plan.ai_limit }}</li>
+        <li><span style="color:var(--ok-soft);">✓</span> GEO-аудит видимости в ИИ</li>
+        <li><span style="color:var(--ok-soft);">✓</span> Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+        {% if plan.telegram_alerts %}<li><span style="color:var(--ok-soft);">✓</span> Telegram-алерты</li>{% endif %}
+        <li><span style="color:var(--ok-soft);">✓</span> История: {% if plan.history_days is None %}без лимита{% else %}{{ plan.history_days }} дн.{% endif %}</li>
       </ul>
-      <a href="https://app.seodyssey.ru/" style="margin-top:auto;text-align:center;background:#6378FF;color:#fff;padding:12px;border-radius:11px;font-weight:600;font-size:14.5px;transition:background .15s;">Выбрать {{ plan.name }}</a>
+      <a class="plan-cta" href="https://app.seodyssey.ru/" style="background:var(--accent);color:#fff;">Выбрать {{ plan.name }}</a>
     </div>
     {% else %}
     <!-- Обычная (светлая) карточка тарифа -->
-    <div style="background:#fff;border:1px solid rgba(21,20,15,0.1);border-radius:18px;padding:26px;display:flex;flex-direction:column;">
-      <div style="font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#9A958B;margin-bottom:14px;">{{ plan.name }}</div>
-      <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:4px;"><span style="font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:34px;font-weight:600;">{{ plan.price_monthly|thousands }}</span><span style="font-size:14px;color:#8A857A;">{% if plan.price_monthly %}₽/мес{% else %}₽{% endif %}</span></div>
-      <div style="font-size:13px;color:#9A958B;margin-bottom:22px;">{% if plan.slug == 'free' %}для первого знакомства{% elif plan.slug == 'start' %}для одного сайта, который нельзя терять{% elif plan.slug == 'agency' %}для агентств и потока клиентов{% else %}{{ plan.name }}{% endif %}</div>
-      <ul style="margin:0 0 24px;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;font-size:14px;color:#4A463E;">
-        <li style="display:flex;gap:9px;"><span style="color:#6378FF;">✓</span> Проектов: {{ plan.max_projects }}</li>
-        <li style="display:flex;gap:9px;"><span style="color:#6378FF;">✓</span> Автоаудит: {{ plan.get_audit_frequency_display }}</li>
-        <li style="display:flex;gap:9px;"><span style="color:#6378FF;">✓</span> AI-проверок в месяц: {{ plan.ai_limit }}</li>
-        {% if plan.slug == 'free' %}<li style="display:flex;gap:9px;color:#9A958B;"><span style="color:#9A958B;">–</span> GEO-аудит — на платных тарифах</li>{% else %}<li style="display:flex;gap:9px;"><span style="color:#6378FF;">✓</span> GEO-аудит видимости в ИИ</li>{% endif %}
-        <li style="display:flex;gap:9px;"><span style="color:#6378FF;">✓</span> Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
-        {% if plan.telegram_alerts %}<li style="display:flex;gap:9px;"><span style="color:#6378FF;">✓</span> Telegram-алерты</li>{% endif %}
+    <div class="plan plan-light">
+      <div class="plan-tag" style="color:#9A958B;">{{ plan.name }}</div>
+      <div class="plan-price"><b>{{ plan.price_monthly|thousands }}</b><span style="font-size:14px;color:var(--faint);">{% if plan.price_monthly %}₽/мес{% else %}₽{% endif %}</span></div>
+      <div class="plan-note" style="color:#9A958B;">{% if plan.slug == 'free' %}для первого знакомства{% elif plan.slug == 'start' %}для одного сайта, который нельзя терять{% elif plan.slug == 'agency' %}для агентств и потока клиентов{% else %}{{ plan.name }}{% endif %}</div>
+      <ul class="plan-list" style="color:#4A463E;">
+        <li><span style="color:var(--accent);">✓</span> Проектов: {{ plan.max_projects }}</li>
+        <li><span style="color:var(--accent);">✓</span> Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+        <li><span style="color:var(--accent);">✓</span> AI-проверок в месяц: {{ plan.ai_limit }}</li>
+        {% if plan.slug == 'free' %}<li style="color:#9A958B;"><span style="color:#9A958B;">–</span> GEO-аудит — на платных тарифах</li>{% else %}<li><span style="color:var(--accent);">✓</span> GEO-аудит видимости в ИИ</li>{% endif %}
+        <li><span style="color:var(--accent);">✓</span> Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+        {% if plan.telegram_alerts %}<li><span style="color:var(--accent);">✓</span> Telegram-алерты</li>{% endif %}
       </ul>
-      <a href="https://app.seodyssey.ru/" style="margin-top:auto;text-align:center;background:#F1F0EC;color:#15140F;padding:12px;border-radius:11px;font-weight:600;font-size:14.5px;transition:background .15s;">{% if plan.price_monthly %}Выбрать {{ plan.name }}{% else %}Начать бесплатно{% endif %}</a>
+      <a class="plan-cta" href="https://app.seodyssey.ru/" style="background:#F1F0EC;color:var(--ink);">{% if plan.price_monthly %}Выбрать {{ plan.name }}{% else %}Начать бесплатно{% endif %}</a>
     </div>
     {% endif %}
     {% endfor %}
@@ -519,115 +661,41 @@
 </section>
 
 <!-- ===== BLOG ===== -->
-<section id="blog" style="background:#fff;border-top:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:38px;">
-      <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6378FF;letter-spacing:0.06em;margin-bottom:18px;">// 10 — блог</div>
-        <h2 style="font-size:clamp(30px,3.8vw,48px);line-height:1.07;letter-spacing:-0.027em;font-weight:700;margin:0;">Разборы, кейсы и статьи</h2>
-      </div>
-      <a href="/blog/" style="background:transparent;border:1px solid rgba(21,20,15,0.16);padding:12px 22px;border-radius:12px;font-weight:600;font-size:14.5px;transition:background .15s;">Все статьи →</a>
+<section id="blog" class="section-white">
+  <div class="wrap section">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:38px;" data-reveal>
+      <h2 class="display">Разборы, кейсы и статьи</h2>
+      <a class="btn btn-ghost" style="padding:12px 22px;font-size:14.5px;" href="/blog/">Все статьи →</a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
+    <div class="posts" data-reveal-group>
       {% for post in latest_posts %}
-      <a href="/blog/{{ post.slug }}/" style="display:block;background:#FAF8F4;border:1px solid rgba(21,20,15,0.08);border-radius:16px;overflow:hidden;transition:transform .18s,box-shadow .18s;">
+      <a class="post-card card-hover" href="/blog/{{ post.slug }}/">
         {% if post.cover %}
-        <div style="aspect-ratio:16/9;background:#EEF0FF;overflow:hidden;"><img src="{{ post.cover.url }}" alt="{{ post.title }}" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="post-cover"><img src="{{ post.cover.url }}" alt="{{ post.title }}"></div>
         {% else %}
         <div style="height:150px;{% cycle 'background:linear-gradient(135deg,#EEF0FF,#DDE2FF);color:#6378FF;' 'background:linear-gradient(135deg,#15140F,#2A2F5C);color:#9FE6B8;' 'background:linear-gradient(135deg,#FFF4F2,#FFE3DF);color:#FF6058;' as cardbg %}display:grid;place-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path></svg></div>
         {% endif %}
-        <div style="padding:22px;">
-          <div style="font-size:12.5px;color:#9A958B;margin-bottom:10px;">{% if post.published_at %}{{ post.published_at|date:"d.m.Y" }}{% else %}{{ post.created_at|date:"d.m.Y" }}{% endif %} · {{ post.read_time }} мин</div>
-          <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.015em;line-height:1.3;margin:0 0 9px;">{{ post.title }}</h3>
-          <p style="font-size:14px;color:#6B675E;line-height:1.5;margin:0;">{{ post.description }}</p>
+        <div class="post-body">
+          <div class="post-meta">{% if post.published_at %}{{ post.published_at|date:"d.m.Y" }}{% else %}{{ post.created_at|date:"d.m.Y" }}{% endif %} · {{ post.read_time }} мин</div>
+          <h3 class="post-title">{{ post.title }}</h3>
+          <p class="post-desc">{{ post.description }}</p>
         </div>
       </a>
       {% empty %}
-      <p style="font-size:15px;color:#8A857A;grid-column:1/-1;">Скоро здесь появятся разборы и кейсы.</p>
+      <p style="font-size:15px;color:var(--faint);grid-column:1/-1;">Скоро здесь появятся разборы и кейсы.</p>
       {% endfor %}
     </div>
   </div>
 </section>
 
 <!-- ===== FINAL CTA ===== -->
-<section style="max-width:1200px;margin:0 auto;padding:clamp(76px,8vw,120px) 24px;">
-  <div style="background:#15140F;border-radius:26px;padding:clamp(40px,6vw,80px) clamp(28px,5vw,64px);text-align:center;position:relative;overflow:hidden;">
-    <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,rgba(99,120,255,0.35),transparent 60%);"></div>
-    <div style="position:relative;">
-      <h2 style="font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-0.03em;font-weight:700;color:#F7F4EE;margin:0 auto 20px;max-width:680px;">Проверьте свой сайт — и получите систему, которая следит за ним</h2>
-      <p style="font-size:clamp(16px,1.5vw,19px);color:#B6B1A6;line-height:1.55;margin:0 auto 34px;max-width:520px;">Начните с бесплатной проверки без регистрации. Дальше — полный аудит, ИИ-рекомендации и мониторинг под ваш сайт.</p>
-      <a href="https://seodyssey.ru/geo-check/" style="display:inline-block;background:#6378FF;color:#fff;padding:16px 32px;border-radius:14px;font-weight:600;font-size:17px;box-shadow:0 16px 40px -14px rgba(99,120,255,0.8);transition:transform .15s;">Проверить сайт бесплатно</a>
+<section class="wrap section">
+  <div class="final-cta" data-reveal>
+    <div>
+      <h2 class="display" style="color:var(--bg);margin:0 auto 20px;max-width:680px;">Проверьте свой сайт — и получите систему, которая следит за ним</h2>
+      <p class="lead" style="color:var(--dark-body);margin:0 auto 34px;max-width:520px;">Начните с бесплатной проверки без регистрации. Дальше — полный аудит, ИИ-рекомендации и мониторинг под ваш сайт.</p>
+      <a class="btn btn-primary" style="padding:16px 32px;font-size:17px;" href="/geo-check/">Проверить сайт бесплатно</a>
     </div>
   </div>
 </section>
-
-<!-- ===== FOOTER ===== -->
-<footer style="border-top:1px solid rgba(21,20,15,0.08);">
-  <div style="max-width:1200px;margin:0 auto;padding:54px 24px 40px;display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;">
-    <div style="flex:1 1 280px;min-width:240px;">
-      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
-        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
-        <div style="display:flex;flex-direction:column;line-height:1.05;"><span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span><span style="font-size:11px;color:#8A857A;font-weight:500;">аудит · нейросети · мониторинг</span></div>
-      </div>
-      <p style="font-size:14px;color:#8A857A;line-height:1.55;margin:0;max-width:300px;">Система под ваш сайт: SEO-аудит, видимость в нейросетях и мониторинг. Не советы, а готовые решения.</p>
-    </div>
-    <div style="display:flex;gap:54px;flex-wrap:wrap;">
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Продукт</span>
-        <a href="#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Возможности</a>
-        <a href="#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Аудит</a>
-        <a href="#pricing" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Тарифы</a>
-        <a href="/blog/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Блог</a>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Связь</span>
-        <a href="https://t.me/seodyssey" target="_blank" rel="noopener" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Поддержка</a>
-        <a href="https://t.me/seodyssey" target="_blank" rel="noopener" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Telegram</a>
-        <a href="https://seodyssey.ru/geo-check/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">GEO-проверка</a>
-      </div>
-    </div>
-  </div>
-  <div style="border-top:1px solid rgba(21,20,15,0.08);">
-    <div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9A958B;">
-      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
-    </div>
-  </div>
-</footer>
-<script>
-(function(){
-  // Копирование кода
-  document.addEventListener('click', function(e){
-    var btn = e.target.closest('[data-action="copy"]');
-    if (btn){
-      var block = btn.closest('[data-codeblock]');
-      if (block){
-        var code = block.querySelector('code');
-        if (code && navigator.clipboard){ try{ navigator.clipboard.writeText(code.innerText); }catch(_){}}
-        var label = btn.querySelector('[data-copy-label]');
-        if (label){ var prev = label.textContent; label.textContent = 'Скопировано ✓'; setTimeout(function(){ label.textContent = prev; }, 1600); }
-      }
-      return;
-    }
-    var burger = e.target.closest('[data-action="toggle-menu"]');
-    if (burger){ var m = document.querySelector('.nav-mobile'); if (m){ m.style.display = (m.style.display==='flex'?'none':'flex'); } return; }
-    var closer = e.target.closest('[data-action="close-menu"]');
-    if (closer){ var mm = document.querySelector('.nav-mobile'); if (mm){ mm.style.display='none'; } return; }
-  });
-  // Scroll-reveal
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduce && 'IntersectionObserver' in window){
-    var targets = [];
-    document.querySelectorAll('[data-reveal-group]').forEach(function(g){
-      Array.prototype.slice.call(g.children).forEach(function(c,i){ c.__d = Math.min(i,8)*85; targets.push(c); });
-    });
-    document.querySelectorAll('[data-reveal]').forEach(function(s){ s.__d = 0; targets.push(s); });
-    targets.forEach(function(el){ el.style.opacity='0'; el.style.transform='translateY(26px)'; el.style.transition='opacity .55s ease-out, transform .55s ease-out'; });
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){ if(!en.isIntersecting) return; var el=en.target; setTimeout(function(){ el.style.opacity='1'; el.style.transform='none'; }, el.__d||0); io.unobserve(el); });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    targets.forEach(function(el){ io.observe(el); });
-  }
-})();
-</script>
-</body>
-</html>
+{% endblock %}

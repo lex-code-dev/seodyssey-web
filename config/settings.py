@@ -62,6 +62,20 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
+# Локальная разработка: экспортировать SEODYSSEY_DEV=1 перед runserver.
+# На сервере переменная не задана — блок не выполняется.
+if os.getenv("SEODYSSEY_DEV") == "1":
+    DEBUG = True
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    ALLOWED_HOSTS += ["seodyssey.localhost", "app.seodyssey.localhost"]
+    CSRF_TRUSTED_ORIGINS += [
+        "http://localhost:8642",
+        "http://127.0.0.1:8642",
+        "http://seodyssey.localhost:8642",
+        "http://app.seodyssey.localhost:8642",
+    ]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -159,6 +173,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Корневая папка static/ — источник для collectstatic и локального runserver
+STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "/login/"

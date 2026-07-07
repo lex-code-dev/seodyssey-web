@@ -24,6 +24,8 @@
        style="top:56px;right:12px;min-width:200px;background:var(--surface);border:0.5px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08);overflow:hidden;">
     <nav style="display:flex;flex-direction:column;padding:6px;font-size:13px;">
       <a href="{% url 'dashboard' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Мои сайты</a>
+      <a href="{% url 'audit_list' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">SEO-аудит</a>
+      <a href="{% url 'ai_queries:geo_audit' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">GEO-аудит</a>
       <div style="height:0.5px;background:var(--line);margin:6px 4px;"></div>
       <a href="{% url 'billing' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Тарифы</a>
       <a href="{% url 'team' %}" style="padding:9px 12px;color:var(--ink-2);text-decoration:none;border-radius:7px;">Команда</a>

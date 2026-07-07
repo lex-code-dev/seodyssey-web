@@ -1,126 +1,68 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Публичная оферта — SEOdyssey</title>
-<meta name="description" content="Публичная оферта на оказание услуг сервиса SEOdyssey: предмет договора, стоимость, порядок оплаты и возврата, реквизиты исполнителя.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+{% extends "landing/base.html" %}
+
+{% block title %}Публичная оферта — SEOdyssey{% endblock %}
+{% block description %}Публичная оферта на оказание услуг сервиса SEOdyssey: предмет договора, стоимость, порядок оплаты и возврата, реквизиты исполнителя.{% endblock %}
+{% block nav_cta_label %}Начать{% endblock %}
+
+{% block head %}
 <style>
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  html, body { max-width: 100%; overflow-x: hidden; }
-  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: #15140F; background: #F7F4EE; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-  ::selection { background: #6378FF; color: #fff; }
-  a { color: inherit; text-decoration: none; }
   .doc p { font-size: 15.5px; line-height: 1.65; color: #4A463E; margin: 0 0 10px; }
   .doc p:last-child { margin-bottom: 0; }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
-    html { scroll-behavior: auto; }
-  }
+  .doc-section { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(22px,3vw,32px); }
+  .doc-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .doc-num { font-family: 'Unbounded', sans-serif; font-size: 19px; font-weight: 600; color: var(--accent); }
+  .doc-head h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; margin: 0; }
 </style>
-</head>
-<body>
-<!-- ===== NAV ===== -->
-<nav style="position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(14px);background:rgba(247,244,238,0.72);border-bottom:1px solid rgba(21,20,15,0.07);">
-  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-    <a href="/" style="display:flex;align-items:center;gap:11px;margin-right:auto;">
-      <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
-      <span style="display:flex;flex-direction:column;line-height:1.05;">
-        <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span>
-        <span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span>
-      </span>
-    </a>
-    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:14.5px;color:#4A463E;font-weight:500;">
-      <a href="/#audit" style="transition:color .15s;">Возможности</a>
-      <a href="/#audit" style="transition:color .15s;">Аудит</a>
-      <a href="https://seodyssey.ru/geo-check/" style="transition:color .15s;">GEO-проверка</a>
-      <a href="/#pricing" style="transition:color .15s;">Тарифы</a>
-      <a href="/blog/" style="transition:color .15s;">Блог</a>
-    </div>
-    <a href="https://seodyssey.ru/geo-check/" style="background:#15140F;color:#F7F4EE;padding:10px 18px;border-radius:11px;font-weight:600;font-size:14.5px;transition:transform .15s,background .15s;">Начать</a>
-  </div>
-</nav>
+{% endblock %}
 
-<!-- ===== HEADER ===== -->
+{% block content %}
 <header style="max-width:760px;margin:0 auto;padding:clamp(40px,5vw,72px) 24px clamp(20px,3vw,32px);">
-  <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px;border-radius:999px;background:#EEF0FF;border:1px solid rgba(99,120,255,0.22);font-size:13px;font-weight:600;color:#4F5BE0;margin-bottom:22px;">
-    <span style="width:7px;height:7px;border-radius:50%;background:#6378FF;display:inline-block;"></span>
-    Документы
-  </div>
-  <h1 style="font-size:clamp(32px,4.4vw,50px);line-height:1.06;letter-spacing:-0.03em;font-weight:700;margin:0 0 14px;">Публичная оферта</h1>
-  <p style="font-size:clamp(15px,1.4vw,17px);color:#7A756B;margin:0;">Договор-оферта на оказание услуг сервиса SEOdyssey · редакция от 31.05.2026</p>
+  <div class="pill" style="margin-bottom:22px;"><span class="dot"></span>Документы</div>
+  <h1 class="display">Публичная оферта</h1>
+  <p style="font-size:clamp(15px,1.4vw,17px);color:#7A756B;margin:14px 0 0;">Договор-оферта на оказание услуг сервиса SEOdyssey · редакция от 31.05.2026</p>
 </header>
 
-<!-- ===== OFFER TEXT ===== -->
 <article class="doc" style="max-width:760px;margin:0 auto;padding:0 24px clamp(56px,6vw,84px);display:flex;flex-direction:column;gap:14px;">
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">01</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Общие положения</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">01</span><h2>Общие положения</h2></div>
     <p>Настоящий документ является публичной офертой (далее — Оферта) самозанятого Девочкина Алексея Валерьевича (далее — Исполнитель) и содержит условия оказания услуг сервиса SEOdyssey (далее — Сервис), размещённого на сайте seodyssey.ru и app.seodyssey.ru.</p>
     <p>Акцептом Оферты (полным и безоговорочным принятием условий) считается оплата услуг или начало использования Сервиса. С момента акцепта пользователь (далее — Заказчик) считается заключившим договор на условиях настоящей Оферты.</p>
   </section>
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">02</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Предмет договора</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">02</span><h2>Предмет договора</h2></div>
     <p>Исполнитель предоставляет Заказчику доступ к Сервису для автоматического мониторинга и SEO-аудита сайтов, получения уведомлений и AI-рекомендаций. Объём функций определяется выбранным тарифом, опубликованным по адресу app.seodyssey.ru/billing/.</p>
   </section>
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">03</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Стоимость и порядок оплаты</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">03</span><h2>Стоимость и порядок оплаты</h2></div>
     <p>Стоимость услуг определяется тарифами, действующими на момент оплаты. Оплата производится через платёжный сервис ЮKassa. После успешной оплаты Заказчику предоставляется доступ к функциям тарифа на оплаченный период (30 дней).</p>
     <p>Исполнитель применяет налог на профессиональный доход (НПД); чек формируется и направляется Заказчику автоматически.</p>
   </section>
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">04</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Условия возврата</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">04</span><h2>Условия возврата</h2></div>
     <p>Заказчик вправе отказаться от услуг и запросить возврат денежных средств за неиспользованный период, направив обращение на контакты Исполнителя. Возврат осуществляется за вычетом стоимости фактически оказанных услуг в срок до 14 рабочих дней на тот же способ оплаты.</p>
   </section>
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">05</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Права и обязанности сторон</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">05</span><h2>Права и обязанности сторон</h2></div>
     <p>Исполнитель обязуется обеспечивать работоспособность Сервиса и сохранность данных Заказчика в разумных пределах. Заказчик обязуется предоставлять достоверные данные и не использовать Сервис в противоправных целях.</p>
   </section>
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">06</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Ответственность сторон</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">06</span><h2>Ответственность сторон</h2></div>
     <p>Сервис предоставляется на условиях «как есть». Исполнитель не несёт ответственности за косвенные убытки, упущенную выгоду, а также за перерывы в работе, вызванные обстоятельствами вне его контроля (сбои хостинга, сторонних API, сетей связи).</p>
   </section>
 
-  <section style="background:#fff;border:1px solid rgba(21,20,15,0.08);border-radius:16px;padding:clamp(22px,3vw,32px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#6378FF;">07</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;">Персональные данные</h2>
-    </div>
+  <section class="doc-section">
+    <div class="doc-head"><span class="doc-num">07</span><h2>Персональные данные</h2></div>
     <p>Принимая Оферту, Заказчик даёт согласие на обработку персональных данных в соответствии с Федеральным законом № 152-ФЗ в объёме, необходимом для оказания услуг.</p>
   </section>
 
-  <section style="background:#15140F;color:#F2EFE8;border-radius:16px;padding:clamp(24px,3vw,34px);">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px;">
-      <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#9FB0FF;">08</span>
-      <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.015em;margin:0;color:#F7F4EE;">Срок действия и реквизиты</h2>
-    </div>
+  <section class="doc-section" style="background:var(--dark);color:#F2EFE8;border-color:var(--dark);">
+    <div class="doc-head"><span class="doc-num" style="color:#9FB0FF;">08</span><h2 style="color:var(--bg);">Срок действия и реквизиты</h2></div>
     <p style="font-size:16.5px;line-height:1.7;color:#C9C5BC;margin:0 0 20px;">Оферта действует с момента публикации и до её отзыва Исполнителем. Реквизиты Исполнителя:</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px 24px;">
       <div style="padding:12px 0;border-top:1px solid rgba(255,255,255,0.1);"><div style="font-size:12px;color:#8E8A80;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;">Самозанятый</div><div style="font-size:15.5px;color:#EAE7E0;font-weight:500;">Девочкин Алексей Валерьевич</div></div>
@@ -131,39 +73,4 @@
   </section>
 
 </article>
-
-<!-- ===== FOOTER ===== -->
-<footer style="border-top:1px solid rgba(21,20,15,0.08);">
-  <div style="max-width:1200px;margin:0 auto;padding:54px 24px 40px;display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;">
-    <div style="flex:1 1 280px;min-width:240px;">
-      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
-        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
-        <div style="display:flex;flex-direction:column;line-height:1.05;"><span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;">SEOdyssey</span><span style="font-size:11px;color:#8A857A;font-weight:500;">видимость в нейросетях</span></div>
-      </div>
-      <p style="font-size:14px;color:#8A857A;line-height:1.55;margin:0;max-width:300px;">Инженерный GEO/AI-аудит с готовым кодом. Не оценка, а конкретные строки, которые копируете и вставляете.</p>
-    </div>
-    <div style="display:flex;gap:54px;flex-wrap:wrap;">
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Продукт</span>
-        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Возможности</a>
-        <a href="/#audit" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Аудит</a>
-        <a href="/#pricing" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Тарифы</a>
-        <a href="/blog/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Блог</a>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <span style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#9A958B;">Связь</span>
-        <a href="#" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Поддержка</a>
-        <a href="#" style="font-size:14.5px;color:#4A463E;transition:color .15s;">Telegram</a>
-        <a href="https://seodyssey.ru/geo-check/" style="font-size:14.5px;color:#4A463E;transition:color .15s;">GEO-проверка</a>
-      </div>
-    </div>
-  </div>
-  <div style="border-top:1px solid rgba(21,20,15,0.08);">
-    <div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9A958B;">
-      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
-      <span>Сделано для рунета · Яндекс Нейро + ChatGPT</span>
-    </div>
-  </div>
-</footer>
-</body>
-</html>
+{% endblock %}

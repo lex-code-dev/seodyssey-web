@@ -1,12 +1,6 @@
 {% extends "ui/base.html" %}
 {% block title %}{{ site.name }} · SEOdyssey{% endblock %}
-{% block extra_css %}<style>
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-</style>
-{% endblock %}
+
 
 <script>
 function showAiToast(used, limit) {
@@ -256,7 +250,7 @@ function loadRecommendations() {
           <div class="section-meta" style="margin-top:2px;">На основе последней проверки сайта</div>
         </div>
         <button id="ai-rec-btn" onclick="loadRecommendations()"
-          style="padding:7px 18px;border-radius:8px;color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer;background:linear-gradient(90deg,#6e3bff,#3d5bf5,#00b4d8,#3d5bf5,#6e3bff);background-size:300% 100%;animation:shimmer 4s ease-in-out infinite;">
+          style="padding:7px 18px;border-radius:8px;color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--accent);">
           Получить рекомендации
         </button>
       </div>
@@ -417,13 +411,6 @@ document.querySelectorAll('.local-time').forEach(el => {
 {% if has_active_check %}
 <script>setTimeout(function(){ location.reload(); }, 7000);</script>
 {% endif %}
-
-<style>
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-</style>
 
 <script>
 function showAiToast(used, limit) {
