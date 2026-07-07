@@ -6,29 +6,107 @@
 
 {% block head %}
 <style>
-  /* ===== hero ===== */
-  .hero { max-width: 1200px; margin: 0 auto; padding: clamp(52px,6.5vw,88px) 24px clamp(48px,6vw,80px); }
-  .hero-grid { display: flex; flex-wrap: wrap; gap: clamp(36px,5vw,64px); align-items: center; }
-  .hero-copy { flex: 1 1 440px; min-width: 300px; }
-  .hero-sub { font-size: clamp(17px,1.5vw,20px); line-height: 1.55; color: var(--body); margin: 22px 0 30px; max-width: 560px; }
+  /* ===== hero: живая демонстрация ===== */
+  .hero { max-width: 1200px; margin: 0 auto; padding: clamp(48px,6vw,84px) 24px clamp(48px,6vw,80px); }
+  .hero-grid { display: flex; flex-wrap: wrap; gap: clamp(36px,5vw,72px); align-items: center; }
+  .hero-copy { flex: 1 1 430px; min-width: 300px; }
+  h1.display.hero-h1 { font-size: clamp(38px, 5vw, 64px); line-height: 1.03; letter-spacing: -0.032em; }
+  .hero-sub { font-size: clamp(17px,1.5vw,20px); line-height: 1.55; color: var(--body); margin: 24px 0 32px; max-width: 560px; }
   .hero-ctas { display: flex; flex-wrap: wrap; gap: 13px; }
   .hero-notes { display: flex; align-items: center; gap: 22px; margin-top: 30px; flex-wrap: wrap; font-size: 13.5px; color: var(--faint); font-weight: 500; }
   .hero-notes span { display: flex; align-items: center; gap: 7px; }
-  .hero-visual { flex: 1 1 400px; min-width: 300px; position: relative; }
-  .hero-score {
-    position: absolute; top: -18px; right: 14px; z-index: 3;
-    display: flex; align-items: center; gap: 9px;
-    background: var(--ink); color: #fff; padding: 9px 15px; border-radius: 13px;
-    box-shadow: 0 16px 34px -14px rgba(21,20,15,0.55);
-    animation: scfloat 5.5s ease-in-out infinite;
+  .hero-visual { flex: 1 1 440px; min-width: 320px; position: relative; }
+
+  /* окно демо */
+  .demo { position: relative; }
+  .demo-window {
+    background: var(--surface); border-radius: 20px; border: 1px solid var(--line);
+    box-shadow: 0 40px 90px -40px rgba(21,20,15,0.45); overflow: hidden;
   }
-  .hero-score b { font-variant-numeric: tabular-nums; font-size: 21px; font-weight: 700; color: var(--ok-soft); }
-  .hero-score small { font-size: 12px; line-height: 1.15; color: #C9C5BC; }
-  .hero-window { background: var(--surface); border-radius: var(--radius-l); border: 1px solid var(--line); box-shadow: 0 30px 70px -34px rgba(21,20,15,0.4); overflow: hidden; }
-  .hero-window-bar { display: flex; align-items: center; gap: 9px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-  .hero-window-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
-  .hero-finding { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--radius-m); background: var(--fail-bg); border: 1px solid var(--fail-line); margin-bottom: 14px; }
-  .hero-finding .mark { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--fail-dot); color: #fff; font-weight: 700; }
+  .demo-bar { display: flex; align-items: center; gap: 9px; padding: 13px 18px; border-bottom: 1px solid var(--line); }
+  .demo-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .demo-bar .name { margin-left: 6px; font-size: 12.5px; color: var(--faint); }
+  .demo-score {
+    margin-left: auto; display: inline-flex; align-items: baseline; gap: 6px;
+    background: var(--ink); color: #C9C5BC; border-radius: 9px; padding: 5px 11px;
+    font-size: 11px;
+  }
+  .demo-score b { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ok-soft); transition: color .3s; }
+  .demo-chat { padding: 20px 20px 6px; min-height: 210px; }
+  .demo-q {
+    display: inline-flex; align-items: center; max-width: 92%;
+    background: var(--accent); color: #fff; border-radius: 15px 15px 4px 15px;
+    padding: 11px 15px; font-size: 14.5px; line-height: 1.45; min-height: 42px;
+  }
+  .demo-caret { display: inline-block; width: 2px; height: 16px; background: rgba(255,255,255,0.9); margin-left: 3px; animation: caretblink 0.9s step-end infinite; }
+  @keyframes caretblink { 50% { opacity: 0; } }
+  .demo-a {
+    margin: 14px 0 0 auto; max-width: 100%;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 15px 15px 15px 4px;
+    padding: 14px 16px;
+    opacity: 0; transform: translateY(10px); transition: opacity .45s ease-out, transform .45s ease-out;
+  }
+  .demo-a-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+  .demo-a-head .spark { color: var(--accent); }
+  .demo-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--line-strong);
+    border-radius: 999px; padding: 6px 13px; font-size: 13.5px; font-weight: 600; color: var(--ink-2);
+  }
+  .chip-you {
+    background: #E7F3E9; border-color: rgba(31,122,61,0.35); color: var(--ok);
+    opacity: 0; transform: scale(0.85); transition: opacity .4s ease-out, transform .45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .demo-miss {
+    display: flex; align-items: center; gap: 8px; margin-top: 12px;
+    font-size: 13px; font-weight: 600; color: var(--fail);
+    opacity: 0; transition: opacity .4s ease-out;
+  }
+  .demo-report {
+    border-top: 1px solid var(--line); background: var(--surface-2);
+    padding: 14px 20px 16px; min-height: 108px;
+  }
+  .demo-report-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+  .demo-finding {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--fail-bg); border: 1px solid var(--fail-line); border-radius: 11px;
+    padding: 10px 13px; font-size: 13.5px; font-weight: 600; color: var(--ink);
+    opacity: 0; transform: translateY(8px); transition: opacity .4s ease-out, transform .4s ease-out;
+  }
+  .demo-finding .mark { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; background: var(--fail-dot); color: #fff; font-weight: 700; font-size: 13px; }
+  .demo-fix-btn {
+    margin-left: auto; border: none; cursor: default;
+    background: var(--accent); color: #fff; border-radius: 8px;
+    padding: 7px 13px; font-size: 12.5px; font-weight: 600; font-family: 'Inter', sans-serif;
+    transition: transform .15s, background .2s;
+  }
+  .demo-fix-btn.pressed { transform: scale(0.95); background: var(--accent-hover); }
+  .demo-fixed {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    font-size: 13px; font-weight: 600; color: var(--ok);
+    opacity: 0; transition: opacity .4s ease-out;
+  }
+  /* состояния шагов */
+  .demo[data-step="2"] .demo-a, .demo[data-step="3"] .demo-a, .demo[data-step="4"] .demo-a { opacity: 1; transform: none; }
+  .demo[data-step="2"] .demo-miss, .demo[data-step="3"] .demo-miss { opacity: 1; }
+  .demo[data-step="3"] .demo-finding, .demo[data-step="4"] .demo-finding { opacity: 1; transform: none; }
+  .demo[data-step="4"] .demo-miss { display: none; }
+  .demo[data-step="4"] .demo-fixed { opacity: 1; }
+  .demo[data-step="4"] .chip-you { opacity: 1; transform: scale(1); }
+  .demo[data-step="4"] .demo-window { box-shadow: 0 40px 90px -40px rgba(99,120,255,0.5); }
+  /* подпись под окном */
+  .demo-caption { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 16px; font-size: 12.5px; color: var(--faint); }
+  .demo-caption .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: caretblink 1.2s step-end infinite; }
+  /* пока бренда нет в ответе — скор жёлтый */
+  .demo[data-step="1"] .demo-score b,
+  .demo[data-step="2"] .demo-score b,
+  .demo[data-step="3"] .demo-score b { color: var(--warn-soft); }
+  .demo-score { white-space: nowrap; }
+  @media (max-width: 480px) {
+    .demo-bar .name { display: none; }
+    .demo-chat { min-height: 230px; }
+  }
 
   /* ===== providers strip ===== */
   .providers { margin-top: clamp(44px,5vw,68px); padding-top: 30px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 14px 40px; align-items: center; font-size: 13.5px; color: var(--faint); font-weight: 500; }
@@ -192,12 +270,12 @@
 {% block content %}
 <a id="top"></a>
 
-<!-- ===== HERO ===== -->
+<!-- ===== HERO: живая демонстрация ===== -->
 <header class="hero">
   <div class="hero-grid">
     <div class="hero-copy">
-      <h1 class="display">Разбор вашего сайта с готовым кодом, <span class="acc">а не общими советами</span></h1>
-      <p class="hero-sub">SEO-аудит, видимость в нейросетях и ежедневный мониторинг в одной системе. Она показывает, что чинить именно у вас, и даёт готовое решение.</p>
+      <h1 class="display hero-h1">В ответе нейросети три бренда. <span class="acc">Ваш там есть?</span></h1>
+      <p class="hero-sub">SEO-аудит, видимость в нейросетях и ежедневный мониторинг в одной системе. Она показывает, что чинить именно у вас, и даёт готовый код — а не общие советы.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="/geo-check/">Проверить сайт бесплатно</a>
         <a class="btn btn-ghost" href="#audit">Как это работает →</a>
@@ -209,47 +287,39 @@
       </div>
     </div>
 
-    <!-- Фрагмент реального отчёта -->
+    <!-- Живое демо: запрос → ответ без вас → находка → код → вы в ответе -->
     <div class="hero-visual">
-      <div class="hero-score">
-        <b>65%</b>
-        <small>GEO<br>Score</small>
-      </div>
-      <div class="hero-window">
-        <div class="hero-window-bar">
-          <i style="background:#FF6058;"></i><i style="background:#FEBC2E;"></i><i style="background:#28C840;"></i>
-          <span class="mono" style="margin-left:8px;font-size:12.5px;color:#8A857A;">отчёт · /shop/dostavka</span>
-        </div>
-        <div style="padding:18px;">
-          <div class="hero-finding">
-            <span class="mark">!</span>
-            <div>
-              <div style="font-weight:600;font-size:14.5px;margin-bottom:3px;">Не найдена FAQPage-разметка</div>
-              <div style="font-size:13px;color:#7A756B;line-height:1.45;">Нейросети не находят прямых ответов на странице — и берут их у конкурента.</div>
+      <div class="demo" id="heroDemo" data-step="4">
+        <div class="demo-window">
+          <div class="demo-bar">
+            <i style="background:#FF6058;"></i><i style="background:#FEBC2E;"></i><i style="background:#28C840;"></i>
+            <span class="name mono">нейровыдача · демо</span>
+            <span class="demo-score">GEO Score <b id="demoScore">89%</b></span>
+          </div>
+          <div class="demo-chat">
+            <div class="demo-q"><span id="demoQ">где заказать роллы в туле?</span><span class="demo-caret" id="demoCaret" hidden></span></div>
+            <div class="demo-a">
+              <div class="demo-a-head"><svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"/></svg>Нейросеть отвечает</div>
+              <div class="demo-chips">
+                <span class="chip">Суши Вёсла</span>
+                <span class="chip">Токио Сити</span>
+                <span class="chip">Ролл Мастер</span>
+                <span class="chip chip-you"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>ваш бренд</span>
+              </div>
+              <div class="demo-miss">✕ вашего бренда нет в ответе</div>
             </div>
           </div>
-          <div data-codeblock="1" class="codeblock" style="border-radius:13px;">
-            <div class="codeblock-head">
-              <span class="filename">JSON-LD · вставить в &lt;head&gt;</span>
-              <button data-action="copy" class="copy-btn muted">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                <span data-copy-label="1">Копировать</span>
-              </button>
+          <div class="demo-report">
+            <div class="demo-report-label">SEOdyssey нашёл причину</div>
+            <div class="demo-finding">
+              <span class="mark">!</span>
+              Не найдена FAQPage-разметка
+              <button class="demo-fix-btn" id="demoFixBtn" type="button" tabindex="-1" aria-hidden="true">Вставить код</button>
             </div>
-            <pre><code>{
-  <span style="color:#7FD6A6;">"@context"</span>: <span style="color:#E2B589;">"https://schema.org"</span>,
-  <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"FAQPage"</span>,
-  <span style="color:#7FD6A6;">"mainEntity"</span>: [{
-    <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"Question"</span>,
-    <span style="color:#7FD6A6;">"name"</span>: <span style="color:#E2B589;">"Сколько стоит доставка?"</span>,
-    <span style="color:#7FD6A6;">"acceptedAnswer"</span>: {
-      <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"Answer"</span>,
-      <span style="color:#7FD6A6;">"text"</span>: <span style="color:#E2B589;">"По Москве — бесплатно от 3000 ₽"</span>
-    }
-  }]
-}</code></pre>
+            <div class="demo-fixed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Код вставлен — при новом запросе бренд попал в ответ</div>
           </div>
         </div>
+        <div class="demo-caption"><span class="dot"></span>так работает GEO-аудит — проверьте на своём сайте</div>
       </div>
     </div>
   </div>
@@ -270,10 +340,6 @@
         <h2 class="display">Поиск изменился. Вопрос — видят ли в нём вас</h2>
         <p class="lead" style="margin:22px 0 18px;">Классическая выдача отдаёт всё меньше переходов: нейросеть забирает ответ прямо на странице результатов. Пользователь читает готовый ответ — и не кликает дальше.</p>
         <p class="lead" style="margin:0;">Если вашего бренда нет в этом ответе — клиент уходит к тому, кто там есть. Видимость в нейросетях становится новым первым экраном.</p>
-        <div class="trend-example">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A9B4FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
-          <p><b>Например:</b> клиент спрашивает у Алисы, где заказать ваш товар. Она называет три компании. Нет вас в списке — заказ ушёл к конкуренту, а вы об этом даже не узнали.</p>
-        </div>
       </div>
       <div class="card-dark" style="flex:1 1 360px;min-width:300px;" data-reveal>
         <div style="font-size:13px;color:#8E8A80;margin-bottom:24px;text-transform:uppercase;letter-spacing:0.07em;">Куда уходит трафик</div>
@@ -698,4 +764,77 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  // Живое демо в hero: набор запроса → ответ без бренда → находка → код → бренд в ответе.
+  // При prefers-reduced-motion остаётся статичный финальный кадр (data-step="4" в разметке).
+  var demo = document.getElementById('heroDemo');
+  if (!demo) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) return;
+
+  var q = document.getElementById('demoQ');
+  var caret = document.getElementById('demoCaret');
+  var score = document.getElementById('demoScore');
+  var fixBtn = document.getElementById('demoFixBtn');
+  var QUERY = 'где заказать роллы в туле?';
+  var timers = [];
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+  function typeQuery(done){
+    var i = 0;
+    q.textContent = '';
+    caret.hidden = false;
+    (function tick(){
+      if (i <= QUERY.length){
+        q.textContent = QUERY.slice(0, i);
+        i++;
+        later(tick, 42);
+      } else {
+        later(function(){ caret.hidden = true; done(); }, 350);
+      }
+    })();
+  }
+
+  function run(){
+    clearTimers();
+    demo.setAttribute('data-step', '1');
+    score.textContent = '64%';
+    fixBtn.classList.remove('pressed');
+    typeQuery(function(){
+      demo.setAttribute('data-step', '2');                       // ответ: три бренда, вас нет
+      later(function(){
+        demo.setAttribute('data-step', '3');                     // находка + кнопка
+        later(function(){
+          fixBtn.classList.add('pressed');                       // «нажатие» кнопки
+          later(function(){
+            fixBtn.classList.remove('pressed');
+            demo.setAttribute('data-step', '4');                 // бренд в ответе, скор растёт
+            score.textContent = '89%';
+            later(run, 5200);                                    // пауза и повтор
+          }, 380);
+        }, 1400);
+      }, 2000);
+    });
+  }
+
+  var started = false;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting && !started){ started = true; run(); io.disconnect(); }
+    });
+  }, { threshold: 0.35 });
+  io.observe(demo);
+
+  // при уходе со вкладки не копим таймеры
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden){ clearTimers(); }
+    else if (started){ run(); }
+  });
+})();
+</script>
 {% endblock %}
