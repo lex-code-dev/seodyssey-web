@@ -1,12 +1,14 @@
 {% extends "ui/base.html" %}
-{% block title %}Интеграции · SEOdyssey{% endblock %}
+{% block title %}Настройки · SEOdyssey{% endblock %}
 
 {% block content %}
 <div class="page-head" style="display:block;">
-  <div class="eyebrow" style="margin-bottom:8px;">ПОДКЛЮЧЕНИЯ И УВЕДОМЛЕНИЯ</div>
-  <h1 class="page-title">Интеграции</h1>
-  <p class="page-sub">Подключите внешние сервисы, чтобы получать данные и отправлять алерты. SEOdyssey только читает данные — мы ничего не меняем на вашем сайте.</p>
+  <div class="eyebrow" style="margin-bottom:8px;">АККАУНТ И ПОДКЛЮЧЕНИЯ</div>
+  <h1 class="page-title">Настройки</h1>
+  <p class="page-sub">Данные аккаунта, безопасность и подключённые сервисы. SEOdyssey только читает данные — мы ничего не меняем на вашем сайте.</p>
 </div>
+
+<div class="section-title" style="margin-bottom:14px;">Подключения</div>
 
 <form method="post" style="display:flex;flex-direction:column;gap:12px;">
   {% csrf_token %}
@@ -99,4 +101,79 @@
   {% csrf_token %}
 </form>
 {% endif %}
+
+<div class="section-title" style="margin:32px 0 14px;">Аккаунт</div>
+<div style="display:flex;flex-direction:column;gap:12px;">
+
+  {# Смена пароля #}
+  <div class="card card-pad-lg">
+    <div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px;">Смена пароля</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Минимум 8 символов, не только цифры.</div>
+    <form method="post" action="{% url 'account_change_password' %}" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;max-width:640px;">
+      {% csrf_token %}
+      <div>
+        <label class="field-label">Текущий пароль</label>
+        <input type="password" name="old_password" class="input" required autocomplete="current-password">
+      </div>
+      <div></div>
+      <div>
+        <label class="field-label">Новый пароль</label>
+        <input type="password" name="new_password1" class="input" required autocomplete="new-password">
+      </div>
+      <div>
+        <label class="field-label">Повторите новый</label>
+        <input type="password" name="new_password2" class="input" required autocomplete="new-password">
+      </div>
+      <div style="grid-column:1/-1;display:flex;justify-content:flex-end;">
+        <button type="submit" class="btn-primary btn-sm">Сменить пароль</button>
+      </div>
+    </form>
+  </div>
+
+  {# Email #}
+  <div class="card card-pad-lg">
+    <div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px;">Email</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Текущий: {{ request.user.email|default:"не указан" }}</div>
+    <form method="post" action="{% url 'account_change_email' %}" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;max-width:640px;">
+      {% csrf_token %}
+      <div>
+        <label class="field-label">Новый email</label>
+        <input type="email" name="email" class="input" required autocomplete="email">
+      </div>
+      <div>
+        <label class="field-label">Текущий пароль</label>
+        <input type="password" name="current_password" class="input" required autocomplete="current-password">
+      </div>
+      <div style="grid-column:1/-1;display:flex;justify-content:flex-end;">
+        <button type="submit" class="btn-primary btn-sm">Обновить email</button>
+      </div>
+    </form>
+  </div>
+
+  {# Экспорт данных #}
+  <div class="card card-pad-lg">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <div>
+        <div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px;">Экспорт данных</div>
+        <div style="font-size:13px;color:var(--muted);">Скачать ваши данные — аккаунт, сайты, подписка — в JSON.</div>
+      </div>
+      <a href="{% url 'account_export' %}" class="btn-secondary btn-sm" style="white-space:nowrap;">Скачать JSON</a>
+    </div>
+  </div>
+
+  {# Удаление аккаунта #}
+  <div class="card card-pad-lg" style="border-color:var(--fail-line);">
+    <div style="font-size:15px;font-weight:500;color:var(--fail-fg);margin-bottom:4px;">Удаление аккаунта</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Аккаунт, сайты и вся история проверок удаляются безвозвратно.</div>
+    <form method="post" action="{% url 'account_delete' %}" onsubmit="return confirm('Удалить аккаунт навсегда? Действие необратимо.');" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;max-width:640px;">
+      {% csrf_token %}
+      <div style="flex:1;min-width:220px;max-width:300px;">
+        <label class="field-label">Пароль для подтверждения</label>
+        <input type="password" name="current_password" class="input" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-danger btn-sm">Удалить аккаунт</button>
+    </form>
+  </div>
+
+</div>
 {% endblock %}

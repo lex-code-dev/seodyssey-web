@@ -5,7 +5,8 @@ import secrets
 from django.http import JsonResponse, HttpResponse
 from urllib.parse import urlencode
 from django.conf import settings
-from django.contrib.auth import login
+from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from core.models import YandexOAuth, Issue
 from datetime import timedelta, date
@@ -583,23 +584,9 @@ def delete_site(request, site_id: int):
 
 @login_required
 def alerts(request):
-    profile = _get_profile(request.user)
-    flags = _integration_flags(profile)
-
-    q = (request.GET.get("q") or "").strip()
-
-    site_ids = list(
-        SiteMember.objects.filter(user=request.user, site__is_deleted=False).values_list("site_id", flat=True)
-    )
-    qs = CheckRun.objects.select_related("site").filter(
-        site_id__in=site_ids, status=CheckRun.STATUS_FAIL
-    )
-
-    if q:
-        qs = qs.filter(Q(site__name__icontains=q) | Q(site__domain__icontains=q))
-
-    alerts_list = list(qs.order_by("-created_at")[:100])
-    return render(request, "core/alerts.html", {"alerts": alerts_list, "q": q, **flags})
+    # Страница алертов ещё не доведена до брендового вида и не в меню —
+    # скрыта до готовности, чтобы не показывать недоделанный экран.
+    return redirect("dashboard")
 
 
 @login_required
@@ -976,9 +963,6 @@ def user_settings(request):
             messages.success(request, "Telegram отключён ✅")
             return redirect("user_settings")
         form = UserProfileForm(request.POST, instance=profile)
-        print("POST DATA:", request.POST)
-        print("FORM VALID:", form.is_valid())
-        print("FORM ERRORS:", form.errors)
         if form.is_valid():
             profile = form.save(commit=False)
             chat_id = (profile.telegram_chat_id or "").strip()
@@ -990,6 +974,86 @@ def user_settings(request):
         form = UserProfileForm(instance=profile)
 
     return render(request, "core/user_settings.html", {"profile": profile, "form": form, **flags})
+
+
+@login_required
+@require_POST
+def account_change_password(request):
+    form = PasswordChangeForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)  # не разлогинивать после смены
+        messages.success(request, "Пароль изменён ✅")
+    else:
+        errs = "; ".join(e for errlist in form.errors.values() for e in errlist)
+        messages.error(request, errs or "Не удалось изменить пароль")
+    return redirect("user_settings")
+
+
+@login_required
+@require_POST
+def account_change_email(request):
+    new_email = (request.POST.get("email") or "").strip()
+    password = request.POST.get("current_password") or ""
+    if not request.user.check_password(password):
+        messages.error(request, "Неверный текущий пароль")
+    elif not new_email:
+        messages.error(request, "Укажите новый email")
+    elif User.objects.filter(email__iexact=new_email).exclude(pk=request.user.pk).exists():
+        messages.error(request, "Этот email уже используется другим аккаунтом")
+    else:
+        request.user.email = new_email
+        request.user.save(update_fields=["email"])
+        messages.success(request, "Email обновлён ✅")
+    return redirect("user_settings")
+
+
+@login_required
+@require_POST
+def account_delete(request):
+    if not request.user.check_password(request.POST.get("current_password") or ""):
+        messages.error(request, "Неверный пароль — аккаунт не удалён")
+        return redirect("user_settings")
+    user = request.user
+    logout(request)
+    user.delete()
+    return redirect("login")
+
+
+@login_required
+def account_export(request):
+    u = request.user
+    site_ids = list(
+        SiteMember.objects.filter(user=u, site__is_deleted=False).values_list("site_id", flat=True)
+    )
+    sites = Site.objects.filter(id__in=site_ids, is_deleted=False)
+    data = {
+        "account": {
+            "username": u.username,
+            "email": u.email,
+            "date_joined": u.date_joined.isoformat() if u.date_joined else None,
+            "last_login": u.last_login.isoformat() if u.last_login else None,
+        },
+        "sites": [
+            {"name": s.name, "domain": s.domain} for s in sites
+        ],
+    }
+    try:
+        from billing.models import Subscription
+        sub = Subscription.objects.filter(user=u).select_related("plan").first()
+        if sub:
+            data["subscription"] = {
+                "plan": sub.plan.name,
+                "status": sub.status,
+                "started_at": sub.started_at.isoformat() if sub.started_at else None,
+            }
+    except Exception:
+        pass
+    payload = json.dumps(data, ensure_ascii=False, indent=2)
+    resp = HttpResponse(payload, content_type="application/json; charset=utf-8")
+    resp["Content-Disposition"] = f'attachment; filename="seodyssey-{u.username}.json"'
+    return resp
+
 
 @login_required
 def site_metrica(request, site_id: int):
