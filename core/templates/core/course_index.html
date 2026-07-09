@@ -24,7 +24,7 @@
       <a href="{% url 'course_lesson' lesson.slug %}"
          style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;">
         <span style="font-size:14px;">{{ lesson.order }}. {{ lesson.title }}</span>
-        {% if lesson.is_free %}<span class="badge-ok" style="font-size:11px;">Бесплатно</span>{% endif %}
+        {% if lesson.is_free %}<span class="badge-ok" style="font-size:11px;">Бесплатно</span>{% elif not has_access %}<span class="badge" style="font-size:11px;">Платно</span>{% endif %}
       </a>
       {% endfor %}
     </div>
@@ -46,7 +46,7 @@
       <a href="{% url 'course_lesson' lesson.slug %}"
          style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;">
         <span style="font-size:14px;">{{ lesson.order }}. {{ lesson.title }}</span>
-        {% if lesson.is_free %}<span class="badge-ok" style="font-size:11px;">Бесплатно</span>{% endif %}
+        {% if lesson.is_free %}<span class="badge-ok" style="font-size:11px;">Бесплатно</span>{% elif not has_access %}<span class="badge" style="font-size:11px;">Платно</span>{% endif %}
       </a>
       {% endfor %}
     </div>

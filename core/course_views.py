@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import Site, SiteMember
 from core.views import _get_profile, _integration_flags
-from course.models import Homework, Lesson, Module, Quiz, Submission
+from course.models import CourseAccess, Homework, Lesson, Module, Quiz, Submission
 
 
 def _video_embed_url(url: str) -> str:
@@ -70,6 +70,7 @@ def course_index(request):
         **_base_context(request),
         "modules_with_lessons": modules_with_lessons,
         "orphan_lessons": orphan_lessons,
+        "has_access": CourseAccess.user_has_access(request.user),
     }
     return render(request, "core/course_index.html", context)
 
@@ -109,6 +110,10 @@ def course_lesson(request, slug):
     lesson = get_object_or_404(
         Lesson.objects.select_related("module"), slug=slug, is_published=True
     )
+
+    # Платный урок закрыт без активного доступа; is_free открыт всем
+    if not lesson.is_free and not CourseAccess.user_has_access(request.user):
+        return redirect("course_index")
 
     quiz = (
         Quiz.objects.filter(lesson=lesson)
