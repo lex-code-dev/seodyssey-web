@@ -142,7 +142,7 @@
     {% endif %}
 
     <div class="art-meta">
-      {% if post.published_at %}<span>{{ post.published_at }}</span>{% endif %}
+      {% if post.published_at %}<span>{{ post.published_at|date:"j E Y" }}</span>{% endif %}
       {% if post.published_at and post.read_time %}<span class="dot"></span>{% endif %}
       {% if post.read_time %}<span>{{ post.read_time }} мин чтения</span>{% endif %}
     </div>
