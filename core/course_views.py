@@ -7,7 +7,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import Site, SiteMember
 from core.views import _get_profile, _integration_flags
-from course.models import CourseAccess, Homework, Lesson, Module, Quiz, Submission
+from course.models import (
+    CourseAccess,
+    CourseAccessRequest,
+    Homework,
+    Lesson,
+    Module,
+    Quiz,
+    Submission,
+)
 
 
 def _video_embed_url(url: str) -> str:
@@ -111,9 +119,28 @@ def course_lesson(request, slug):
         Lesson.objects.select_related("module"), slug=slug, is_published=True
     )
 
-    # Платный урок закрыт без активного доступа; is_free открыт всем
+    # Платный урок закрыт без активного доступа; is_free открыт всем.
+    # Вместо тихого редиректа показываем paywall и собираем заявку на доступ.
     if not lesson.is_free and not CourseAccess.user_has_access(request.user):
-        return redirect("course_index")
+        if request.method == "POST" and "request_access" in request.POST:
+            CourseAccessRequest.objects.get_or_create(
+                user=request.user, is_handled=False,
+                defaults={"lesson": lesson},
+            )
+            return redirect(request.path)  # PRG: обновление не плодит заявки
+        modules = Module.objects.filter(is_published=True).prefetch_related("lessons")
+        teaser_modules = [
+            (module, module.lessons.filter(is_published=True))
+            for module in modules
+        ]
+        return render(request, "core/course_locked.html", {
+            **_base_context(request),
+            "lesson": lesson,
+            "has_request": CourseAccessRequest.objects.filter(
+                user=request.user, is_handled=False
+            ).exists(),
+            "teaser_modules": teaser_modules,
+        })
 
     quiz = (
         Quiz.objects.filter(lesson=lesson)

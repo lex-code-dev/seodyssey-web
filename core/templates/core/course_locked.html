@@ -1,0 +1,58 @@
+{% extends "ui/base.html" %}
+{% block title %}{{ lesson.title }} · Курс · SEOdyssey{% endblock %}
+
+{% block content %}
+<div class="page-head" style="display:block;">
+  <div class="eyebrow" style="margin-bottom:8px;">
+    <a href="{% url 'course_index' %}" style="color:inherit;text-decoration:none;">КУРС</a>
+    {% if lesson.module %} · МОДУЛЬ {{ lesson.module.order }} — {{ lesson.module.title|upper }}{% endif %}
+  </div>
+  <h1 class="page-title">{{ lesson.order }}. {{ lesson.title }}</h1>
+</div>
+
+<div style="max-width:760px;display:flex;flex-direction:column;gap:16px;">
+
+  <div class="card card-pad-lg">
+    <div style="font-size:32px;line-height:1;margin-bottom:12px;">🔒</div>
+    <div class="section-title" style="margin-bottom:6px;">Этот урок входит в платный курс</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--muted);margin:0 0 20px;">
+      Оставь заявку — откроем доступ ко всем урокам курса, домашним заданиям с проверкой и обратной связью.
+    </p>
+
+    {% if has_request %}
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface-2);border-radius:10px;">
+      <span class="badge-ok">Заявка отправлена</span>
+      <span style="font-size:13px;color:var(--muted);">Скоро свяжемся и откроем доступ.</span>
+    </div>
+    {% else %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="request_access" value="1">
+      <button type="submit" class="btn-primary">Оставить заявку на доступ</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if teaser_modules %}
+  <div class="card card-pad-lg">
+    <div class="eyebrow" style="margin-bottom:12px;">ЧТО ВНУТРИ КУРСА</div>
+    {% for module, lessons in teaser_modules %}
+    <div style="margin-bottom:16px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;">{{ module.order }}. {{ module.title }}</div>
+      {% for l in lessons %}
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);">
+        <span style="font-size:13px;color:var(--muted);">{{ l.order }}. {{ l.title }}</span>
+        {% if l.is_free %}<span class="badge-ok" style="font-size:11px;">Бесплатно</span>{% elif l.id == lesson.id %}<span class="badge" style="font-size:11px;">Этот урок</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div>
+    <a href="{% url 'course_index' %}" class="btn-ghost">← Ко всем урокам</a>
+  </div>
+
+</div>
+{% endblock %}

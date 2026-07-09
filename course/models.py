@@ -214,3 +214,37 @@ class CourseAccess(models.Model):
         if not user.is_authenticated:
             return False
         return CourseAccess.objects.filter(user=user, is_active=True).exists()
+
+
+class CourseAccessRequest(models.Model):
+    """Заявка на доступ к платному курсу — оставляется на paywall закрытого урока."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="course_access_requests",
+        verbose_name="Пользователь",
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.SET_NULL,
+        related_name="access_requests",
+        verbose_name="Урок-триггер",
+        null=True, blank=True,
+        help_text="С какого закрытого урока пришла заявка",
+    )
+    is_handled = models.BooleanField(
+        "Обработана", default=False,
+        help_text="Сняли, когда выдали доступ или связались",
+    )
+    created_at = models.DateTimeField("Создана", auto_now_add=True)
+    updated_at = models.DateTimeField("Обновлена", auto_now=True)
+
+    class Meta:
+        verbose_name = "Заявка на доступ к курсу"
+        verbose_name_plural = "Заявки на доступ к курсу"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        state = "обработана" if self.is_handled else "новая"
+        return f"{self.user} — заявка на курс ({state})"

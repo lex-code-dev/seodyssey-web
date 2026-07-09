@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from .models import (
     Choice,
     CourseAccess,
+    CourseAccessRequest,
     Homework,
     Lesson,
     Module,
@@ -119,3 +121,29 @@ class CourseAccessAdmin(admin.ModelAdmin):
     list_filter = ("is_active",)
     search_fields = ("user__username", "user__email")
     ordering = ("-paid_at",)
+
+
+@admin.register(CourseAccessRequest)
+class CourseAccessRequestAdmin(admin.ModelAdmin):
+    list_display = ("user", "lesson", "is_handled", "created_at")
+    list_filter = ("is_handled",)
+    search_fields = ("user__username", "user__email")
+    readonly_fields = ("created_at", "updated_at")
+    ordering = ("is_handled", "-created_at")
+    actions = ["grant_access"]
+
+    @admin.action(description="Выдать доступ к курсу и отметить обработанной")
+    def grant_access(self, request, queryset):
+        granted = 0
+        for req in queryset:
+            _, created = CourseAccess.objects.get_or_create(
+                user=req.user,
+                defaults={"paid_at": timezone.now(), "is_active": True},
+            )
+            granted += int(created)
+            req.is_handled = True
+            req.save(update_fields=["is_handled", "updated_at"])
+        self.message_user(
+            request,
+            f"Обработано заявок: {queryset.count()}. Новых доступов выдано: {granted}.",
+        )
