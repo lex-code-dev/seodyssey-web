@@ -1,24 +1,35 @@
 from __future__ import annotations
+import re
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import Site, SiteMember
 from core.views import _get_profile, _integration_flags
-from course.models import Lesson, Module
+from course.models import Homework, Lesson, Module, Quiz, Submission
 
 
-def _youtube_embed_url(url: str) -> str:
+def _video_embed_url(url: str) -> str:
     """
-    Превращает обычную YouTube-ссылку в embed-формат.
-    Поддерживает: watch?v=, youtu.be/, shorts/, уже готовый embed/.
-    Не-YouTube или пустая ссылка → "" (шаблон не покажет плеер).
+    Превращает ссылку на видео в embed-формат для iframe.
+    VK Видео: vk.com/video<oid>_<id>, vkvideo.ru/..., готовый video_ext.php
+    (передаётся как есть — сохраняет hash приватных видео «доступ по ссылке»).
+    YouTube: watch?v=, youtu.be/, shorts/, готовый embed/.
+    Неизвестный хост или пустая ссылка → "" (шаблон не покажет плеер).
     """
     if not url:
         return ""
     parsed = urlparse(url)
-    host = (parsed.hostname or "").lower().removeprefix("www.")
+    host = (parsed.hostname or "").lower().removeprefix("www.").removeprefix("m.")
+
+    if host in ("vk.com", "vk.ru", "vkvideo.ru"):
+        if parsed.path.startswith("/video_ext.php"):
+            return url
+        m = re.match(r"^/video(-?\d+)_(\d+)", parsed.path)
+        if m:
+            return f"https://vkvideo.ru/video_ext.php?oid={m.group(1)}&id={m.group(2)}&hd=2"
+        return ""
 
     video_id = ""
     if host == "youtu.be":
@@ -63,14 +74,81 @@ def course_index(request):
     return render(request, "core/course_index.html", context)
 
 
+def _check_quiz_answers(questions, post_data) -> dict:
+    """
+    Сверяет ответы из POST с is_correct.
+    Вопрос без ответа или с чужим choice_id считается отвеченным неверно.
+    """
+    correct = 0
+    detailed = []
+    for question in questions:
+        raw = post_data.get(f"question_{question.id}", "")
+        selected = None
+        if raw.isdigit():
+            selected = next(
+                (c for c in question.choices.all() if c.id == int(raw)), None
+            )
+        is_right = bool(selected and selected.is_correct)
+        correct += int(is_right)
+        detailed.append({
+            "question": question,
+            "selected": selected,
+            "is_right": is_right,
+            "correct_choices": [c for c in question.choices.all() if c.is_correct],
+        })
+    return {
+        "correct": correct,
+        "total": len(questions),
+        "percent": round(correct * 100 / len(questions)),
+        "detailed": detailed,
+    }
+
+
 @login_required
 def course_lesson(request, slug):
     lesson = get_object_or_404(
         Lesson.objects.select_related("module"), slug=slug, is_published=True
     )
+
+    quiz = (
+        Quiz.objects.filter(lesson=lesson)
+        .prefetch_related("questions__choices")
+        .first()
+    )
+    # Вопросы без вариантов ответа не показываем — на них нечего отвечать
+    questions = [q for q in quiz.questions.all() if q.choices.all()] if quiz else []
+
+    quiz_result = None
+    if request.method == "POST" and "quiz_submit" in request.POST and questions:
+        quiz_result = _check_quiz_answers(questions, request.POST)
+
+    homework = Homework.objects.filter(lesson=lesson).first()
+    hw_latest = None
+    hw_can_submit = False
+    if homework:
+        # Meta.ordering = ["-submitted_at"], поэтому first() = последняя сдача
+        hw_latest = homework.submissions.filter(user=request.user).first()
+        hw_can_submit = (
+            hw_latest is None
+            or hw_latest.status == Submission.STATUS_NEEDS_REVISION
+        )
+
+    if request.method == "POST" and "homework_body" in request.POST:
+        body = request.POST["homework_body"].strip()
+        if homework and hw_can_submit and body:
+            Submission.objects.create(homework=homework, user=request.user, body=body)
+        # PRG: после сдачи редирект, чтобы обновление страницы не создавало дубль
+        return redirect(f"{request.path}#homework")
+
     context = {
         **_base_context(request),
         "lesson": lesson,
-        "embed_url": _youtube_embed_url(lesson.video_url),
+        "embed_url": _video_embed_url(lesson.video_url),
+        "quiz": quiz,
+        "quiz_questions": questions,
+        "quiz_result": quiz_result,
+        "homework": homework,
+        "hw_latest": hw_latest,
+        "hw_can_submit": hw_can_submit,
     }
     return render(request, "core/course_lesson.html", context)

@@ -30,8 +30,91 @@
   </div>
   {% endif %}
 
+  {% if quiz_questions %}
+  <div class="card card-pad-lg" id="quiz">
+    <div class="eyebrow" style="margin-bottom:4px;">ПРОВЕРЬ СЕБЯ</div>
+    <div class="section-title" style="margin-bottom:12px;">{{ quiz }}</div>
+
+    {% if quiz_result %}
+    <div style="font-size:15px;font-weight:600;margin:0 0 8px;">
+      Результат: {{ quiz_result.correct }} из {{ quiz_result.total }} ({{ quiz_result.percent }}%)
+    </div>
+
+    {% for item in quiz_result.detailed %}
+    <div style="padding:12px 0;border-top:1px solid var(--line);">
+      <div style="font-size:14px;margin-bottom:6px;">{{ forloop.counter }}. {{ item.question.text }}</div>
+      {% if item.is_right %}
+      <div style="font-size:13px;color:var(--ok-fg);">Верно: {{ item.selected.text }}</div>
+      {% else %}
+      <div style="font-size:13px;color:var(--fail-fg);">
+        {% if item.selected %}Твой ответ: {{ item.selected.text }}{% else %}Без ответа{% endif %}
+      </div>
+      <div style="font-size:13px;color:var(--muted);">Правильно: {% for c in item.correct_choices %}{{ c.text }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div style="margin-top:16px;">
+      <a href="{{ request.path }}#quiz" class="btn-ghost">Пройти ещё раз</a>
+    </div>
+    {% else %}
+    <form method="post" action="#quiz">
+      {% csrf_token %}
+      <input type="hidden" name="quiz_submit" value="1">
+      {% for question in quiz_questions %}
+      <div style="padding:12px 0;{% if not forloop.first %}border-top:1px solid var(--line);{% endif %}">
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ forloop.counter }}. {{ question.text }}</div>
+        {% for choice in question.choices.all %}
+        <label style="display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:14px;cursor:pointer;">
+          <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" required style="margin-top:3px;">
+          <span>{{ choice.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn-primary" style="margin-top:8px;">Проверить ответы</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if homework %}
+  <div class="card card-pad-lg" id="homework">
+    <div class="eyebrow" style="margin-bottom:4px;">ДОМАШНЕЕ ЗАДАНИЕ</div>
+    <div style="font-size:14px;line-height:1.7;margin-bottom:12px;">{{ homework.text|linebreaks }}</div>
+
+    {% if hw_latest %}
+    {% if hw_latest.status == "accepted" %}
+    <span class="badge-ok">Принято</span>
+    {% elif hw_latest.status == "needs_revision" %}
+    <span class="badge-fail">На доработку</span>
+    {% else %}
+    <span class="badge-warn">На проверке</span>
+    {% endif %}
+
+    {% if hw_latest.reviewer_comment %}
+    <p style="font-size:13px;margin:10px 0 0;"><span style="color:var(--muted);">Комментарий проверяющего:</span> {{ hw_latest.reviewer_comment }}</p>
+    {% endif %}
+
+    <p style="font-size:13px;color:var(--muted);margin:10px 0 4px;">Сдано {{ hw_latest.submitted_at|date:"d.m.Y H:i" }}. Твой ответ:</p>
+    <div style="font-size:13px;background:var(--surface-2);border-radius:8px;padding:10px 12px;">{{ hw_latest.body|linebreaks }}</div>
+    {% endif %}
+
+    {% if hw_can_submit %}
+    <form method="post" action="#homework" style="margin-top:12px;">
+      {% csrf_token %}
+      <textarea name="homework_body" required rows="5" placeholder="Твой ответ..."
+                style="width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;"></textarea>
+      <button type="submit" class="btn-primary" style="margin-top:10px;">
+        {% if hw_latest %}Сдать повторно{% else %}Сдать на проверку{% endif %}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
   <div>
-    <a href="{% url 'course_index' %}" class="btn-secondary">← Ко всем урокам</a>
+    <a href="{% url 'course_index' %}" class="btn-ghost">← Ко всем урокам</a>
   </div>
 
 </div>

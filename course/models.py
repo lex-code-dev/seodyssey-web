@@ -34,7 +34,7 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField("Порядок", default=0)
     video_url = models.URLField(
         "Ссылка на видео", blank=True,
-        help_text="YouTube unlisted",
+        help_text="VK Видео (обычная ссылка или код плеера video_ext.php) либо YouTube",
     )
     body = models.TextField("Текст под видео", blank=True)
     is_free = models.BooleanField(

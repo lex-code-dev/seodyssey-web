@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count, Q
 
 from .models import (
     Choice,
@@ -67,11 +68,38 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInline]
 
 
+class SubmissionInline(admin.TabularInline):
+    model = Submission
+    fields = ("user", "status", "submitted_at", "body")
+    readonly_fields = ("user", "submitted_at", "body")
+    extra = 0
+    can_delete = False
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False  # сдачи создают ученики на сайте, не админ
+
+
 @admin.register(Homework)
 class HomeworkAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "lesson", "updated_at")
+    list_display = ("__str__", "lesson", "pending_count", "accepted_count", "updated_at")
     list_filter = ("lesson__module",)
     search_fields = ("text",)
+    inlines = [SubmissionInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _pending=Count("submissions", filter=Q(submissions__status=Submission.STATUS_SUBMITTED)),
+            _accepted=Count("submissions", filter=Q(submissions__status=Submission.STATUS_ACCEPTED)),
+        )
+
+    @admin.display(description="Ждут проверки", ordering="_pending")
+    def pending_count(self, obj):
+        return obj._pending
+
+    @admin.display(description="Принято", ordering="_accepted")
+    def accepted_count(self, obj):
+        return obj._accepted
 
 
 @admin.register(Submission)
