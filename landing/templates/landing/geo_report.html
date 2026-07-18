@@ -252,9 +252,11 @@
       <div class="gauge">
         <svg width="132" height="132" viewBox="0 0 132 132">
           <circle cx="66" cy="66" r="58" fill="none" stroke="#EBE9E2" stroke-width="12"/>
+          {% if percent > 0 %}
           <circle cx="66" cy="66" r="58" fill="none" stroke="#6378FF" stroke-width="12"
-                  stroke-linecap="round" stroke-dasharray="364.4"
-                  stroke-dashoffset="calc(364.4 - 364.4 * {{ percent }} / 100)"/>
+                  stroke-linecap="round"
+                  stroke-dasharray="{% widthratio percent 100 364 %} 364.4"/>
+          {% endif %}
         </svg>
         <div class="gauge-center">
           <div class="gauge-num">{{ percent }}<small>%</small></div>

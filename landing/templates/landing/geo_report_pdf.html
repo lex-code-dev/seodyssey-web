@@ -100,15 +100,12 @@
       <div class="donut-wrap">
         <svg viewBox="0 0 120 120" width="130" height="130">
           <circle cx="60" cy="60" r="50" fill="none" stroke="#eef0f4" stroke-width="13"/>
+          {% if ok %}
           <circle cx="60" cy="60" r="50" fill="none" stroke="#22a06b" stroke-width="13"
+                  stroke-linecap="round"
                   stroke-dasharray="{{ donut_ok }} 314.16" stroke-dashoffset="0"
                   transform="rotate(-90 60 60)"/>
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#e8a23d" stroke-width="13"
-                  stroke-dasharray="{{ donut_warn }} 314.16" stroke-dashoffset="{{ donut_warn_offset }}"
-                  transform="rotate(-90 60 60)"/>
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#e2574c" stroke-width="13"
-                  stroke-dasharray="{{ donut_fail }} 314.16" stroke-dashoffset="{{ donut_fail_offset }}"
-                  transform="rotate(-90 60 60)"/>
+          {% endif %}
         </svg>
         <div class="donut-center">
           <div class="donut-pct">{{ percent }}%</div>

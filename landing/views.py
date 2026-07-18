@@ -225,8 +225,6 @@ def geo_report_pdf(request, token):
     # Геометрия бублика (r=50 → длина окружности 2*pi*50 ≈ 314.16)
     c = 314.16
     len_ok = ok / total * c
-    len_warn = warn / total * c
-    len_fail = fail / total * c
 
     ai_report = lead.ai_report if isinstance(lead.ai_report, dict) else {}
     is_paid = lead.pay_status == GeoLead.PAY_PAID
@@ -246,12 +244,8 @@ def geo_report_pdf(request, token):
         "oks": [r for r in results if r.get("status") == "ok"],
         "ai_ready": ai_ready,
         "ai_items": ai_report.get("items", []),
-        # строки с точкой — защита от запятой в русской локали
+        # строка с точкой — защита от запятой в русской локали
         "donut_ok": f"{len_ok:.2f}",
-        "donut_warn": f"{len_warn:.2f}",
-        "donut_fail": f"{len_fail:.2f}",
-        "donut_warn_offset": f"{-len_ok:.2f}",
-        "donut_fail_offset": f"{-(len_ok + len_warn):.2f}",
     }
 
     html_string = render_to_string("landing/geo_report_pdf.html", context)
