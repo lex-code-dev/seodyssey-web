@@ -3,3 +3,5 @@
 Логин: {{ reg_user.username }}
 E-mail: {{ reg_user.email|default:"—" }}
 Когда: {{ reg_user.date_joined|date:"d.m.Y H:i" }}
+
+Отписаться: {% verbatim %}{{UnsubscribeUrl}}{% endverbatim %}

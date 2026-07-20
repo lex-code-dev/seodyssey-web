@@ -4,3 +4,5 @@
 Тариф: {{ payment.plan }}
 Пользователь: {{ payment.user.username }} ({{ payment.user.email|default:"—" }})
 Платёж ЮKassa: {{ payment.yookassa_id }}
+
+Отписаться: {% verbatim %}{{UnsubscribeUrl}}{% endverbatim %}

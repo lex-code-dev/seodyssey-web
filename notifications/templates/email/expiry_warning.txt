@@ -11,3 +11,4 @@
 Открыть в панели: {{ site_url }}/sites/{{ site.id }}/
 
 — SEOdyssey · {{ site_url }}
+Отписаться: {% verbatim %}{{UnsubscribeUrl}}{% endverbatim %}

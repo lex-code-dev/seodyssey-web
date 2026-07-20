@@ -10,3 +10,4 @@
 3. Включите Telegram-алерты, чтобы узнавать о проблемах мгновенно.
 
 — SEOdyssey · {{ site_url }}
+Отписаться: {% verbatim %}{{UnsubscribeUrl}}{% endverbatim %}

@@ -52,6 +52,11 @@ class UnisenderGoBackend(BaseEmailBackend):
                 "body": body,
             }
         }
+        # Не дописывать футер отписки Go — требует флага allow_skip_unsubscribe
+        # у аккаунта (включает поддержка). Пока флага нет, вместо этого в шаблонах
+        # стоит своя ссылка {{UnsubscribeUrl}} — тогда Go свой блок не добавляет.
+        if getattr(settings, "UNISENDER_GO_SKIP_UNSUBSCRIBE", False):
+            payload["message"]["skip_unsubscribe"] = 1
 
         resp = requests.post(
             API_URL,

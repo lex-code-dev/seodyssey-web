@@ -241,6 +241,8 @@ EMAIL_TIMEOUT = 20
 
 # Транзакционные письма (notifications)
 UNISENDER_GO_API_KEY = os.getenv("EMAIL_HOST_PASSWORD", "")  # API-ключ = SMTP-пароль Go
+# Включить после того, как поддержка Go включит аккаунту allow_skip_unsubscribe
+UNISENDER_GO_SKIP_UNSUBSCRIBE = False
 SITE_URL = "https://seodyssey.ru"  # абсолютные ссылки в письмах
 OWNER_NOTIFICATION_EMAIL = "info@seodyssey.ru"  # уведомления владельцу сервиса
 EMAIL_ASYNC = True  # слать через Celery; False — синхронно (тесты, dev без Redis)

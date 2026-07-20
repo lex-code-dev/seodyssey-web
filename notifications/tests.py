@@ -231,6 +231,18 @@ class UnisenderGoBackendTests(TestCase):
         self.assertEqual(message["from_email"], "info@seodyssey.ru")
         self.assertEqual(message["from_name"], "SEOdyssey")
         self.assertEqual(message["body"], {"plaintext": "Текст", "html": "<b>html</b>"})
+        # skip_unsubscribe требует флага у аккаунта — по умолчанию выключен
+        self.assertNotIn("skip_unsubscribe", message)
+
+    @override_settings(UNISENDER_GO_API_KEY="test-key", UNISENDER_GO_SKIP_UNSUBSCRIBE=True)
+    def test_skip_unsubscribe_when_enabled(self):
+        from unittest.mock import MagicMock, patch
+
+        ok = MagicMock(status_code=200)
+        ok.json.return_value = {"status": "success"}
+        with patch("notifications.backends.requests.post", return_value=ok) as mock_post:
+            self._send_message()
+        self.assertEqual(mock_post.call_args.kwargs["json"]["message"]["skip_unsubscribe"], 1)
 
     @override_settings(UNISENDER_GO_API_KEY="test-key")
     def test_api_error_raises(self):
