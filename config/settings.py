@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'audits',
     'billing',
     'course',
+    'notifications',
     'django_ckeditor_5',
 ]
 
@@ -226,7 +227,8 @@ CKEDITOR_5_CONFIGS = {
 }
 
 # === Email (Timeweb SMTP) ===
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# SMTP-порты наружу заблокированы на VPS Timeweb — шлём через HTTPS API Unisender Go
+EMAIL_BACKEND = "notifications.backends.UnisenderGoBackend"
 EMAIL_HOST = "smtp.go2.unisender.ru"
 EMAIL_PORT = 587
 EMAIL_USE_SSL = False
@@ -236,6 +238,12 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = "SEOdyssey <info@seodyssey.ru>"
 SERVER_EMAIL = "info@seodyssey.ru"
 EMAIL_TIMEOUT = 20
+
+# Транзакционные письма (notifications)
+UNISENDER_GO_API_KEY = os.getenv("EMAIL_HOST_PASSWORD", "")  # API-ключ = SMTP-пароль Go
+SITE_URL = "https://seodyssey.ru"  # абсолютные ссылки в письмах
+OWNER_NOTIFICATION_EMAIL = "info@seodyssey.ru"  # уведомления владельцу сервиса
+EMAIL_ASYNC = True  # слать через Celery; False — синхронно (тесты, dev без Redis)
 # Message-ID должен использовать FQDN домена, а не хостнейм сервера ("seodyssey").
 # Иначе Gmail может молча отбрасывать письма.
 from django.core.mail import utils as _mail_utils

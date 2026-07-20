@@ -1,0 +1,32 @@
+{% extends "email/base_email.html" %}
+{% block title %}{{ site.domain }}: {{ what }} истекает{% endblock %}
+{% block content %}
+          <tr>
+            <td class="px" style="padding:30px 36px 8px;">
+              <h1 style="margin:0; font-size:22px; font-weight:800; color:#15140f; letter-spacing:-0.4px;">{% if check_key == "ssl" %}SSL-сертификат истекает{% else %}Домен истекает{% endif %}</h1>
+              <p style="margin:10px 0 0; font-size:14.5px; color:#6b675e; line-height:1.55;">У сайта <strong style="color:#15140f;">{{ site.name }}</strong> ({{ site.domain }}) {{ what }} истекает <strong style="color:#15140f;">{{ expires_on|date:"d.m.Y" }}</strong>.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="px" style="padding:24px 36px 4px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9f8f4; border:1px solid rgba(21,20,15,0.06); border-radius:14px;">
+                <tr>
+                  <td style="padding:22px 24px; text-align:center;">
+                    <div style="font-size:40px; font-weight:800; color:{% if days_left <= 7 %}#c2410c{% else %}#4f5be0{% endif %}; letter-spacing:-1px; line-height:1;">{{ days_left }}</div>
+                    <div style="font-size:13px; color:#9a958b; margin-top:6px;">дней осталось</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="px" style="padding:18px 36px 8px;">
+              <p style="margin:0; font-size:13.5px; color:#6b675e; line-height:1.6;">{% if check_key == "ssl" %}Проверьте, что автопродление сертификата настроено и работает. Если сертификат истечёт, браузеры начнут показывать посетителям предупреждение безопасности, а поисковики понизят сайт.{% else %}Продлите домен у регистратора заранее. Если домен истечёт, сайт станет недоступен, а после освобождения домен могут перехватить.{% endif %}</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="px" style="padding:24px 36px 34px; text-align:center;">
+              <a href="{{ site_url }}/sites/{{ site.id }}/" class="cta" style="display:inline-block; background:#15140f; color:#ffffff; font-size:15px; font-weight:600; text-decoration:none; padding:14px 30px; border-radius:12px;">Открыть сайт в панели →</a>
+            </td>
+          </tr>
+{% endblock %}

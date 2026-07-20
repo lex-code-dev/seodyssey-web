@@ -1,0 +1,14 @@
+{% extends "email/base_email.html" %}
+{% block title %}Новая регистрация{% endblock %}
+{% block content %}
+          <tr>
+            <td class="px" style="padding:30px 36px 34px;">
+              <h1 style="margin:0; font-size:22px; font-weight:800; color:#15140f; letter-spacing:-0.4px;">Новая регистрация 🎉</h1>
+              <p style="margin:14px 0 0; font-size:14.5px; color:#6b675e; line-height:1.7;">
+                Логин: <strong style="color:#15140f;">{{ reg_user.username }}</strong><br>
+                E-mail: <strong style="color:#15140f;">{{ reg_user.email|default:"—" }}</strong><br>
+                Когда: {{ reg_user.date_joined|date:"d.m.Y H:i" }}
+              </p>
+            </td>
+          </tr>
+{% endblock %}

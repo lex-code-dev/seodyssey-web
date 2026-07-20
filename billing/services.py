@@ -89,3 +89,10 @@ def apply_successful_payment(payment):
     payment.is_processed = True
     payment.status = payment.STATUS_SUCCEEDED
     payment.save(update_fields=["is_processed", "status"])
+
+    try:
+        from notifications.email import notify_owner_payment
+        notify_owner_payment(payment)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Не отправилось письмо об оплате payment_id=%s", payment.id)

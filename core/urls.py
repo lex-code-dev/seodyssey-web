@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views
 from . import course_views
@@ -5,6 +7,16 @@ from . import course_views
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("register/", views.register, name="register"),
+    # Переопределяем стандартный password_reset, чтобы слать HTML-версию письма
+    # (остальные шаги flow остаются из django.contrib.auth.urls)
+    path(
+        "password_reset/",
+        auth_views.PasswordResetView.as_view(
+            html_email_template_name="registration/password_reset_email_html.html",
+            extra_email_context={"site_url": settings.SITE_URL},
+        ),
+        name="password_reset",
+    ),
     path("sites/new/", views.site_new, name="site_new"),
     path("integrations/yandex/connect/", views.yandex_connect, name="yandex_connect"),
     path("integrations/yandex/callback/", views.yandex_callback, name="yandex_callback"),

@@ -1,0 +1,6 @@
+Успешная оплата в SEOdyssey
+
+Сумма: {{ payment.amount }} ₽
+Тариф: {{ payment.plan }}
+Пользователь: {{ payment.user.username }} ({{ payment.user.email|default:"—" }})
+Платёж ЮKassa: {{ payment.yookassa_id }}

@@ -671,6 +671,16 @@ class Command(BaseCommand):
                         iss.last_checkrun = check
                         iss.save(update_fields=["status", "resolved_at", "last_checkrun", "last_seen_at"])
                 # --- /Issues ---
+
+                # E-mail «SSL/домен истекает» (пороги 30/7/3, дедуп в EmailLog)
+                try:
+                    from notifications.email import send_expiry_warnings
+                    sent_emails = send_expiry_warnings(site, checks)
+                    if sent_emails:
+                        self.stdout.write(f"[EMAIL] expiry warnings sent: {sent_emails} (site_id={site.id})")
+                except Exception as exc:
+                    self.stderr.write(f"[EMAIL] expiry warnings failed site_id={site.id}: {exc}")
+
                 label = "FAIL" if overall_fail else "OK"
                 self.stdout.write(f"[{label}] {site.name} — {url}")
             except Exception as exc:

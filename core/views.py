@@ -246,6 +246,13 @@ def register(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            try:
+                from notifications.email import send_welcome_email, notify_owner_new_user
+                send_welcome_email(user)
+                notify_owner_new_user(user)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).exception("Не отправились письма о регистрации user_id=%s", user.id)
             login(request, user)
             return redirect("dashboard")
     else:
