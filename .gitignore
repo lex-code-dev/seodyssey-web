@@ -7,3 +7,6 @@ run_checks.log
 .env
 .DS_Store
 .idea/
+.env.bak*
+*.log
+.claude/settings.local.json

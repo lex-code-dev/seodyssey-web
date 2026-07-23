@@ -2,14 +2,16 @@
 Проверка robots.txt на блокировку AI-ботов, важных для GEO-видимости.
 
 Чистый модуль без зависимостей от моделей проекта — можно тестировать отдельно.
-Используем стандартный urllib.robotparser (корректная семантика групп),
-а не самописный парсинг.
+Разбор правил — в audits.robots_rules: стандартный urllib.robotparser не
+понимает ни `*` внутри пути, ни якорь `$`, и пропускал бы такие запреты.
 """
 
 from urllib.parse import urlparse, urlunparse
-from urllib.robotparser import RobotFileParser
 
-import requests
+import httpx
+
+from audits.net_guard import safe_get
+from audits.robots_rules import parse_robots
 
 # Боты, критичные для попадания бренда в AI-ответы (RU + глобальные).
 #   token    — как пишется в robots.txt
@@ -36,26 +38,17 @@ def _evaluate_robots(content, http_status, test_path):
     Чистая функция: по содержимому robots.txt и HTTP-статусу решает,
     какие AI-боты допущены к test_path. Тестируется без сети.
     """
-    rp = RobotFileParser()
-
-    if http_status is None:
+    if http_status is None or http_status >= 500:
         return {"status": "unknown", "bots": [], "blocked_critical": []}
 
-    if http_status in (401, 403):
-        # Per RFC 9309: 401/403 на robots.txt = полный запрет обхода
-        rp.disallow_all = True
-    elif http_status >= 400:
-        # 404/410/прочие 4xx = robots.txt нет → разрешено всё
-        rp.allow_all = True
-    elif http_status >= 500:
-        return {"status": "unknown", "bots": [], "blocked_critical": []}
-    else:
-        rp.parse(content.splitlines())
+    # parse_robots сам применяет RFC 9309: 401/403 — запрет всего,
+    # прочие 4xx — robots.txt нет, разрешено всё.
+    robots = parse_robots(content, http_status)
 
     bots = []
     blocked_critical = []
     for b in AI_BOTS:
-        allowed = rp.can_fetch(b["token"], test_path)
+        allowed = robots.check(b["token"], test_path)[0]
         bots.append({
             "token": b["token"],
             "label": b["label"],
@@ -91,10 +84,10 @@ def check_ai_bots(url, timeout=ROBOTS_TIMEOUT):
     test_path = parsed.path or "/"
 
     try:
-        resp = requests.get(robots_url, headers=DEFAULT_HEADERS, timeout=timeout)
+        resp = safe_get(robots_url, headers=DEFAULT_HEADERS, timeout=timeout)
         http_status = resp.status_code
         content = resp.text if http_status < 400 else ""
-    except requests.RequestException as e:
+    except httpx.RequestError as e:
         return {"robots_url": robots_url, "status": "error",
                 "error": str(e), "http_status": None, "bots": [],
                 "blocked_critical": [], "summary": "robots.txt недоступен"}

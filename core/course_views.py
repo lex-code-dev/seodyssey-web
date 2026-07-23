@@ -3,6 +3,7 @@ import re
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
 from core.models import Site, SiteMember
@@ -53,6 +54,12 @@ def _video_embed_url(url: str) -> str:
     return f"https://www.youtube-nocookie.com/embed/{video_id}"
 
 
+def _require_staff(request) -> None:
+    """Курс пока скрыт от пользователей: доступен только staff."""
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+
 def _base_context(request) -> dict:
     """Контекст app-шелла — как в help_page (sites для меню + флаги интеграций)."""
     profile = _get_profile(request.user)
@@ -66,6 +73,7 @@ def _base_context(request) -> dict:
 
 @login_required
 def course_index(request):
+    _require_staff(request)
     modules = Module.objects.filter(is_published=True).prefetch_related("lessons")
     modules_with_lessons = [
         (module, module.lessons.filter(is_published=True))
@@ -115,6 +123,7 @@ def _check_quiz_answers(questions, post_data) -> dict:
 
 @login_required
 def course_lesson(request, slug):
+    _require_staff(request)
     lesson = get_object_or_404(
         Lesson.objects.select_related("module"), slug=slug, is_published=True
     )

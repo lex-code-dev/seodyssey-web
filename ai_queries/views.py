@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -5,6 +7,8 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from ai_queries.models import AIQueryResult
 from ai_queries.services.analyze import analyze
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -69,8 +73,13 @@ def analyze_view(request):
         result['ai_used'] = used
         result['ai_limit'] = limit
         return JsonResponse(result)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    except Exception:
+        # Наружу — общий текст: в исключении бывают внутренние адреса
+        # и куски ответов внешних API. Подробности пишем в лог.
+        logger.exception("Анализ AI-запросов упал, user_id=%s", request.user.id)
+        return JsonResponse(
+            {'error': 'Не удалось выполнить анализ. Попробуйте позже.'}, status=500
+        )
 
 
 @login_required

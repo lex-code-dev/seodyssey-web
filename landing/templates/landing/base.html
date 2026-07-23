@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}SEOdyssey — SEO-аудит, видимость в нейросетях и мониторинг сайта{% endblock %}</title>
-<meta name="description" content="{% block description %}Единая система под ваш сайт: SEO-аудит, проверка видимости в нейросетях и ежедневный мониторинг. Не общие советы, а готовый код и решения под вашу страницу.{% endblock %}">
+<title>{% block title %}SEOdyssey – SEO-аудит, видимость в нейросетях и мониторинг сайта{% endblock %}</title>
+<meta name="description" content="{% block description %}SEO-аудит, проверка видимости в нейросетях и ежедневный мониторинг. К каждой находке – готовый код правок под вашу страницу.{% endblock %}">
 {% block canonical %}{% endblock %}
 <link rel="icon" href="/static/favicon.ico" sizes="any">
 <link rel="icon" href="/static/img/spiral-icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/landing.css?v=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Commissioner:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/landing.css?v=4">
 {% block head %}{% endblock %}
 <script type="text/javascript">
   (function(m,e,t,r,i,k,a){
@@ -25,6 +25,7 @@
 <noscript><div><img src="https://mc.yandex.ru/watch/108669492" style="position:absolute;left:-9999px;" alt="" /></div></noscript>
 </head>
 <body>
+<div data-nav-sentinel aria-hidden="true" style="position:absolute;top:0;left:0;width:1px;height:1px;"></div>
 
 <nav class="nav">
   <div class="nav-inner">
@@ -69,7 +70,7 @@
           <small>аудит · нейросети · мониторинг</small>
         </span>
       </div>
-      <p>Система под ваш сайт: SEO-аудит, видимость в нейросетях и мониторинг. Не советы, а готовые решения.</p>
+      <p>SEO-аудит, видимость в нейросетях и мониторинг сайта. К каждой находке прилагается код правок</p>
     </div>
     <div class="footer-cols">
       <div class="footer-col">
@@ -80,10 +81,16 @@
         <a href="/blog/">Блог</a>
       </div>
       <div class="footer-col">
+        <span class="footer-col-title">Инструменты</span>
+        <a href="{% url 'tools_index' %}">Все инструменты</a>
+        <a href="{% url 'geo_check' %}">GEO-проверка</a>
+        <a href="{% url 'robots_txt_check' %}">Проверка robots.txt</a>
+        <a href="{% url 'meta_tags_check' %}">Проверка title и description</a>
+      </div>
+      <div class="footer-col">
         <span class="footer-col-title">Связь</span>
         <a href="https://t.me/seodyssey" target="_blank" rel="noopener">Поддержка</a>
         <a href="https://t.me/seodyssey" target="_blank" rel="noopener">Telegram</a>
-        <a href="/geo-check/">GEO-проверка</a>
       </div>
       <div class="footer-col">
         <span class="footer-col-title">Документы</span>
@@ -127,6 +134,14 @@
     var closer = e.target.closest('[data-action="close-menu"]');
     if (closer){ var mm = document.querySelector('.nav-mobile'); if (mm){ mm.style.display = 'none'; } return; }
   });
+  // Тень у шапки, когда страница проскроллена (sentinel + IO, без scroll-листенера)
+  var nav = document.querySelector('.nav');
+  var sentinel = document.querySelector('[data-nav-sentinel]');
+  if (nav && sentinel && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(entries){
+      nav.classList.toggle('nav-scrolled', !entries[0].isIntersecting);
+    }).observe(sentinel);
+  }
   // Scroll-reveal: элементы видимы по умолчанию, скрываются только при поддержке IO
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduce && 'IntersectionObserver' in window){

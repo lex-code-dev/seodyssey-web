@@ -458,6 +458,8 @@
       <div class="email-note" style="color:var(--ok);">Отчёт отправлен на {{ lead.email }}</div>
       {% elif request.GET.mail == "err" %}
       <div class="email-note" style="color:var(--warn);">Не удалось отправить письмо, попробуйте ещё раз</div>
+      {% elif request.GET.mail == "limit" %}
+      <div class="email-note" style="color:var(--warn);">С вашего адреса отправлено слишком много писем — попробуйте через час</div>
       {% endif %}
 
       {% if lead.email %}

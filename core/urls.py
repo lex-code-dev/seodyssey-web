@@ -11,7 +11,7 @@ urlpatterns = [
     # (остальные шаги flow остаются из django.contrib.auth.urls)
     path(
         "password_reset/",
-        auth_views.PasswordResetView.as_view(
+        views.ThrottledPasswordResetView.as_view(
             html_email_template_name="registration/password_reset_email_html.html",
             extra_email_context={"site_url": settings.SITE_URL},
         ),

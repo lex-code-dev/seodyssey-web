@@ -11,6 +11,21 @@ from audits.tasks import run_site_audit
 def _check_odyssey(request):
     return request.user.is_authenticated and request.user.username == "odyssey"
 
+def _count_statuses(results) -> dict:
+    """Сводка ok/warn/fail по всем блокам аудита."""
+    counts = {"ok": 0, "warn": 0, "fail": 0}
+    for checks in (results or {}).values():
+        for item in checks or []:
+            st = _status_of(item)
+            if st == "ok":
+                counts["ok"] += 1
+            elif st == "warning":
+                counts["warn"] += 1
+            else:
+                counts["fail"] += 1
+    return counts
+
+
 @login_required
 def audit_list(request):
     from core.models import SiteMember, Site
@@ -19,7 +34,14 @@ def audit_list(request):
     )
     audits = AuditResult.objects.filter(site_id__in=site_ids).select_related('site').order_by('-created_at')[:50]
     sites = Site.objects.filter(id__in=site_ids, is_deleted=False).order_by('domain')
-    return render(request, 'audits/audit_list.html', {'audits': audits, 'sites': sites})
+
+    # Считаем здесь, а не в JS: в results лежат title/description с проверяемого
+    # сайта, то есть текст, который контролирует его владелец. Отдавать его
+    # в <script> сырым нельзя.
+    rows = [{"audit": a, "counts": _count_statuses(a.results) if a.results else None}
+            for a in audits]
+
+    return render(request, 'audits/audit_list.html', {'rows': rows, 'sites': sites})
 
 
 @login_required

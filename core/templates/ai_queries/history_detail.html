@@ -83,8 +83,10 @@
 </p>
 
 {{ item.visibility|json_script:"visibility-data" }}
+{{ item.ai_queries|json_script:"queries-data" }}
 <script>
-window._lastQueries = {{ item.ai_queries|safe }};
+var _queriesData = document.getElementById('queries-data');
+window._lastQueries = _queriesData ? JSON.parse(_queriesData.textContent) : [];
 var _visData = document.getElementById('visibility-data');
 window._savedVisibility = _visData ? JSON.parse(_visData.textContent) : {};
 

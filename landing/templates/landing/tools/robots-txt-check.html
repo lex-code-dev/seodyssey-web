@@ -1,76 +1,91 @@
-{% extends "landing/base.html" %}
+{% extends "landing/tools/_tool_base.html" %}
 
 {% block title %}Проверка robots.txt · SEOdyssey{% endblock %}
-{% block description %}Бесплатно проверьте robots.txt вашего сайта: запреты индексации и наличие Sitemap. Без регистрации.{% endblock %}
-{% block nav_cta_label %}Перейти в сервис{% endblock %}
+{% block description %}Бесплатно проверьте robots.txt сайта или отдельную страницу: закрыта ли она от индексации, каким правилом, есть ли noindex и canonical, пускает ли сайт AI-ботов ChatGPT, Gemini и Perplexity. Без регистрации.{% endblock %}
 
-{% block head %}
-<style>
-  .rc-page { position: relative; overflow: hidden; padding: clamp(48px,6vw,84px) 24px clamp(56px,7vw,96px); }
-  .rc-page::before {
-    content: ""; position: absolute; inset: 0;
-    background: radial-gradient(900px 480px at 82% -10%, rgba(99,120,255,0.14), transparent 60%);
-    pointer-events: none;
-  }
-  .rc-inner { position: relative; max-width: 640px; margin: 0 auto; }
-  .rc-sub { font-size: 16px; line-height: 1.55; color: var(--body); margin: 16px 0 0; }
-  .rc-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px; box-shadow: 0 30px 70px -38px rgba(21,20,15,0.4); margin-top: 32px; }
-  .rc-submit { width: 100%; margin-top: 18px; }
-  .rc-results { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
-  .rc-results-title { font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #9A958B; margin-bottom: 4px; }
-  .rc-item { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px; border: 1px solid; font-size: 14.5px; line-height: 1.5; }
-  .rc-item.ok { background: #E7F3E9; border-color: rgba(31,122,61,0.25); color: var(--ink); }
-  .rc-item.warning { background: #FBF0DA; border-color: rgba(138,90,0,0.25); color: var(--ink); }
-  .rc-item.fail { background: var(--fail-bg); border-color: var(--fail-line); color: var(--ink); }
-  .rc-item .ic { flex-shrink: 0; margin-top: 2px; }
-  .rc-item.ok .ic { color: var(--ok); }
-  .rc-item.warning .ic { color: var(--warn); }
-  .rc-item.fail .ic { color: var(--fail); }
-  .rc-empty { padding: 14px 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); font-size: 14px; color: var(--muted); }
-</style>
+{% block tool_styles %}
+  .rc-bots { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .rc-bots li { font-size: 12.5px; line-height: 1.3; padding: 4px 9px; border-radius: 7px; border: 1px solid; white-space: nowrap; }
+  .rc-bots li.on { background: rgba(255,255,255,0.55); border-color: rgba(31,122,61,0.28); color: #1F7A3D; }
+  .rc-bots li.off { background: rgba(255,255,255,0.55); border-color: rgba(176,42,42,0.3); color: #B02A2A; }
 {% endblock %}
 
-{% block content %}
-<main class="rc-page">
-  <div class="rc-inner">
-    <div class="pill" style="margin-bottom:22px;"><span class="dot"></span>Бесплатно · без регистрации</div>
-    <h1 class="display">Проверка <span class="acc">robots.txt</span></h1>
-    <p class="rc-sub">Проверим, не закрыт ли сайт от индексации в robots.txt и указан ли в нём Sitemap.</p>
+{% block tool_crumb %}Проверка robots.txt{% endblock %}
+{% block tool_crumb_json %}Проверка robots.txt{% endblock %}
 
-    <div class="rc-card">
-      <form method="post" action="{% url 'robots_txt_check' %}">
-        {% csrf_token %}
-        <label class="field-label" for="id_domain">Домен сайта</label>
+{% block tool_h1 %}Проверка <span class="acc">robots.txt</span>{% endblock %}
+{% block tool_sub %}Проверим robots.txt всего сайта — или отдельную страницу: закрыта ли она от индексации, каким именно правилом и пускает ли сайт AI-ботов ChatGPT, Gemini, Perplexity{% endblock %}
+
+{% block tool_form %}
+        <div class="rc-modes" role="radiogroup" aria-label="Что проверяем">
+          <label class="rc-mode">
+            <input type="radio" name="mode" value="site" {% if mode != 'page' %}checked{% endif %}>
+            <span>Весь сайт</span>
+          </label>
+          <label class="rc-mode">
+            <input type="radio" name="mode" value="page" {% if mode == 'page' %}checked{% endif %}>
+            <span>Одна страница</span>
+          </label>
+        </div>
+
+        <label class="field-label" for="id_domain" data-site="Домен сайта" data-page="Адрес страницы">Домен сайта</label>
         <input class="field-input mono" id="id_domain" name="domain" type="text"
                placeholder="example.ru"
+               data-site="example.ru" data-page="example.ru/catalog/page/"
                value="{{ domain|default:'' }}" required>
-        <button class="btn btn-primary rc-submit" type="submit">Проверить robots.txt
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"></path></svg>
-        </button>
-      </form>
+{% endblock %}
 
-      {% if results is not None %}
-      <div class="rc-results">
-        <div class="rc-results-title">Результат проверки {{ domain }}</div>
-        {% for r in results %}
-        <div class="rc-item {{ r.status }}">
-          <span class="ic">
-            {% if r.status == "ok" %}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
-            {% elif r.status == "warning" %}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
-            {% else %}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M15 9l-6 6M9 9l6 6"></path></svg>
-            {% endif %}
-          </span>
-          <span>{{ r.message }}</span>
-        </div>
-        {% empty %}
-        <div class="rc-empty">Не удалось получить результаты проверки.</div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</main>
+{% block tool_submit %}<span data-site="Проверить robots.txt" data-page="Проверить страницу">Проверить robots.txt</span>{% endblock %}
+
+{% block tool_note %}
+    <section class="rc-note">
+      <h2>Зачем нужен robots.txt</h2>
+      <p>Это текстовый файл в корне сайта — <span class="mono">site.ru/robots.txt</span>. В нём вы говорите поисковым и AI-роботам, какие разделы обходить, а какие пропускать: служебные страницы, корзину, результаты поиска, персональные ссылки. Файл управляет <b>обходом</b>, но не защищает от посторонних: закрытая в нём страница остаётся доступной по прямой ссылке, а если на неё ведут ссылки с других сайтов — может попасть в выдачу. Чтобы убрать страницу из результатов поиска, нужен мета-тег <span class="mono">noindex</span> на самой странице.</p>
+
+      <h2 class="next">Из чего состоят правила</h2>
+      <dl class="rc-defs">
+        <dt><code>User-agent:</code></dt>
+        <dd>Кому адресован блок правил. <code>*</code> — всем роботам, <code>YandexBot</code> или <code>GPTBot</code> — конкретному.</dd>
+
+        <dt><code>Disallow:</code></dt>
+        <dd>Что не обходить. <code>Disallow: /cart/</code> — раздел, <code>Disallow: /</code> — весь сайт целиком.</dd>
+
+        <dt><code>Allow:</code></dt>
+        <dd>Исключение внутри запрета: открыть один подраздел там, где закрыт весь родительский.</dd>
+
+        <dt><code>Sitemap:</code></dt>
+        <dd>Полный адрес карты сайта — <code>https://site.ru/sitemap.xml</code>. Указывается один раз, вне блоков.</dd>
+
+        <dt><code>*</code></dt>
+        <dd>Любая последовательность символов: <code>Disallow: /*?sort=</code> закроет все URL с этим параметром.</dd>
+
+        <dt><code>$</code></dt>
+        <dd>Конец адреса: <code>Disallow: /catalog$</code> закроет саму страницу, но не вложенные в неё.</dd>
+
+        <dt><code>#</code></dt>
+        <dd>Комментарий — робот игнорирует всё до конца строки.</dd>
+      </dl>
+
+      <p class="rc-warn"><b>Про пустые строки.</b> Пустую строку ставят <i>перед</i> каждым блоком <span class="mono">User-agent</span> — так рекомендует Яндекс. Внутри блока её лучше не оставлять: Google такой разрыв игнорирует и правила ниже применит, но парсеры, следующие старому стандарту, посчитают блок законченным — и запрет перестанет работать ровно там, где он вам нужен.</p>
+    </section>
+
+    <script>
+      // Переключение режима меняет подписи формы: одно поле на две проверки
+      (function () {
+        var form = document.querySelector('.rc-card form');
+        if (!form) return;
+        function apply() {
+          var mode = form.querySelector('input[name="mode"]:checked').value;
+          form.querySelectorAll('[data-' + mode + ']').forEach(function (el) {
+            var text = el.getAttribute('data-' + mode);
+            if (el.tagName === 'INPUT') el.placeholder = text;
+            else el.textContent = text;
+          });
+        }
+        form.querySelectorAll('input[name="mode"]').forEach(function (radio) {
+          radio.addEventListener('change', apply);
+        });
+        apply();
+      })();
+    </script>
 {% endblock %}

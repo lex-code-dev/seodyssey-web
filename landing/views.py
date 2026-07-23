@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from landing.forms import GeoCheckForm
 from landing.models import GeoLead, ServicePrice, BlogPost
 
@@ -7,6 +9,22 @@ from landing.models import GeoLead, ServicePrice, BlogPost
 
 def index(request):
     return render(request, "landing/index.html")
+
+
+def index_v2(request):
+    """Макет редизайна главной в стиле Magic Portfolio. Превью на /v2/,
+    в прод-навигацию не выводится; контекст тот же, что собирает
+    AppDomainMiddleware для настоящей главной."""
+    from billing.models import Plan
+    from landing.models import ServicePrice
+
+    return render(request, "landing/index_v2.html", {
+        "plans": Plan.objects.filter(is_active=True).order_by("sort_order"),
+        "latest_posts": BlogPost.objects.filter(is_published=True)[:3],
+        "geo_report": ServicePrice.objects.filter(
+            code="geo_report", is_active=True
+        ).first(),
+    })
 
 
 def requisites(request):
@@ -18,9 +36,19 @@ def offer(request):
 
 
 def geo_check(request):
+    from landing.rate_limit import (
+        GEO_LIMIT, GEO_RATE_LIMIT_MESSAGE, GEO_WINDOW, is_rate_limited,
+    )
+
     if request.method == "POST":
         form = GeoCheckForm(request.POST)
-        if form.is_valid():
+        # is_valid() до add_error: иначе форме некуда класть ошибку.
+        # Лимит считаем только для валидных отправок — опечатка в адресе
+        # не должна съедать квоту.
+        valid = form.is_valid()
+        if valid and is_rate_limited(request, "geo", limit=GEO_LIMIT, window=GEO_WINDOW):
+            form.add_error(None, GEO_RATE_LIMIT_MESSAGE)
+        elif valid:
             from landing.models import _gen_report_token
             lead = GeoLead.objects.create(
                 url=form.cleaned_data["url"],
@@ -123,11 +151,26 @@ def geo_report_send_email(request, token):
         return redirect("geo_report", token=token)
     if request.method != "POST":
         return redirect("geo_report", token=token)
-    email = (request.POST.get("email") or "").strip()
-    if not email:
-        email = (lead.email or "").strip()
-    if not email:
-        return redirect("geo_report", token=token)
+    # Адрес привязывается к заявке один раз и больше не меняется. Иначе один
+    # действующий токен превращался в ретранслятор: адрес брался из формы,
+    # и по одной ссылке можно было слать письма на сколько угодно чужих ящиков.
+    # Теперь на каждый новый адрес нужна новая GEO-проверка, а она уже под
+    # своим лимитом.
+    if lead.email:
+        email = lead.email
+    else:
+        email = (request.POST.get("email") or "").strip()
+        if not email:
+            return redirect("geo_report", token=token)
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return redirect(f"/geo-check/report/{token}/?mail=err")
+
+    from landing.rate_limit import GEO_LIMIT, GEO_WINDOW, is_rate_limited
+    if is_rate_limited(request, "geo_email", limit=GEO_LIMIT, window=GEO_WINDOW):
+        return redirect(f"/geo-check/report/{token}/?mail=limit")
+
     if not lead.email:
         lead.email = email
         lead.save(update_fields=["email"])
@@ -273,63 +316,97 @@ def blog_post(request, slug):
 
 SITE_URL = "https://seodyssey.ru"
 
-# Статические публичные страницы лендинга (путь, priority, changefreq)
-STATIC_SITEMAP_PAGES = [
-    ("/", "1.0", "monthly"),
-    ("/offer/", "0.5", "yearly"),
-    ("/requisites/", "0.3", "yearly"),
-    ("/blog/", "0.8", "weekly"),
-    ("/geo-check/", "0.8", "weekly"),
-]
-
 
 def sitemap_xml(request):
-    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-    lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    """
+    Карта сайта лежит в templates/sitemap.xml: статические страницы правятся
+    прямо в нём, статьи блога подставляются из базы.
+    """
+    posts = BlogPost.objects.filter(is_published=True)
+    return render(
+        request,
+        "sitemap.xml",
+        {"site_url": SITE_URL, "posts": posts},
+        content_type="application/xml",
+    )
 
-    for path, priority, changefreq in STATIC_SITEMAP_PAGES:
-        lines.append("  <url>")
-        lines.append(f"    <loc>{SITE_URL}{path}</loc>")
-        lines.append(f"    <changefreq>{changefreq}</changefreq>")
-        lines.append(f"    <priority>{priority}</priority>")
-        lines.append("  </url>")
 
-    for post in BlogPost.objects.filter(is_published=True):
-        lines.append("  <url>")
-        lines.append(f"    <loc>{SITE_URL}/blog/{post.slug}/</loc>")
-        if post.published_at:
-            lines.append(f"    <lastmod>{post.published_at.isoformat()}</lastmod>")
-        lines.append("    <changefreq>monthly</changefreq>")
-        lines.append("    <priority>0.7</priority>")
-        lines.append("  </url>")
-
-    lines.append("</urlset>")
-    return HttpResponse("\n".join(lines), content_type="application/xml")
+def tools_index(request):
+    """Витрина бесплатных инструментов — родительская страница для /tools/*."""
+    return render(request, "landing/tools/index.html")
 
 
 def robots_txt_check_tool(request):
+    """
+    Два режима: robots.txt всего сайта и разбор одной страницы —
+    закрыта ли она от индексации и каким именно правилом.
+    """
+    from audits.net_guard import TargetError, normalize_domain, normalize_url
+    from landing.rate_limit import RATE_LIMIT_MESSAGE, is_rate_limited
+
     results = None
-    domain = ""
+    error = None
+    target = ""
+    mode = "site"
 
     if request.method == "POST":
-        domain = (request.POST.get("domain") or "").strip()
-        domain = domain.replace("https://", "").replace("http://", "").strip("/")
-        if domain:
-            from audits.checks.indexability import check_robots_txt
-            results = check_robots_txt(domain)
+        mode = "page" if request.POST.get("mode") == "page" else "site"
+        target = (request.POST.get("domain") or "").strip()
+        if target and is_rate_limited(request, "tools"):
+            error = RATE_LIMIT_MESSAGE
+        elif target:
+            from audits.checks.indexability import check_page, check_robots_txt
+            try:
+                if mode == "page":
+                    results = check_page(normalize_url(target))
+                else:
+                    results = check_robots_txt(normalize_domain(target))
+            except TargetError as e:
+                error = str(e)
 
     return render(request, "landing/tools/robots-txt-check.html", {
-        "domain": domain,
+        "domain": target,
+        "mode": mode,
         "results": results,
+        "error": error,
+    })
+
+
+def meta_tags_check_tool(request):
+    """Проверка title, description и H1 одной страницы + превью сниппета."""
+    from audits.net_guard import TargetError, normalize_url
+    from landing.rate_limit import RATE_LIMIT_MESSAGE, is_rate_limited
+
+    results = None
+    error = None
+    meta = None
+    target = ""
+
+    if request.method == "POST":
+        target = (request.POST.get("domain") or "").strip()
+        if target and is_rate_limited(request, "tools"):
+            error = RATE_LIMIT_MESSAGE
+        elif target:
+            from audits.checks.seo import fetch_and_evaluate_seo
+            try:
+                results, meta = fetch_and_evaluate_seo(normalize_url(target))
+            except TargetError as e:
+                error = str(e)
+
+    return render(request, "landing/tools/meta-tags-check.html", {
+        "domain": target,
+        "results": results,
+        "meta": meta,
+        "error": error,
     })
 
 
 def robots_txt(request):
-    content = (
-        "User-agent: *\n"
-        "Allow: /\n"
-        "Allow: /geo-check/$\n"
-        "Disallow: /geo-check/\n"
-        f"Sitemap: {SITE_URL}/sitemap.xml\n"
-    )
-    return HttpResponse(content, content_type="text/plain")
+    """
+    Правила лежат в templates/robots.txt (лендинг) и templates/robots_app.txt
+    (личный кабинет) — правятся как обычные txt-файлы, без правок кода.
+    Личный кабинет на app.* закрыт от индексации целиком.
+    """
+    host = request.get_host().split(":")[0]
+    template = "robots_app.txt" if host.startswith("app.") else "robots.txt"
+    return render(request, template, {"site_url": SITE_URL}, content_type="text/plain")

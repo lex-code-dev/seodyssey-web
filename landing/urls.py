@@ -3,6 +3,7 @@ from django.urls import path
 from landing import views
 
 urlpatterns = [
+    path("v2/", views.index_v2, name="index_v2"),
     path("requisites/", views.requisites, name="requisites"),
     path("offer/", views.offer, name="offer"),
     path("geo-check/", views.geo_check, name="geo_check"),
@@ -14,5 +15,7 @@ urlpatterns = [
     path("blog/<slug:slug>/", views.blog_post, name="blog_post"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),
     path("robots.txt", views.robots_txt, name="robots_txt"),
+    path("tools/", views.tools_index, name="tools_index"),
     path("tools/robots-txt-check/", views.robots_txt_check_tool, name="robots_txt_check"),
+    path("tools/meta-tags-check/", views.meta_tags_check_tool, name="meta_tags_check"),
 ]

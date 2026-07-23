@@ -1,5 +1,7 @@
 import random
 import httpx
+
+from audits.net_guard import safe_get
 from bs4 import BeautifulSoup
 
 def _detect_author_date(page_soup) -> tuple[bool, bool]:
@@ -49,7 +51,7 @@ def check_sitemap_pages(domain: str) -> list[dict]:
     # --- Получаем sitemap ---
     try:
         sitemap_url = f"{base_url}/sitemap.xml"
-        response = httpx.get(sitemap_url, follow_redirects=True, timeout=10)
+        response = safe_get(sitemap_url, timeout=10)
         if response.status_code != 200:
             return []
     except httpx.RequestError:
@@ -101,7 +103,7 @@ def check_sitemap_pages(domain: str) -> list[dict]:
         short_url = url.replace(base_url, "") or "/"
 
         try:
-            r = httpx.get(url, follow_redirects=False, timeout=10)
+            r = safe_get(url, follow_redirects=False, timeout=10)
             status = r.status_code
 
             # Редирект

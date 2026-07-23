@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Статические страницы лендинга — правятся прямо здесь, без правок кода -->
+  <url>
+    <loc>{{ site_url }}/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/offer/</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/requisites/</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/blog/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/geo-check/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/tools/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/tools/robots-txt-check/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>{{ site_url }}/tools/meta-tags-check/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+{# Статьи блога — подтягиваются из базы, вручную добавлять не нужно #}{% for post in posts %}
+  <url>
+    <loc>{{ site_url }}/blog/{{ post.slug }}/</loc>{% if post.published_at %}
+    <lastmod>{{ post.published_at|date:"c" }}</lastmod>{% endif %}
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>{% endfor %}
+</urlset>

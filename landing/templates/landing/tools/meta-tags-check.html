@@ -1,0 +1,75 @@
+{% extends "landing/tools/_tool_base.html" %}
+
+{% block title %}Проверка title и description · SEOdyssey{% endblock %}
+{% block description %}Бесплатно проверьте title, description и H1 любой страницы: длина, переспам, дубли слов, превью сниппета в поиске. Без регистрации.{% endblock %}
+
+{% block tool_styles %}
+  .rc-snippet { padding: 16px 18px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+  .rc-snippet-label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #9A958B; margin-bottom: 10px; }
+  .rc-snippet-url { font-size: 13px; color: #3B7A3B; word-break: break-all; margin-bottom: 3px; }
+  .rc-snippet-title { font-size: 18px; line-height: 1.3; color: #1A0DAB; margin-bottom: 4px; }
+  .rc-snippet-desc { font-size: 13.5px; line-height: 1.5; color: var(--body); }
+  .rc-snippet-empty { font-size: 13.5px; color: var(--fail); font-style: italic; }
+  .rc-lens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  .rc-lens span { padding: 3px 9px; border-radius: 7px; background: var(--surface); border: 1px solid var(--line); }
+{% endblock %}
+
+{% block tool_crumb %}Проверка title и description{% endblock %}
+{% block tool_crumb_json %}Проверка title и description{% endblock %}
+
+{% block tool_h1 %}Проверка <span class="acc">title и description</span>{% endblock %}
+{% block tool_sub %}Покажем, как страница выглядит в выдаче, и проверим мета-теги: длину, переспам, повторы слов, наличие H1{% endblock %}
+
+{% block tool_form %}
+        <label class="field-label" for="id_domain">Адрес страницы</label>
+        <input class="field-input mono" id="id_domain" name="domain" type="text"
+               placeholder="example.ru/catalog/page/"
+               value="{{ domain|default:'' }}" required>
+{% endblock %}
+
+{% block tool_submit %}Проверить мета-теги{% endblock %}
+
+{% block tool_result_extra %}
+{% if meta.title or meta.description %}
+<div class="rc-snippet">
+  <div class="rc-snippet-label">Так страница выглядит в выдаче</div>
+  <div class="rc-snippet-url">{{ meta.url }}</div>
+  {% if meta.title %}
+  <div class="rc-snippet-title">{{ meta.title|truncatechars:70 }}</div>
+  {% else %}
+  <div class="rc-snippet-title rc-snippet-empty">Title не заполнен — поисковик придумает заголовок сам</div>
+  {% endif %}
+  {% if meta.description %}
+  <div class="rc-snippet-desc">{{ meta.description|truncatechars:180 }}</div>
+  {% else %}
+  <div class="rc-snippet-desc rc-snippet-empty">Description не заполнен — в сниппет попадёт случайный кусок текста страницы</div>
+  {% endif %}
+  <div class="rc-lens">
+    <span>title: {{ meta.title|length }} симв.</span>
+    <span>description: {{ meta.description|length }} симв.</span>
+    {% if meta.h1 %}<span>H1: «{{ meta.h1|truncatechars:40 }}»</span>{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block tool_note %}
+    <section class="rc-note">
+      <h2>Зачем нужны title и description</h2>
+      <p><span class="mono">title</span> — главный текстовый сигнал о теме страницы и одновременно кликабельный заголовок в выдаче. <span class="mono">description</span> на ранжирование напрямую не влияет, но именно он чаще всего становится описанием под ссылкой и решает, кликнут по вам или по соседу. Если тега нет или он не отвечает на запрос, поисковик соберёт сниппет сам — из случайного куска текста страницы.</p>
+
+      <h2 class="next">Ориентиры по длине</h2>
+      <dl class="rc-defs">
+        <dt><code>title</code></dt>
+        <dd>30–80 символов. Короче — теряете ключевые слова, длиннее — хвост обрежется многоточием. Начинайте с главного: обрезается конец.</dd>
+
+        <dt><code>description</code></dt>
+        <dd>70–160 символов. Читаемое предложение, а не перечисление ключей через запятую — за такое сниппет просто перепишут.</dd>
+
+        <dt><code>H1</code></dt>
+        <dd>Один на страницу. Это заголовок для человека: он может отличаться от title, который пишется под выдачу.</dd>
+      </dl>
+
+      <p class="rc-warn"><b>Важно.</b> Длина в символах — ориентир, а не закон: и Google, и Яндекс обрезают сниппет по ширине в пикселях, поэтому строка из широких букв обрежется раньше короткой. И оба вправе показать вместо ваших тегов свой вариант, если сочтут его более подходящим запросу.</p>
+    </section>
+{% endblock %}

@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /geo-check/report/
+Disallow: /geo-check/pay/
+
+Sitemap: {{ site_url }}/sitemap.xml

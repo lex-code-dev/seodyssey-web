@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+from audits.net_guard import TargetError, assert_public_host
+
 from .models import Site
 
 
@@ -55,6 +57,16 @@ class AddSiteForm(forms.ModelForm):
         # Домен не должен быть просто числом или IP без зоны
         if all(p.isdigit() for p in parts):
             raise ValidationError("Введи доменное имя, а не IP-адрес")
+
+        # Аудит ходит по этому домену с нашего сервера, поэтому он должен вести
+        # наружу. Формальную проверку выше проходят и внутренние имена вроде
+        # metadata.google.internal, и домен с A-записью на 127.0.0.1.
+        # Повторная проверка есть в safe_get на каждом запросе: запись могли
+        # перевесить уже после добавления сайта.
+        try:
+            assert_public_host(domain)
+        except TargetError as e:
+            raise ValidationError(str(e))
 
         self._normalized_domain = domain
         return domain

@@ -38,7 +38,7 @@
 </script>
 {% endif %}
 
-{% if audits %}
+{% if rows %}
 <div class="card" style="padding:0 22px;">
   <table class="tbl">
     <thead>
@@ -53,12 +53,14 @@
       </tr>
     </thead>
     <tbody>
-      {% for a in audits %}
+      {% for row in rows %}
+      {% with a=row.audit %}
       <tr>
         <td><span class="cell-primary">{{ a.site.domain }}</span></td>
-        <td class="c"><span class="numeric" data-audit-id="{{ a.id }}" data-count="ok">—</span></td>
-        <td class="c"><span class="numeric" data-audit-id="{{ a.id }}" data-count="warn">—</span></td>
-        <td class="c"><span class="numeric" data-audit-id="{{ a.id }}" data-count="fail">—</span></td>
+        {# default здесь не годится: 0 проверок — это ноль, а не прочерк #}
+        <td class="c"><span class="numeric">{% if row.counts %}{{ row.counts.ok }}{% else %}—{% endif %}</span></td>
+        <td class="c"><span class="numeric">{% if row.counts %}{{ row.counts.warn }}{% else %}—{% endif %}</span></td>
+        <td class="c"><span class="numeric">{% if row.counts %}{{ row.counts.fail }}{% else %}—{% endif %}</span></td>
         <td class="c">
           {% if a.status == 'done' %}
             <span class="badge-ok">готово</span>
@@ -75,37 +77,11 @@
           {% endif %}
         </td>
       </tr>
+      {% endwith %}
       {% endfor %}
     </tbody>
   </table>
 </div>
-
-{# Подсчёт OK/Warn/Fail из JSON результатов #}
-{% for a in audits %}
-{% if a.results %}
-<script>
-(function() {
-  var results = {{ a.results|safe }};
-  var ok = 0, warn = 0, fail = 0;
-  Object.keys(results).forEach(function(key) {
-    (results[key] || []).forEach(function(item) {
-      if (item.status === 'ok') ok++;
-      else if (item.status === 'warning') warn++;
-      else fail++;
-    });
-  });
-  var id = '{{ a.id }}';
-  var els = document.querySelectorAll('[data-audit-id="' + id + '"]');
-  els.forEach(function(el) {
-    var t = el.getAttribute('data-count');
-    if (t === 'ok') el.textContent = ok;
-    else if (t === 'warn') el.textContent = warn;
-    else if (t === 'fail') el.textContent = fail;
-  });
-})();
-</script>
-{% endif %}
-{% endfor %}
 
 {% else %}
 <div class="card card-pad-lg" style="text-align:center;padding:48px 28px;">

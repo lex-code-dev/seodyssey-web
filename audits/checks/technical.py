@@ -3,6 +3,8 @@ import socket
 import time
 import httpx
 
+from audits.net_guard import safe_get
+
 
 def check_technical(domain: str) -> list[dict]:
     results = []
@@ -11,7 +13,7 @@ def check_technical(domain: str) -> list[dict]:
     # --- Доступность и статус ---
     try:
         start = time.time()
-        response = httpx.get(url, follow_redirects=True, timeout=10)
+        response = safe_get(url, timeout=10)
         elapsed = round(time.time() - start, 2)
         status = response.status_code
 
@@ -50,7 +52,7 @@ def check_technical(domain: str) -> list[dict]:
 
         # --- Редирект HTTP → HTTPS ---
         http_url = f"http://{domain}"
-        http_response = httpx.get(http_url, follow_redirects=False, timeout=10)
+        http_response = safe_get(http_url, follow_redirects=False, timeout=10)
         if http_response.status_code in (301, 302) and "https" in http_response.headers.get("location", ""):
             results.append({
                 "check": "http_to_https",
@@ -65,7 +67,7 @@ def check_technical(domain: str) -> list[dict]:
             })
 
         # --- Цепочка редиректов ---
-        redirect_response = httpx.get(url, follow_redirects=True, timeout=10)
+        redirect_response = safe_get(url, timeout=10)
         hops = len(redirect_response.history)
         if hops <= 1:
             results.append({

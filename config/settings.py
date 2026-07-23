@@ -21,6 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# Секрет вебхука Telegram: тот же, что передан в setWebhook(secret_token=...).
+# Telegram присылает его в заголовке X-Telegram-Bot-Api-Secret-Token —
+# без этой проверки эндпоинт принимает поддельные апдейты от кого угодно.
+TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+# Ключ Fernet для шифрования OAuth-токенов в базе (см. core.crypto).
+# Сгенерировать: python -c "from cryptography.fernet import Fernet;
+#                           print(Fernet.generate_key().decode())"
+# Потеря ключа = потеря токенов: пользователям придётся переподключить Яндекс.
+CREDENTIALS_ENCRYPTION_KEY = os.getenv("CREDENTIALS_ENCRYPTION_KEY", "")
 WHOISXML_API_KEY = os.getenv("WHOISXML_API_KEY", "")
 YANDEX_CLIENT_ID = os.getenv("YANDEX_CLIENT_ID", "")
 YANDEX_CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET", "")
@@ -37,8 +46,10 @@ APP_DOMAIN = "app.seodyssey.ru"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#9(p2izhx+s+mldn^#t1gc1vk_#i@w58y_xvmmo%!%$w1tr8c*'
+# Ключ подписывает сессии, CSRF-токены и ссылки сброса пароля — держим его
+# только в .env. Дефолта нет намеренно: без переменной прод должен падать
+# на старте, а не молча работать с предсказуемым ключом.
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -62,12 +73,38 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
+# --- Заголовки безопасности ---
+# HSTS: браузер сам переключается на https и не даёт кликнуть «продолжить»
+# при подменённом сертификате. Год + поддомены — значения для preload-списка.
+# Включать, только когда https работает на всех поддоменах: откатить нельзя,
+# браузеры помнят заголовок весь срок.
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+# Дублирует редирект nginx — страховка на случай, если конфиг переедет.
+SECURE_SSL_REDIRECT = True
+# Не отдавать полный URL кабинета сторонним сайтам: в путях есть id сайтов
+# и токены отчётов.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # две недели
+
 # Локальная разработка: экспортировать SEODYSSEY_DEV=1 перед runserver.
 # На сервере переменная не задана — блок не выполняется.
 if os.getenv("SEODYSSEY_DEV") == "1":
     DEBUG = True
     CSRF_COOKIE_SECURE = False
     SESSION_COOKIE_SECURE = False
+    # Локально всё по http, иначе runserver уйдёт в бесконечный редирект
+    # и запишет HSTS в браузер на год — потом на localhost не зайти.
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_PRELOAD = False
     ALLOWED_HOSTS += ["seodyssey.localhost", "app.seodyssey.localhost"]
     CSRF_TRUSTED_ORIGINS += [
         "http://localhost:8642",
@@ -142,6 +179,10 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
+# Счётчик неудачных попыток входа. Стоит вместо стандартного ModelBackend,
+# чтобы прикрыть сразу все точки входа — и форму кабинета, и админку.
+AUTHENTICATION_BACKENDS = ["core.login_throttle.ThrottledModelBackend"]
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -201,9 +242,46 @@ CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 
+# --- Логи ---
+# Пишем в stdout/stderr: gunicorn и celery запущены под systemd, он всё
+# складывает в journald (`journalctl -u seodyssey`). Файловых хендлеров
+# намеренно нет — не нужны ни права на каталог, ни своя ротация.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "{asctime} {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        # Наш код — на INFO, чтобы было видно отказы вебхука и списания лимитов.
+        "core": {"level": "INFO"},
+        "landing": {"level": "INFO"},
+        "audits": {"level": "INFO"},
+        "ai_queries": {"level": "INFO"},
+        "billing": {"level": "INFO"},
+        "notifications": {"level": "INFO"},
+        "django.request": {"level": "ERROR"},
+    },
+}
+
 # --- CKEditor 5 ---
 CKEDITOR_5_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-CKEDITOR_5_UPLOAD_FILE_TYPES = ["jpg", "jpeg", "png", "gif", "webp", "svg"]
+# svg убран намеренно: файл исполняет JS при открытии по прямой ссылке,
+# а media/ отдаётся с нашего домена — это был бы XSS на seodyssey.ru.
+CKEDITOR_5_UPLOAD_FILE_TYPES = ["jpg", "jpeg", "png", "gif", "webp"]
 
 CKEDITOR_5_CONFIGS = {
     "default": {

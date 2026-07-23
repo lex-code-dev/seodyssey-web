@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from urllib.parse import urlencode
 from django.conf import settings
 from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from core.models import YandexOAuth, Issue
@@ -15,7 +16,7 @@ from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q, Count, Max
-from django.http import HttpResponseForbidden, Http404
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from .forms import SignUpForm
@@ -423,13 +424,8 @@ def run_check(request, site_id: int):
     CheckRun.objects.create(site=site, created_by=request.user, status=CheckRun.STATUS_QUEUED)
     messages.success(request, "Проверка добавлена в очередь.")
 
-    import subprocess, sys, os
-    subprocess.Popen(
-        [sys.executable, "manage.py", "run_checks"],
-        cwd="/var/www/seodyssey-web",
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    from core.tasks import run_queued_checks
+    run_queued_checks.delay()
 
     return redirect("site_checks", site_id=site.id)
 
@@ -1022,6 +1018,17 @@ def account_delete(request):
         messages.error(request, "Неверный пароль — аккаунт не удалён")
         return redirect("user_settings")
     user = request.user
+
+    # GeoLead не связан с User внешним ключом — заявку оставляют без аккаунта.
+    # Каскад его не заденет, а email там лежит, поэтому чистим по адресу:
+    # иначе после «удалить аккаунт» персональные данные остаются в базе.
+    email = (user.email or "").strip()
+    if email:
+        from landing.models import GeoLead
+        deleted, _ = GeoLead.objects.filter(email__iexact=email).delete()
+        if deleted:
+            logger.info("Удалено GEO-заявок вместе с аккаунтом: %s", deleted)
+
     logout(request)
     user.delete()
     return redirect("login")
@@ -1227,6 +1234,20 @@ def onboarding_done(request):
 def telegram_webhook(request):
     if request.method != "POST":
         return HttpResponse("ok")
+
+    # Эндпоинт публичный и без CSRF, поэтому единственное, что отличает
+    # настоящий апдейт от подделки, — секрет из setWebhook(secret_token=...).
+    # Без него кто угодно мог слать боту произвольные chat_id и текст
+    # и перебирать tg_token чужих GEO-заявок.
+    secret = settings.TELEGRAM_WEBHOOK_SECRET
+    # Сравниваем байты: compare_digest на строках с не-ASCII бросает TypeError,
+    # то есть заголовок с кириллицей выдавал бы 500 вместо отказа.
+    provided = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if not secret or not secrets.compare_digest(
+        provided.encode("utf-8", "ignore"), secret.encode("utf-8")
+    ):
+        logger.warning("Telegram webhook: неверный секрет, апдейт отброшен")
+        return HttpResponse(status=403)
 
     import json
     try:
@@ -1455,22 +1476,65 @@ def analytics(request):
     cache.set(CACHE_KEY, ctx, CACHE_TTL)
     return render(request, "core/analytics.html", ctx)
 
+class ThrottledPasswordResetView(auth_views.PasswordResetView):
+    """
+    Сброс пароля шлёт письмо на каждый POST, без всякого предела: удобный
+    способ и завалить чужой ящик, и сжечь нашу квоту у отправителя.
+    Ограничиваем по IP.
+    """
+
+    RESET_LIMIT = 5
+    RESET_WINDOW = 3600
+
+    def post(self, request, *args, **kwargs):
+        from landing.rate_limit import is_rate_limited
+
+        if is_rate_limited(request, "pwreset",
+                           limit=self.RESET_LIMIT, window=self.RESET_WINDOW):
+            form = self.get_form()
+            form.add_error(
+                None,
+                "Слишком много запросов на сброс пароля с вашего адреса. "
+                "Попробуйте через час.",
+            )
+            return self.form_invalid(form)
+        return super().post(request, *args, **kwargs)
+
+
+LIMIT_EXHAUSTED_TEXT = "Лимит AI-проверок исчерпан. Обновится 1-го числа следующего месяца."
+
+
 @login_required
 def ai_recommendations(request, check_id):
     check = get_object_or_404(CheckRun, id=check_id, site__members__user=request.user)
+
+    from core.ai_limits import check_ai_limit, check_and_spend_ai_limit
+
+    # Лимита здесь не было вовсе — эндпоинт можно было дёргать в цикле.
+    ok, used, limit = check_ai_limit(request.user)
+    if not ok:
+        return JsonResponse({
+            "status": "limit",
+            "text": LIMIT_EXHAUSTED_TEXT,
+            "ai_used": used,
+            "ai_limit": limit,
+        }, status=403)
+
     check_data = check.result or {}
 
     try:
         from rag.engine import get_recommendations
         data = get_recommendations(check_data)
-        return JsonResponse({"status": "ok", "data": data})
-    except Exception as e:
-        import traceback
-        open("/tmp/ai_error.log", "a").write(traceback.format_exc())
-        return JsonResponse({"status": "error", "text": str(e)}, status=500)
+    except Exception:
+        logger.exception("AI-рекомендации не собрались, check_id=%s", check_id)
+        return JsonResponse(
+            {"status": "error", "text": "Не удалось собрать рекомендации. Попробуйте позже."},
+            status=500,
+        )
 
-@login_required
-@require_POST
+    _, used, limit = check_and_spend_ai_limit(request.user)
+    return JsonResponse({"status": "ok", "data": data, "ai_used": used, "ai_limit": limit})
+
 @login_required
 @require_POST
 def site_ai_recommendations(request, site_id):
@@ -1478,30 +1542,35 @@ def site_ai_recommendations(request, site_id):
     if not _require_site_access(request.user, site):
         return HttpResponseForbidden("Нет доступа к сайту")
 
-    from core.ai_limits import check_and_spend_ai_limit
+    from core.ai_limits import check_ai_limit, check_and_spend_ai_limit
 
     last = site.checks.first()
     if not last:
         return JsonResponse({"status": "error", "text": "Нет данных проверки"}, status=400)
+
+    # Проверяем ДО обращения к модели: раньше лимит смотрели после, и юзер
+    # с исчерпанной квотой получал отказ уже после того, как запрос оплачен.
+    ok, used, limit = check_ai_limit(request.user)
+    if not ok:
+        return JsonResponse({
+            "status": "limit",
+            "text": LIMIT_EXHAUSTED_TEXT,
+            "ai_used": used,
+            "ai_limit": limit,
+        }, status=403)
 
     check_data = last.result or {}
 
     try:
         from rag.engine import get_recommendations
         data = get_recommendations(check_data)
+    except Exception:
+        logger.exception("AI-рекомендации не собрались, site_id=%s", site_id)
+        return JsonResponse(
+            {"status": "error", "text": "Не удалось собрать рекомендации. Попробуйте позже."},
+            status=500,
+        )
 
-        # Списываем лимит только после успешного ответа
-        ok, used, limit = check_and_spend_ai_limit(request.user)
-        if not ok:
-            return JsonResponse({
-                "status": "limit",
-                "text": "Лимит AI-проверок исчерпан. Обновится 1-го числа следующего месяца.",
-                "ai_used": used,
-                "ai_limit": limit,
-            }, status=403)
-
-        return JsonResponse({"status": "ok", "data": data, "ai_used": used, "ai_limit": limit})
-    except Exception as e:
-        import traceback
-        open("/tmp/ai_error.log", "a").write(traceback.format_exc())
-        return JsonResponse({"status": "error", "text": str(e)}, status=500)
+    # Списываем только после успешного ответа
+    _, used, limit = check_and_spend_ai_limit(request.user)
+    return JsonResponse({"status": "ok", "data": data, "ai_used": used, "ai_limit": limit})

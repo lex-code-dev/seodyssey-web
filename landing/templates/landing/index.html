@@ -1,16 +1,38 @@
 {% extends "landing/base.html" %}
 {% load money %}
 
-{% block title %}SEOdyssey — SEO-аудит, видимость в нейросетях и мониторинг сайта{% endblock %}
+{% block title %}SEOdyssey – SEO-аудит, видимость в нейросетях и мониторинг сайта{% endblock %}
 {% block canonical %}<link rel="canonical" href="https://seodyssey.ru/">{% endblock %}
 
 {% block head %}
 <style>
   /* ===== hero: живая демонстрация ===== */
   .hero { max-width: 1200px; margin: 0 auto; padding: clamp(48px,6vw,84px) 24px clamp(48px,6vw,80px); }
+
+  /* каскад появления hero при загрузке (только если анимации не отключены) */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero .fx { opacity: 0; transform: translateY(16px); animation: heroUp .7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .fx-1 { animation-delay: .05s; }
+    .fx-2 { animation-delay: .17s; }
+    .fx-3 { animation-delay: .3s; }
+    .fx-4 { animation-delay: .42s; }
+    .fx-5 { animation-delay: .55s; }
+    @keyframes heroUp { to { opacity: 1; transform: none; } }
+  }
+
+  /* эффекты по скроллу: JS вешает .anim-ready (исходное состояние) и .anim-in (проигрывание),
+     при prefers-reduced-motion скрипт не запускается и всё видно сразу */
+  .trend-bar { width: var(--w, 100%); }
+  [data-anim].anim-ready .trend-bar { width: 0; }
+  [data-anim].anim-in .trend-bar { width: var(--w, 100%); transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1) .15s; }
+  [data-anim].anim-in div:nth-child(2) .trend-bar { transition-delay: .35s; }
+  .tg-alert.anim-ready { opacity: 0; transform: translateY(36px) scale(0.93); }
+  .tg-alert.anim-in { opacity: 1; transform: none; transition: opacity .4s ease-out, transform .7s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .final-cta.anim-ready .spiral path { transition: stroke-dashoffset 2.6s cubic-bezier(0.22, 1, 0.36, 1) .25s; }
+  .final-cta.anim-in .spiral path { stroke-dashoffset: 0 !important; }
   .hero-grid { display: flex; flex-wrap: wrap; gap: clamp(36px,5vw,72px); align-items: center; }
   .hero-copy { flex: 1 1 430px; min-width: 300px; }
-  h1.display.hero-h1 { font-size: clamp(38px, 5vw, 64px); line-height: 1.03; letter-spacing: -0.032em; }
+  h1.display.hero-h1 { font-size: clamp(34px, 4.4vw, 56px); line-height: 1.06; letter-spacing: -0.025em; }
   .hero-sub { font-size: clamp(17px,1.5vw,20px); line-height: 1.55; color: var(--body); margin: 24px 0 32px; max-width: 560px; }
   .hero-ctas { display: flex; flex-wrap: wrap; gap: 13px; }
   .hero-notes { display: flex; align-items: center; gap: 22px; margin-top: 30px; flex-wrap: wrap; font-size: 13.5px; color: var(--faint); font-weight: 500; }
@@ -94,11 +116,10 @@
   .demo[data-step="4"] .demo-miss { display: none; }
   .demo[data-step="4"] .demo-fixed { opacity: 1; }
   .demo[data-step="4"] .chip-you { opacity: 1; transform: scale(1); }
-  .demo[data-step="4"] .demo-window { box-shadow: 0 40px 90px -40px rgba(99,120,255,0.5); }
   /* подпись под окном */
   .demo-caption { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 16px; font-size: 12.5px; color: var(--faint); }
   .demo-caption .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: caretblink 1.2s step-end infinite; }
-  /* пока бренда нет в ответе — скор жёлтый */
+  /* пока бренда нет в ответе – скор жёлтый */
   .demo[data-step="1"] .demo-score b,
   .demo[data-step="2"] .demo-score b,
   .demo[data-step="3"] .demo-score b { color: var(--warn-soft); }
@@ -125,19 +146,18 @@
   .journey-step { position: relative; padding: 0 28px 8px 0; }
   .journey-step + .journey-step { padding-left: 28px; }
   .journey-num {
-    display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
-    font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700;
-    background: var(--accent); color: #fff; margin-bottom: 20px; position: relative; z-index: 1;
+    display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500;
+    background: var(--surface); border: 2px solid var(--accent); color: var(--accent-ink);
+    margin-bottom: 20px; position: relative; z-index: 1;
   }
-  .journey-step:nth-child(2) .journey-num { background: var(--ink); }
-  .journey-step:nth-child(3) .journey-num { background: #9FB0FF; color: var(--ink); }
-  .journey-step:nth-child(4) .journey-num { background: var(--accent); }
+  .journey-step:last-child .journey-num { background: var(--accent); border-color: var(--accent); color: #fff; }
   .journey-step::before {
-    content: ""; position: absolute; top: 23px; left: 0; right: 0; height: 1px;
-    border-top: 2px dashed rgba(99,120,255,0.35);
+    content: ""; position: absolute; top: 21px; left: 0; right: 0; height: 1px;
+    border-top: 2px dotted rgba(99,120,255,0.45);
   }
-  .journey-step:first-child::before { left: 46px; }
-  .journey-step:last-child::before { right: calc(100% - 46px - 28px); }
+  .journey-step:first-child::before { left: 42px; }
+  .journey-step:last-child::before { right: calc(100% - 42px - 28px); }
   .journey-step h3 { font-size: 18.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
   .journey-step p { font-size: 14.5px; line-height: 1.55; color: #6B675E; margin: 0; }
   @media (max-width: 700px) {
@@ -164,7 +184,7 @@
   .audit-lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 40px; }
   .audit-lane { border-radius: 20px; padding: clamp(24px,3vw,34px); }
   .audit-lane-light { background: var(--surface); border: 1px solid var(--line); }
-  .audit-lane-dark { background: var(--dark); color: #F2EFE8; box-shadow: 0 30px 64px -34px rgba(99,120,255,0.4); }
+  .audit-lane-dark { background: var(--dark); color: #F2EFE8; box-shadow: 0 24px 48px -30px rgba(21,20,15,0.45); }
   .audit-lane-tag { display: inline-flex; padding: 7px 15px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 26px; }
   .audit-lane-light .audit-lane-tag { background: #F1F0EC; color: var(--ink); }
   .audit-lane-dark .audit-lane-tag { background: var(--accent); color: #fff; }
@@ -220,7 +240,7 @@
   .cmp-grid { display: flex; flex-wrap: wrap; gap: 18px; }
   .cmp-col { flex: 1 1 360px; min-width: 290px; border-radius: 18px; padding: 30px; }
   .cmp-col-them { background: var(--dark-2); border: 1px solid var(--dark-line); }
-  .cmp-col-us { background: linear-gradient(160deg, #2A2F5C, #1B1D2E); border: 1px solid rgba(99,120,255,0.4); box-shadow: 0 30px 70px -34px rgba(99,120,255,0.55); }
+  .cmp-col-us { background: var(--dark-2); border: 1px solid rgba(99,120,255,0.5); }
   .cmp-title { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 22px; }
   .cmp-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
   .cmp-list li { display: flex; gap: 12px; font-size: 15.5px; line-height: 1.5; }
@@ -229,21 +249,25 @@
   .price-hero { background: var(--dark); color: #F2EFE8; border-radius: var(--radius-xl); padding: clamp(28px,4vw,44px); margin-bottom: 30px; box-shadow: 0 34px 80px -40px rgba(21,20,15,0.6); }
   .price-hero-grid { display: flex; flex-wrap: wrap; gap: 34px; align-items: center; justify-content: space-between; }
   .price-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 11px 22px; max-width: 560px; }
-  .price-features span { display: flex; gap: 9px; font-size: 14.5px; color: #DAD6CC; }
+  .price-features span { display: flex; align-items: baseline; gap: 10px; font-size: 14.5px; color: #DAD6CC; }
+  .price-features span::before { content: ""; flex: none; width: 5px; height: 5px; border-radius: 50%; background: #9FB0FF; transform: translateY(-2px); }
   .price-box { flex: 0 1 280px; min-width: 240px; background: var(--dark-2); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 28px; text-align: center; }
-  .price-num { font-variant-numeric: tabular-nums; font-size: clamp(40px,5vw,56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .price-num { font-family: 'Commissioner', sans-serif; font-size: clamp(40px,4.8vw,54px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
   .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
   .plan { border-radius: 18px; padding: 26px; display: flex; flex-direction: column; }
   .plan-light { background: var(--surface); border: 1px solid rgba(21,20,15,0.1); }
-  .plan-dark { background: var(--dark); color: #F2EFE8; border: 1px solid var(--dark); position: relative; box-shadow: 0 30px 64px -34px rgba(99,120,255,0.5); }
+  .plan-dark { background: var(--dark); color: #F2EFE8; border: 1px solid var(--dark); position: relative; box-shadow: 0 24px 48px -30px rgba(21,20,15,0.5); }
   .plan-tag { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; }
   .plan-price { display: flex; align-items: baseline; gap: 5px; margin-bottom: 4px; }
-  .plan-price b { font-variant-numeric: tabular-nums; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; }
-  .plan-note { font-size: 13px; margin-bottom: 22px; }
-  .plan-list { margin: 0 0 24px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; font-size: 14px; }
-  .plan-list li { display: flex; gap: 9px; }
+  .plan-price b { font-family: 'Commissioner', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  .plan-note { font-size: 13px; margin-bottom: 18px; }
+  .plan-list { margin: 0 0 24px; padding: 0; list-style: none; display: flex; flex-direction: column; font-size: 14px; }
+  .plan-list li { padding: 9px 0; }
+  .plan-list li + li { border-top: 1px solid rgba(21,20,15,0.07); }
+  .plan-dark .plan-list li + li { border-top-color: var(--dark-line); }
   .plan-cta { margin-top: auto; text-align: center; padding: 12px; border-radius: 11px; font-weight: 600; font-size: 14.5px; transition: background .15s, transform .15s; }
   .plan-cta:hover { transform: translateY(-1px); }
+  .plan-cta:active { transform: scale(0.98); }
   .plan-popular {
     position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
     background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
@@ -262,7 +286,7 @@
 
   /* ===== final cta ===== */
   .final-cta { background: var(--dark); border-radius: var(--radius-xl); padding: clamp(40px,6vw,80px) clamp(28px,5vw,64px); text-align: center; position: relative; overflow: hidden; }
-  .final-cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 120%, rgba(99,120,255,0.35), transparent 60%); }
+  .final-cta .spiral { position: absolute; right: -140px; top: 50%; transform: translateY(-50%); width: 520px; height: 520px; opacity: 0.16; pointer-events: none; }
   .final-cta > div { position: relative; }
 </style>
 {% endblock %}
@@ -274,21 +298,21 @@
 <header class="hero">
   <div class="hero-grid">
     <div class="hero-copy">
-      <h1 class="display hero-h1">В ответе нейросети три бренда. <span class="acc">Ваш там есть?</span></h1>
-      <p class="hero-sub">SEO-аудит, видимость в нейросетях и ежедневный мониторинг в одной системе. Она показывает, что чинить именно у вас, и даёт готовый код — а не общие советы.</p>
-      <div class="hero-ctas">
+      <h1 class="display hero-h1 fx fx-1">В ответе нейросети три бренда. <span class="acc">Ваш там есть?</span></h1>
+      <p class="hero-sub fx fx-2">SEOdyssey проверяет сайт так, как его видят Google, Яндекс и нейросети: находит, что мешает попасть в ответы, и пишет код правок под вашу страницу</p>
+      <div class="hero-ctas fx fx-3">
         <a class="btn btn-primary" href="/geo-check/">Проверить сайт бесплатно</a>
         <a class="btn btn-ghost" href="#audit">Как это работает →</a>
       </div>
-      <div class="hero-notes">
+      <div class="hero-notes fx fx-4">
         <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Без регистрации</span>
         <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Результат за пару минут</span>
-        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Готовый код, а не советы</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Код правок в первом же отчёте</span>
       </div>
     </div>
 
     <!-- Живое демо: запрос → ответ без вас → находка → код → вы в ответе -->
-    <div class="hero-visual">
+    <div class="hero-visual fx fx-5">
       <div class="demo" id="heroDemo" data-step="4">
         <div class="demo-window">
           <div class="demo-bar">
@@ -316,10 +340,10 @@
               Не найдена FAQPage-разметка
               <button class="demo-fix-btn" id="demoFixBtn" type="button" tabindex="-1" aria-hidden="true">Вставить код</button>
             </div>
-            <div class="demo-fixed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Код вставлен — при новом запросе бренд попал в ответ</div>
+            <div class="demo-fixed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Код вставлен – при новом запросе бренд попал в ответ</div>
           </div>
         </div>
-        <div class="demo-caption"><span class="dot"></span>так работает GEO-аудит — проверьте на своём сайте</div>
+        <div class="demo-caption"><span class="dot"></span>так работает GEO-аудит – проверьте на своём сайте</div>
       </div>
     </div>
   </div>
@@ -337,20 +361,20 @@
   <div class="wrap-narrow section">
     <div class="trend-grid">
       <div style="flex:1 1 420px;min-width:300px;" data-reveal>
-        <h2 class="display">Поиск изменился. Вопрос — видят ли в нём вас</h2>
-        <p class="lead" style="margin:22px 0 18px;">Классическая выдача отдаёт всё меньше переходов: нейросеть забирает ответ прямо на странице результатов. Пользователь читает готовый ответ — и не кликает дальше.</p>
-        <p class="lead" style="margin:0;">Если вашего бренда нет в этом ответе — клиент уходит к тому, кто там есть. Видимость в нейросетях становится новым первым экраном.</p>
+        <h2 class="display">Ответ нейросети стал первым экраном поиска</h2>
+        <p class="lead" style="margin:22px 0 18px;">Всё больше запросов заканчивается прямо на странице выдачи: человек читает ответ нейросети и не открывает ни одной ссылки</p>
+        <p class="lead" style="margin:0;">Пока в этом ответе три чужих бренда, клиенты достаются им. Попадание в ответ зависит от вполне конкретных вещей на сайте – их можно проверить и починить</p>
       </div>
-      <div class="card-dark" style="flex:1 1 360px;min-width:300px;" data-reveal>
+      <div class="card-dark" style="flex:1 1 360px;min-width:300px;" data-reveal data-anim>
         <div style="font-size:13px;color:#8E8A80;margin-bottom:24px;text-transform:uppercase;letter-spacing:0.07em;">Куда уходит трафик</div>
         <div style="display:flex;flex-direction:column;gap:20px;">
           <div>
             <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:#DAD6CC;"><span>Ответ нейросети на странице</span><span style="color:var(--ok-soft);font-weight:600;">растёт</span></div>
-            <div class="trend-bar-track"><div class="trend-bar" style="width:74%;background:linear-gradient(90deg,#6378FF,#9FE6B8);"></div></div>
+            <div class="trend-bar-track"><div class="trend-bar" style="--w:74%;background:linear-gradient(90deg,#6378FF,#9FE6B8);"></div></div>
           </div>
           <div>
             <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:#DAD6CC;"><span>Переходы из классической выдачи</span><span style="color:var(--warn-soft);font-weight:600;">падает</span></div>
-            <div class="trend-bar-track"><div class="trend-bar" style="width:38%;background:#5A5C66;"></div></div>
+            <div class="trend-bar-track"><div class="trend-bar" style="--w:38%;background:#5A5C66;"></div></div>
           </div>
           <div style="margin-top:6px;padding-top:18px;border-top:1px solid var(--dark-line);font-size:13.5px;color:#9A958B;line-height:1.5;">Чем чаще нейросеть отвечает за вас, тем важнее, чтобы она называла именно ваш бренд.</div>
         </div>
@@ -363,29 +387,29 @@
 <section id="how" class="section-white">
   <div class="wrap section">
     <div style="max-width:760px;" data-reveal>
-      <h2 class="display">Не один инструмент, а система под ваш сайт</h2>
-      <p class="lead" style="margin:18px 0 0;">Начинаете с бесплатной проверки. Дальше сайт под постоянным присмотром: аудит, нейросети, мониторинг — всё в одном месте.</p>
+      <h2 class="display">Маршрут: от первой проверки до сайта под присмотром</h2>
+      <p class="lead" style="margin:18px 0 0;">Начинается с бесплатной проверки. Дальше аудит, нейросети и мониторинг работают в одном месте</p>
     </div>
     <div class="journey" data-reveal-group>
       <div class="journey-step">
-        <span class="journey-num">1</span>
+        <span class="journey-num">01</span>
         <h3>Бесплатная проверка</h3>
-        <p>Вводите адрес, без регистрации. Смотрите, что нейросети думают о вашем бренде, и получаете первый готовый код.</p>
+        <p>Вводите адрес, без регистрации. Видите, что нейросети думают о вашем бренде, и получаете первый код правок</p>
       </div>
       <div class="journey-step">
-        <span class="journey-num">2</span>
+        <span class="journey-num">02</span>
         <h3>Полный аудит</h3>
-        <p>Заводите аккаунт — и сайт проходит 80+ проверок: техника, индексация, мета, доверие, видимость в ИИ.</p>
+        <p>Заводите аккаунт – и сайт проходит 80+ проверок: техника, индексация, мета, доверие, видимость в ИИ</p>
       </div>
       <div class="journey-step">
-        <span class="journey-num">3</span>
+        <span class="journey-num">03</span>
         <h3>ИИ-рекомендации</h3>
-        <p>Каждая проблема с готовым кодом и переписанным текстом под реальные данные вашей страницы, а не шаблон.</p>
+        <p>К каждой проблеме – код и переписанный текст, собранные из реальных данных вашей страницы</p>
       </div>
       <div class="journey-step">
-        <span class="journey-num">4</span>
+        <span class="journey-num">04</span>
         <h3>Постоянный мониторинг</h3>
-        <p>Система проверяет сайт по расписанию и пишет в Telegram, если что-то упало. Узнаёте первым, а не от клиента.</p>
+        <p>Система проверяет сайт по расписанию и пишет в Telegram, если что-то упало. Узнаёте о проблеме раньше клиентов</p>
       </div>
     </div>
   </div>
@@ -398,15 +422,15 @@
     <div class="whom" data-reveal-group>
       <div class="whom-col">
         <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>SEO-специалисты и фрилансеры</h3>
-        <p>Аудит клиентского сайта за минуты вместо часов ручной работы — с технической глубиной, которой можно доверять.</p>
+        <p>Первичный аудит клиентского сайта занимает минуты. Внутри те же проверки, что вы делаете руками: рендер, индексация, разметка, мета</p>
       </div>
       <div class="whom-col">
         <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 4v16"></path></svg>Небольшие агентства</h3>
-        <p>Готовые отчёты для клиентов и код, который экономит часы разработки. Один разбор — понятный результат для заказчика.</p>
+        <p>Отчёт можно отдать заказчику как есть: находки объяснены словами, к каждой приложен код для разработчика</p>
       </div>
       <div class="whom-col">
         <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>Владельцы сайтов и магазинов</h3>
-        <p>Попасть в ответы нейросетей без штатного SEO. Простой вход через бесплатную проверку, дальше — понятные шаги.</p>
+        <p>Штатного сеошника нет – и не нужно: система обычными словами говорит, что вставить и куда. Начать можно с бесплатной проверки</p>
       </div>
     </div>
   </div>
@@ -415,57 +439,57 @@
 <!-- ===== AUDIT CORE: две линии ===== -->
 <section id="audit" class="wrap section">
   <div style="max-width:760px;" data-reveal>
-    <h2 class="display">Не просто оценка — инженерный разбор и готовый код</h2>
-    <p class="lead" style="margin:18px 0 0;">Два аудита в одном отчёте: классический технический SEO и видимость бренда в нейросетях. Каждый модуль — это конкретные находки на вашей странице, а не общая цифра.</p>
+    <h2 class="display">Что внутри отчёта</h2>
+    <p class="lead" style="margin:18px 0 0;">Отчёт состоит из двух частей: классический технический SEO и видимость бренда в нейросетях. Обе собраны из конкретных находок на вашей странице</p>
   </div>
 
   <div class="audit-lanes" data-reveal-group>
     <div class="audit-lane audit-lane-light">
-      <span class="audit-lane-tag">SEO-аудит — техническое здоровье</span>
+      <span class="audit-lane-tag">SEO-аудит – техническое здоровье</span>
       <div class="audit-item">
         <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></span>
         <div>
           <h3>Техническое здоровье</h3>
-          <p>Скорость, ошибки рендера, доступность для ботов, корректность robots.txt — включая правила для AI-краулеров.</p>
+          <p>Скорость, ошибки рендера, доступность для ботов, корректность robots.txt – включая правила для AI-краулеров</p>
         </div>
       </div>
       <div class="audit-item">
         <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
         <div>
           <h3>Индексируемость и структура</h3>
-          <p>Видят ли поисковики страницу, логична ли иерархия заголовков, нет ли каннибализации и дублей.</p>
+          <p>Видят ли поисковики страницу, логична ли иерархия заголовков, нет ли каннибализации и дублей</p>
         </div>
       </div>
       <div class="audit-item">
         <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
         <div>
           <h3>Мета-теги и E-E-A-T</h3>
-          <p>Качество title / description / H1 конкретной страницы, сигналы экспертности и доверия — не главной, а той, что продвигаете.</p>
+          <p>Качество title / description / H1 конкретной страницы, сигналы экспертности и доверия – не главной, а той, что продвигаете</p>
         </div>
       </div>
     </div>
 
     <div class="audit-lane audit-lane-dark">
-      <span class="audit-lane-tag">GEO/AI-аудит — видимость в нейросетях</span>
+      <span class="audit-lane-tag">GEO/AI-аудит – видимость в нейросетях</span>
       <div class="audit-item">
         <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"></path></svg></span>
         <div>
           <h3>Видимость и цитируемость</h3>
-          <p>Называет ли вас Яндекс Нейро и ChatGPT в ответах по вашим темам, как часто и в каком контексте.</p>
+          <p>Называет ли вас Яндекс Нейро и ChatGPT в ответах по вашим темам, как часто и в каком контексте</p>
         </div>
       </div>
       <div class="audit-item">
         <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"></path><path d="M5 9h14l1 12H4z"></path><path d="M9 13v3M15 13v3"></path></svg></span>
         <div>
           <h3>Классификация источников</h3>
-          <p>Кто вас цитирует: свой сайт, агрегаторы, СМИ или соцсети. Видно, на чьих словах нейросеть строит мнение о бренде.</p>
+          <p>Кто вас цитирует: свой сайт, агрегаторы, СМИ или соцсети. Видно, на чьих словах нейросеть строит мнение о бренде</p>
         </div>
       </div>
       <div class="audit-item">
         <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3-3 6-4 9-4s6 1 9 4"></path><path d="M12 3v8"></path><path d="m8 7 4-4 4 4"></path></svg></span>
         <div>
-          <h3>Earned media gap</h3>
-          <p>Нейросеть знает вас только с ваших слов — без подтверждений в СМИ. Показываем разрыв и где его закрывать.</p>
+          <h3>Подтверждения извне</h3>
+          <p>Нейросеть знает вас только с ваших слов, без подтверждений в СМИ и обзорах. Показываем этот разрыв и где его закрывать</p>
         </div>
       </div>
     </div>
@@ -477,36 +501,36 @@
   <div class="wrap-narrow section">
     <div class="mon-grid">
       <div style="flex:1 1 420px;min-width:300px;" data-reveal>
-        <h2 class="display">Сайт под присмотром 24/7</h2>
-        <p class="lead" style="margin:18px 0 28px;">Проблемы с индексацией, скоростью или доступностью возникают внезапно. Система ловит их первой.</p>
+        <h2 class="display">Дальше сайт живёт под присмотром</h2>
+        <p class="lead" style="margin:18px 0 28px;">Сертификат истекает, страница отдаёт 500, из индекса выпал раздел – такое случается тихо. Система замечает это в тот же день</p>
         <div class="mon-list">
           <div class="mon-item">
             <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
             <div>
               <h3>Автоаудит по расписанию</h3>
-              <p>Ежедневно или еженедельно, зависит от тарифа. Не нужно помнить о проверках.</p>
+              <p>Ежедневно или еженедельно, зависит от тарифа. Помнить о проверках не нужно</p>
             </div>
           </div>
           <div class="mon-item">
             <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></span>
             <div>
               <h3>Telegram-алерты</h3>
-              <p>Упала страница, слетел SSL, выросли ошибки индексации — приходит уведомление с причиной и решением.</p>
+              <p>Упала страница, слетел SSL, выросли ошибки индексации – приходит уведомление с причиной и решением</p>
             </div>
           </div>
           <div class="mon-item">
             <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg></span>
             <div>
               <h3>История и динамика</h3>
-              <p>Видно, как показатели меняются со временем: лучше или хуже после правок.</p>
+              <p>Видно, как показатели меняются со временем: лучше или хуже после правок</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- превью реального алерта из продукта -->
-      <div style="flex:1 1 340px;min-width:300px;" data-reveal>
-        <div class="tg-alert">
+      <!-- превью реального алерта из продукта: «сообщение приходит» при появлении -->
+      <div style="flex:1 1 340px;min-width:300px;">
+        <div class="tg-alert" data-anim="pop">
           <div class="tg-alert-head">
             <span class="avatar"><img src="/static/img/spiral-icon.svg" width="20" height="20" alt=""></span>
             <div>
@@ -534,13 +558,13 @@
 <section class="section-white">
   <div class="wrap section">
     <div style="max-width:760px;margin-bottom:40px;" data-reveal>
-      <h2 class="display">Разбор под вашу страницу, а не шаблон</h2>
-      <p class="lead" style="margin:18px 0 0;">Правки и код генерирует AI на основе реальных данных вашей страницы: берёт ваш настоящий первый абзац, ваши мета-теги, ваше название компании — и переписывает их. Никаких «вставьте сюда название» — всё уже подставлено.</p>
+      <h2 class="display">AI переписывает ваши тексты фактами</h2>
+      <p class="lead" style="margin:18px 0 0;">Система берёт настоящий текст вашей страницы – первый абзац, мета-теги, название компании – и переписывает его так, чтобы нейросети было что процитировать. В правках уже стоят ваши данные, а не «вставьте название сюда»</p>
     </div>
 
     <div class="ba-grid" data-reveal-group>
       <div class="ba-col card-tinted">
-        <div class="ba-head" style="color:#9A958B;"><i style="background:#B9B4A8;"></i>Было — ваш текст сейчас</div>
+        <div class="ba-head" style="color:#9A958B;"><i style="background:#B9B4A8;"></i>Было – ваш текст сейчас</div>
         <p class="ba-quote" style="color:#6B675E;background:#fff;border:1px solid var(--line);">«Мы молодая компания, которая занимается доставкой. У нас выгодные цены и хороший сервис.»</p>
         <ul class="ba-list" style="color:#8A857A;">
           <li><span style="color:var(--fail-dot);">✕</span> нет фактов, которые нейросеть может процитировать</li>
@@ -553,10 +577,10 @@
       </div>
 
       <div class="ba-col" style="background:var(--dark);color:#F2EFE8;border-radius:16px;padding:24px;box-shadow:0 28px 60px -32px rgba(21,20,15,0.55);">
-        <div class="ba-head" style="color:var(--ok-soft);"><i style="background:var(--ok-soft);"></i>Стало — переписал AI</div>
-        <p class="ba-quote" style="color:#E6E2D9;background:var(--dark-2);border:1px solid var(--dark-line);">«Служба доставки X работает в Москве с 2019 года. Бесплатная доставка от 3000 ₽, среднее время — 90 минут, более 12 000 заказов в месяц.»</p>
+        <div class="ba-head" style="color:var(--ok-soft);"><i style="background:var(--ok-soft);"></i>Стало – переписал AI</div>
+        <p class="ba-quote" style="color:#E6E2D9;background:var(--dark-2);border:1px solid var(--dark-line);">«Служба доставки X работает в Москве с 2019 года. Бесплатная доставка от 3000 ₽, среднее время – 90 минут, более 12 000 заказов в месяц.»</p>
         <ul class="ba-list" style="color:var(--dark-body);">
-          <li><span style="color:var(--ok-soft);">✓</span> конкретные факты — нейросети есть что цитировать</li>
+          <li><span style="color:var(--ok-soft);">✓</span> конкретные факты – нейросети есть что цитировать</li>
           <li><span style="color:var(--ok-soft);">✓</span> готово к вставке + сгенерирован код разметки</li>
         </ul>
       </div>
@@ -568,12 +592,12 @@
 <section class="wrap section">
   <div style="display:flex;flex-wrap:wrap;gap:clamp(34px,5vw,64px);align-items:center;">
     <div style="flex:1 1 360px;min-width:300px;" data-reveal>
-      <h2 class="display">Готовый код — копируете и вставляете</h2>
-      <p class="lead" style="margin:20px 0 26px;">К каждой проблеме — не абстрактная рекомендация, а конкретный блок кода под вашу страницу. Скопировали, вставили в шаблон — проблема закрыта.</p>
+      <h2 class="display">Код правок уже написан</h2>
+      <p class="lead" style="margin:20px 0 26px;">У каждой находки есть блок кода под вашу страницу. Его остаётся скопировать и вставить в шаблон</p>
       <div class="code-steps">
-        <div class="code-step"><b>01</b><div><h3>Находим проблему</h3><p>«Не найдена FAQPage-разметка» — с объяснением, почему это мешает попасть в ответы нейросетей.</p></div></div>
-        <div class="code-step"><b>02</b><div><h3>Генерируем код под вас</h3><p>JSON-LD с вашими реальными вопросами и ответами — не пустой шаблон.</p></div></div>
-        <div class="code-step"><b>03</b><div><h3>Вставляете — и всё</h3><p>Одна кнопка «Копировать». Без правок руками и без обращения к разработчику.</p></div></div>
+        <div class="code-step"><b>01</b><div><h3>Находим проблему</h3><p>«Не найдена FAQPage-разметка» – с объяснением, почему это мешает попасть в ответы нейросетей</p></div></div>
+        <div class="code-step"><b>02</b><div><h3>Генерируем код под вас</h3><p>JSON-LD с вашими реальными вопросами и ответами – не пустой шаблон</p></div></div>
+        <div class="code-step"><b>03</b><div><h3>Вставляете – и всё</h3><p>Одна кнопка «Копировать». Без правок руками и без обращения к разработчику</p></div></div>
       </div>
     </div>
 
@@ -608,8 +632,8 @@
 }
 <span style="color:#7E8AB0;">&lt;/script&gt;</span></code></pre>
       </div>
-      <p style="display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--body);margin:13px 4px 0;line-height:1.5;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 6 9 17l-5-5"></path></svg><span>Разбираться в коде не нужно — вставляется одной кнопкой. А если не ведёте сайт сами, просто перешлите этот блок своему разработчику.</span></p>
-      <p style="font-size:13px;color:var(--faint);margin:8px 4px 0;line-height:1.5;">Зачем: FAQPage-разметка даёт нейросетям готовые пары «вопрос-ответ» — и они охотнее цитируют вас напрямую.</p>
+      <p style="display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--body);margin:13px 4px 0;line-height:1.5;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 6 9 17l-5-5"></path></svg><span>Разбираться в коде не нужно – вставляется одной кнопкой. А если не ведёте сайт сами, просто перешлите этот блок своему разработчику</span></p>
+      <p style="font-size:13px;color:var(--faint);margin:8px 4px 0;line-height:1.5;">Зачем: FAQPage-разметка даёт нейросетям готовые пары «вопрос-ответ» – и они охотнее цитируют вас напрямую</p>
     </div>
   </div>
 </section>
@@ -644,24 +668,24 @@
 <!-- ===== PRICING ===== -->
 <section id="pricing" class="wrap section">
   <div style="text-align:center;margin-bottom:46px;" data-reveal>
-    <h2 class="display">Простые цены — без скрытых платежей</h2>
-    <p class="lead" style="margin:16px 0 0;">Начните с одного разбора — без подписки. Нужно следить постоянно — переходите на тариф.</p>
+    <h2 class="display">Сколько это стоит</h2>
+    <p class="lead" style="margin:16px 0 0;">Можно купить один разбор без подписки. Подписка нужна, только когда хочется постоянного присмотра за сайтом</p>
   </div>
 
   <!-- Разовый Pro-отчёт -->
   <div class="price-hero" data-reveal>
     <div class="price-hero-grid">
       <div style="flex:1 1 380px;min-width:280px;">
-        <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:18px;">★ С чего начать</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:18px;">С чего начать</div>
         <h3 style="font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-0.02em;margin:0 0 10px;">Pro-отчёт по вашей странице</h3>
-        <p style="font-size:15.5px;color:var(--dark-body);line-height:1.55;margin:0 0 24px;max-width:440px;">Разовая покупка, без подписки. Полный разбор одной страницы со всеми правками и кодом.</p>
+        <p style="font-size:15.5px;color:var(--dark-body);line-height:1.55;margin:0 0 24px;max-width:440px;">Разовая покупка, без подписки. Полный разбор одной страницы со всеми правками и кодом</p>
         <div class="price-features">
-          <span><span style="color:var(--ok-soft);">✓</span> Полный разбор всех проблем</span>
-          <span><span style="color:var(--ok-soft);">✓</span> Персонализированные правки</span>
-          <span><span style="color:var(--ok-soft);">✓</span> Готовый код для вставки</span>
-          <span><span style="color:var(--ok-soft);">✓</span> Переписанные тексты</span>
-          <span><span style="color:var(--ok-soft);">✓</span> Выгрузка в PDF</span>
-          <span><span style="color:var(--ok-soft);">✓</span> GEO + SEO в одном отчёте</span>
+          <span>Полный разбор всех проблем</span>
+          <span>Правки под вашу страницу</span>
+          <span>Готовый код для вставки</span>
+          <span>Переписанные тексты</span>
+          <span>Выгрузка в PDF</span>
+          <span>GEO + SEO в одном отчёте</span>
         </div>
       </div>
       <div class="price-box">
@@ -681,26 +705,26 @@
   <!-- Подписки -->
   <div style="text-align:center;margin:48px 0 26px;" data-reveal>
     <h3 style="font-size:clamp(20px,2.2vw,26px);font-weight:700;letter-spacing:-0.02em;margin:0 0 8px;">Подписки для постоянного мониторинга</h3>
-    <p style="font-size:15px;color:#6B675E;margin:0;">Нужно следить постоянно и вести несколько сайтов — выбирайте тариф.</p>
+    <p style="font-size:15px;color:#6B675E;margin:0;">Тарифы отличаются числом проектов и частотой автоматических проверок</p>
   </div>
   <div class="plans" data-reveal-group>
 
     {% for plan in plans %}
     {% if plan.slug == 'pro' %}
-    <!-- Pro — популярный (тёмная карточка) -->
+    <!-- Pro – популярный (тёмная карточка) -->
     <div class="plan plan-dark">
       <span class="plan-popular">Популярный</span>
       <div class="plan-tag" style="color:#9FB0FF;">{{ plan.name }}</div>
       <div class="plan-price"><b>{{ plan.price_monthly|thousands }}</b><span style="font-size:14px;color:var(--dark-body);">{% if plan.price_monthly %}₽/мес{% endif %}</span></div>
       <div class="plan-note" style="color:var(--dark-faint);">для тех, кто ведёт несколько проектов</div>
       <ul class="plan-list" style="color:#DAD6CC;">
-        <li><span style="color:var(--ok-soft);">✓</span> Проектов: {{ plan.max_projects }}</li>
-        <li><span style="color:var(--ok-soft);">✓</span> Автоаудит: {{ plan.get_audit_frequency_display }}</li>
-        <li><span style="color:var(--ok-soft);">✓</span> AI-проверок в месяц: {{ plan.ai_limit }}</li>
-        <li><span style="color:var(--ok-soft);">✓</span> GEO-аудит видимости в ИИ</li>
-        <li><span style="color:var(--ok-soft);">✓</span> Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
-        {% if plan.telegram_alerts %}<li><span style="color:var(--ok-soft);">✓</span> Telegram-алерты</li>{% endif %}
-        <li><span style="color:var(--ok-soft);">✓</span> История: {% if plan.history_days is None %}без лимита{% else %}{{ plan.history_days }} дн.{% endif %}</li>
+        <li>Проектов: {{ plan.max_projects }}</li>
+        <li>Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+        <li>AI-проверок в месяц: {{ plan.ai_limit }}</li>
+        <li>GEO-аудит видимости в ИИ</li>
+        <li>Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+        {% if plan.telegram_alerts %}<li>Telegram-алерты</li>{% endif %}
+        <li>История: {% if plan.history_days is None %}без лимита{% else %}{{ plan.history_days }} дн.{% endif %}</li>
       </ul>
       <a class="plan-cta" href="https://app.seodyssey.ru/" style="background:var(--accent);color:#fff;">Выбрать {{ plan.name }}</a>
     </div>
@@ -711,12 +735,12 @@
       <div class="plan-price"><b>{{ plan.price_monthly|thousands }}</b><span style="font-size:14px;color:var(--faint);">{% if plan.price_monthly %}₽/мес{% else %}₽{% endif %}</span></div>
       <div class="plan-note" style="color:#9A958B;">{% if plan.slug == 'free' %}для первого знакомства{% elif plan.slug == 'start' %}для одного сайта, который нельзя терять{% elif plan.slug == 'agency' %}для агентств и потока клиентов{% else %}{{ plan.name }}{% endif %}</div>
       <ul class="plan-list" style="color:#4A463E;">
-        <li><span style="color:var(--accent);">✓</span> Проектов: {{ plan.max_projects }}</li>
-        <li><span style="color:var(--accent);">✓</span> Автоаудит: {{ plan.get_audit_frequency_display }}</li>
-        <li><span style="color:var(--accent);">✓</span> AI-проверок в месяц: {{ plan.ai_limit }}</li>
-        {% if plan.slug == 'free' %}<li style="color:#9A958B;"><span style="color:#9A958B;">–</span> GEO-аудит — на платных тарифах</li>{% else %}<li><span style="color:var(--accent);">✓</span> GEO-аудит видимости в ИИ</li>{% endif %}
-        <li><span style="color:var(--accent);">✓</span> Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
-        {% if plan.telegram_alerts %}<li><span style="color:var(--accent);">✓</span> Telegram-алерты</li>{% endif %}
+        <li>Проектов: {{ plan.max_projects }}</li>
+        <li>Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+        <li>AI-проверок в месяц: {{ plan.ai_limit }}</li>
+        {% if plan.slug == 'free' %}<li style="color:#9A958B;">GEO-аудит – на платных тарифах</li>{% else %}<li>GEO-аудит видимости в ИИ</li>{% endif %}
+        <li>Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+        {% if plan.telegram_alerts %}<li>Telegram-алерты</li>{% endif %}
       </ul>
       <a class="plan-cta" href="https://app.seodyssey.ru/" style="background:#F1F0EC;color:var(--ink);">{% if plan.price_monthly %}Выбрать {{ plan.name }}{% else %}Начать бесплатно{% endif %}</a>
     </div>
@@ -739,7 +763,7 @@
         {% if post.cover %}
         <div class="post-cover"><img src="{{ post.cover.url }}" alt="{{ post.title }}"></div>
         {% else %}
-        <div style="height:150px;{% cycle 'background:linear-gradient(135deg,#EEF0FF,#DDE2FF);color:#6378FF;' 'background:linear-gradient(135deg,#15140F,#2A2F5C);color:#9FE6B8;' 'background:linear-gradient(135deg,#FFF4F2,#FFE3DF);color:#FF6058;' as cardbg %}display:grid;place-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path></svg></div>
+        <div style="height:150px;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path></svg></div>
         {% endif %}
         <div class="post-body">
           <div class="post-meta">{% if post.published_at %}{{ post.published_at|date:"d.m.Y" }}{% else %}{{ post.created_at|date:"d.m.Y" }}{% endif %} · {{ post.read_time }} мин</div>
@@ -748,7 +772,7 @@
         </div>
       </a>
       {% empty %}
-      <p style="font-size:15px;color:var(--faint);grid-column:1/-1;">Скоро здесь появятся разборы и кейсы.</p>
+      <p style="font-size:15px;color:var(--faint);grid-column:1/-1;">Скоро здесь появятся разборы и кейсы</p>
       {% endfor %}
     </div>
   </div>
@@ -756,10 +780,13 @@
 
 <!-- ===== FINAL CTA ===== -->
 <section class="wrap section">
-  <div class="final-cta" data-reveal>
+  <div class="final-cta" data-reveal data-anim>
+    <svg class="spiral" viewBox="0 0 660 660" fill="none" aria-hidden="true">
+      <path d="M330 330 a10 10 0 0 1 20 0 a20 20 0 0 1 -40 0 a40 40 0 0 1 80 0 a80 80 0 0 1 -160 0 a160 160 0 0 1 320 0" stroke="#9FB0FF" stroke-width="2" stroke-linecap="round"/>
+    </svg>
     <div>
-      <h2 class="display" style="color:var(--bg);margin:0 auto 20px;max-width:680px;">Проверьте свой сайт — и получите систему, которая следит за ним</h2>
-      <p class="lead" style="color:var(--dark-body);margin:0 auto 34px;max-width:520px;">Начните с бесплатной проверки без регистрации. Дальше — полный аудит, ИИ-рекомендации и мониторинг под ваш сайт.</p>
+      <h2 class="display" style="color:var(--bg);margin:0 auto 20px;max-width:680px;">Проверьте, что нейросети говорят о вас</h2>
+      <p class="lead" style="color:var(--dark-body);margin:0 auto 34px;max-width:520px;">Бесплатная проверка занимает пару минут и не требует регистрации. Что чинить первым – увидите в первом же отчёте</p>
       <a class="btn btn-primary" style="padding:16px 32px;font-size:17px;" href="/geo-check/">Проверить сайт бесплатно</a>
     </div>
   </div>
@@ -768,6 +795,42 @@
 
 {% block scripts %}
 <script>
+(function(){
+  // Эффекты по скроллу: рост баров тренда, «прилетающий» tg-алерт, самозакручивающаяся спираль.
+  // При prefers-reduced-motion не запускаемся — всё видно сразу в финальном состоянии.
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) return;
+  var targets = document.querySelectorAll('[data-anim]');
+  if (!targets.length) return;
+
+  // спирали задаём длину штриха, чтобы она рисовала себя при появлении
+  var spiral = document.querySelector('.final-cta .spiral path');
+  if (spiral && spiral.getTotalLength){
+    try {
+      var len = Math.ceil(spiral.getTotalLength());
+      spiral.style.strokeDasharray = len;
+      spiral.style.strokeDashoffset = len;
+    } catch(_){}
+  }
+
+  targets.forEach(function(el){ el.classList.add('anim-ready'); });
+  function onSeen(io){
+    return function(entries){
+      entries.forEach(function(en){
+        if (!en.isIntersecting) return;
+        en.target.classList.add('anim-in');
+        io.unobserve(en.target);
+      });
+    };
+  }
+  // обычные эффекты стартуют при 20% видимости; «pop» (tg-алерт) — когда карточка
+  // видна больше чем наполовину, чтобы прилёт сообщения происходил на глазах
+  var io = new IntersectionObserver(function(e){ onSeen(io)(e); }, { threshold: 0.2 });
+  var ioPop = new IntersectionObserver(function(e){ onSeen(ioPop)(e); }, { threshold: 0.55 });
+  targets.forEach(function(el){
+    (el.getAttribute('data-anim') === 'pop' ? ioPop : io).observe(el);
+  });
+})();
 (function(){
   // Живое демо в hero: набор запроса → ответ без бренда → находка → код → бренд в ответе.
   // При prefers-reduced-motion остаётся статичный финальный кадр (data-step="4" в разметке).

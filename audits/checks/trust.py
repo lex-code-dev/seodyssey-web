@@ -1,5 +1,7 @@
 import re
 import httpx
+
+from audits.net_guard import safe_get
 from bs4 import BeautifulSoup
 
 def check_trust(domain: str) -> list[dict]:
@@ -7,7 +9,7 @@ def check_trust(domain: str) -> list[dict]:
     base_url = f"https://{domain}"
 
     try:
-        response = httpx.get(base_url, follow_redirects=True, timeout=10)
+        response = safe_get(base_url, timeout=10)
         soup = BeautifulSoup(response.text, "lxml")
         text = soup.get_text(separator=" ", strip=True)
         html = response.text

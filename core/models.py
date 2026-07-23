@@ -3,6 +3,8 @@ from django.db import models
 from django.utils import timezone
 from urllib.parse import urlparse
 
+from core.crypto import EncryptedTextField
+
 
 def normalize_domain(raw: str) -> str:
     raw = (raw or "").strip()
@@ -149,8 +151,10 @@ class YandexOAuth(models.Model):
         on_delete=models.CASCADE,
         related_name="yandex_oauth",
     )
-    access_token = models.TextField()
-    refresh_token = models.TextField(blank=True, null=True)
+    # Шифруются в базе: см. core.crypto — доступ к Метрике и Вебмастеру
+    # пользователя не должен утекать вместе с копией db.sqlite3.
+    access_token = EncryptedTextField()
+    refresh_token = EncryptedTextField(blank=True, null=True)
     expires_at = models.DateTimeField(blank=True, null=True)
     scope = models.CharField(max_length=512, blank=True, default="")
     webmaster_user_id = models.BigIntegerField(blank=True, null=True)

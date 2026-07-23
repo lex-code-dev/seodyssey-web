@@ -1,6 +1,8 @@
 import json
 import re
 import httpx
+
+from audits.net_guard import safe_get
 from bs4 import BeautifulSoup
 from urllib.robotparser import RobotFileParser
 
@@ -49,7 +51,7 @@ def check_ai_geo(domain: str) -> list[dict]:
     root_url = f"{_parsed.scheme}://{_parsed.netloc}"
 
     try:
-        response = httpx.get(base_url, follow_redirects=True, timeout=10)
+        response = safe_get(base_url, timeout=10)
         soup = BeautifulSoup(response.text, "lxml")
         text = soup.get_text(separator=" ", strip=True).lower()
         html = response.text
@@ -67,7 +69,7 @@ def check_ai_geo(domain: str) -> list[dict]:
             "CCBot",  # Common Crawl (кормит многие LLM)
         ]
         try:
-            robots_resp = httpx.get(f"{root_url}/robots.txt", follow_redirects=True, timeout=10)
+            robots_resp = safe_get(f"{root_url}/robots.txt", timeout=10)
             if robots_resp.status_code == 200 and robots_resp.text.strip():
                 rp = RobotFileParser()
                 rp.parse(robots_resp.text.splitlines())
@@ -593,7 +595,7 @@ def extract_page_facts(domain: str) -> dict:
         base_url = f"https://{domain}"
 
     try:
-        response = httpx.get(base_url, follow_redirects=True, timeout=10)
+        response = safe_get(base_url, timeout=10)
         soup = BeautifulSoup(response.text, "lxml")
         html = response.text
         text = soup.get_text(separator=" ", strip=True)

@@ -1,0 +1,89 @@
+{% extends "landing/base.html" %}
+
+{% block title %}Бесплатные SEO-инструменты · SEOdyssey{% endblock %}
+{% block description %}Бесплатные инструменты SEOdyssey без регистрации: проверка robots.txt и доступа AI-ботов, проверка title и description, GEO-проверка видимости сайта в нейросетях.{% endblock %}
+{% block nav_cta_label %}Перейти в сервис{% endblock %}
+
+{% block head %}
+<style>
+  .tl-page { position: relative; overflow: hidden; padding: clamp(48px,6vw,84px) 24px clamp(56px,7vw,96px); }
+  .tl-page::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(900px 480px at 82% -10%, rgba(99,120,255,0.14), transparent 60%);
+    pointer-events: none;
+  }
+  .tl-inner { position: relative; max-width: 880px; margin: 0 auto; }
+  .tl-sub { font-size: 16px; line-height: 1.55; color: var(--body); margin: 16px 0 0; max-width: 620px; }
+  .tl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 40px; }
+  .tl-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+  .tl-card h2 { font-size: 18px; font-weight: 600; margin: 0 0 10px; color: var(--ink); }
+  .tl-card p { font-size: 14.5px; line-height: 1.55; color: var(--body); margin: 0 0 16px; }
+  .tl-list { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .tl-list li { position: relative; padding-left: 20px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .tl-list li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-size: 12px; }
+  .tl-go { margin-top: auto; font-size: 14px; font-weight: 500; color: var(--acc); display: inline-flex; align-items: center; gap: 6px; }
+  .tl-tag { display: inline-block; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #9A958B; margin-bottom: 12px; }
+  .tl-soon { opacity: 0.62; }
+  .tl-soon .tl-go { color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="tl-page">
+  <div class="tl-inner">
+    <div class="pill" style="margin-bottom:22px;"><span class="dot"></span>Бесплатно · без регистрации</div>
+    <h1 class="display">Бесплатные <span class="acc">инструменты</span></h1>
+    <p class="tl-sub">Быстрые проверки сайта без регистрации и оплаты. Каждая отвечает на один конкретный вопрос — и объясняет, что делать с результатом.</p>
+
+    <div class="tl-grid">
+      <a class="card card-hover tl-card" href="{% url 'geo_check' %}">
+        <span class="tl-tag">GEO · нейросети</span>
+        <h2>GEO-проверка сайта</h2>
+        <p>Видит ли вашу страницу ChatGPT, Perplexity и нейроответ Яндекса — и что мешает попасть в их ответы.</p>
+        <ul class="tl-list">
+          <li>Доступ AI-ботов и техническая готовность</li>
+          <li>Структура, факты, микроразметка</li>
+          <li>Отчёт со ссылкой и выгрузкой в PDF</li>
+        </ul>
+        <span class="tl-go">Проверить сайт →</span>
+      </a>
+
+      <a class="card card-hover tl-card" href="{% url 'robots_txt_check' %}">
+        <span class="tl-tag">Индексация</span>
+        <h2>Проверка robots.txt</h2>
+        <p>Не закрыт ли сайт или конкретная страница от поисковиков — и каким именно правилом.</p>
+        <ul class="tl-list">
+          <li>Запрет обхода сайта и отдельной страницы</li>
+          <li>Доступ 9 AI-ботов: ChatGPT, Gemini, Perplexity</li>
+          <li>noindex, X-Robots-Tag, canonical, Sitemap</li>
+        </ul>
+        <span class="tl-go">Проверить robots.txt →</span>
+      </a>
+
+      <a class="card card-hover tl-card" href="{% url 'meta_tags_check' %}">
+        <span class="tl-tag">Мета-теги</span>
+        <h2>Проверка title и description</h2>
+        <p>Как страница выглядит в выдаче и что не так с мета-тегами.</p>
+        <ul class="tl-list">
+          <li>Превью сниппета и длина тегов</li>
+          <li>Переспам, повторы слов, CAPS</li>
+          <li>H1 и объём текста на странице</li>
+        </ul>
+        <span class="tl-go">Проверить мета-теги →</span>
+      </a>
+
+      <div class="card card-tinted tl-card tl-soon">
+        <span class="tl-tag">Скоро</span>
+        <h2>SSL и срок домена</h2>
+        <p>Когда истекает сертификат и регистрация домена, настроен ли редирект на https.</p>
+        <ul class="tl-list">
+          <li>Срок действия сертификата</li>
+          <li>Дата продления домена</li>
+          <li>Редиректы и цепочки переходов</li>
+        </ul>
+        <span class="tl-go">В разработке</span>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

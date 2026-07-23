@@ -1,0 +1,1195 @@
+{% load money %}<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEOdyssey – макет редизайна главной (v2)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/static/img/spiral-icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Commissioner:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SEOdyssey · v2 mockup · язык Magic Portfolio / Once UI
+   Светлая тема целиком. Акцент прежний: перивинкль #6378FF.
+   Радиусы: интерактив = 999, карточки/окна = 24, мелочь = 12.
+   ============================================================ */
+:root {
+  --bg: #F7F4EE;
+  --surface: #FFFFFF;
+  --surface-2: #FAF8F4;
+  --line: rgba(21, 20, 15, 0.09);
+  --line-strong: rgba(21, 20, 15, 0.18);
+  --ink: #15140F;
+  --ink-2: #3D3A33;
+  --body: #5C584F;
+  --faint: #8A857A;
+  --accent: #6378FF;
+  --accent-hover: #4F5BE0;
+  --accent-bg: #EEF0FF;
+  --accent-line: rgba(99, 120, 255, 0.28);
+  --accent-ink: #3D4CC4;
+  --ok: #1F7A3D; --ok-bg: #E7F3E9; --ok-line: rgba(31, 122, 61, 0.3);
+  --warn: #8A5A00;
+  --fail: #B3261E; --fail-dot: #FF6058; --fail-bg: #FFF4F2; --fail-line: rgba(255, 96, 88, 0.26);
+  --code-bg: #121316;
+  --r-card: 24px;
+  --r-small: 12px;
+  --shadow-card: 0 24px 60px -32px rgba(21, 20, 15, 0.28);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { max-width: 100%; overflow-x: hidden; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--accent); color: #fff; }
+a { color: inherit; text-decoration: none; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+/* ---------- типографика ---------- */
+.display {
+  font-family: 'Commissioner', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+  margin: 0;
+}
+h1.display { font-size: clamp(38px, 5.6vw, 68px); line-height: 1.04; }
+h2.display { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.12; }
+.display .acc { color: var(--accent); }
+.lead { font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; color: var(--body); }
+
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+.section { padding-top: clamp(72px, 9vw, 128px); padding-bottom: clamp(72px, 9vw, 128px); }
+.section-tint { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.sec-head { max-width: 720px; }
+.sec-head .lead { margin: 18px 0 0; }
+
+/* ---------- плавающая pill-навигация ---------- */
+.pnav {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 50; display: flex; align-items: center; gap: 4px;
+  padding: 7px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 12px 40px -18px rgba(21, 20, 15, 0.28);
+  backdrop-filter: saturate(160%) blur(16px);
+  -webkit-backdrop-filter: saturate(160%) blur(16px);
+  max-width: calc(100vw - 28px);
+}
+.pnav-logo { display: flex; align-items: center; gap: 9px; padding: 6px 12px 6px 8px; border-radius: 999px; }
+.pnav-logo b { font-size: 15px; letter-spacing: -0.02em; white-space: nowrap; }
+.pnav-links { display: flex; align-items: center; gap: 2px; }
+.pnav-links a {
+  padding: 9px 14px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; color: var(--ink-2);
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.pnav-links a:hover { background: var(--surface-2); color: var(--ink); }
+.pnav-cta {
+  margin-left: 6px;
+  background: var(--ink); color: #fff;
+  padding: 10px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; white-space: nowrap;
+  transition: transform .15s, background .15s;
+}
+.pnav-cta:hover { transform: translateY(-1px); background: #2E2C24; }
+.pnav-burger {
+  display: none; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border: none; background: transparent;
+  border-radius: 999px; cursor: pointer; color: var(--ink);
+}
+.pnav-mobile {
+  display: none; position: fixed; top: 72px; left: 14px; right: 14px; z-index: 49;
+  flex-direction: column; gap: 2px; padding: 10px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: 0 24px 60px -24px rgba(21, 20, 15, 0.35);
+}
+.pnav-mobile a { padding: 12px 14px; font-size: 15.5px; font-weight: 500; border-radius: 14px; }
+.pnav-mobile a:active { background: var(--accent-bg); }
+.pnav-mobile .pnav-cta { text-align: center; margin: 6px 0 0; }
+@media (max-width: 880px) {
+  .pnav { left: 14px; right: 14px; transform: none; justify-content: space-between; }
+  .pnav-links, .pnav > .pnav-cta { display: none; }
+  .pnav-burger { display: inline-flex; }
+}
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  padding: clamp(120px, 14vw, 168px) 24px clamp(56px, 7vw, 88px);
+  text-align: center;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(1200px 560px at 50% -120px, rgba(99, 120, 255, 0.17), transparent 72%);
+}
+.hero-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(99, 120, 255, 0.55) 1.15px, transparent 1.15px);
+  background-size: 26px 26px;
+  opacity: 0.28;
+  -webkit-mask-image: radial-gradient(760px 420px at 50% -40px, #000 12%, transparent 72%);
+  mask-image: radial-gradient(760px 420px at 50% -40px, #000 12%, transparent 72%);
+}
+.hero-inner { position: relative; max-width: 880px; margin: 0 auto; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: rgba(99, 120, 255, 0.10);
+  border: 1px solid var(--accent-line);
+  color: var(--accent-ink);
+  border-radius: 999px; padding: 8px 16px;
+  font-size: 13.5px; font-weight: 600;
+  transition: background .15s, transform .15s;
+}
+.hero-badge:hover { background: rgba(99, 120, 255, 0.16); transform: translateY(-1px); }
+.hero-badge svg { flex: none; }
+.hero h1 { margin: 26px auto 0; max-width: 840px; }
+.hero-sub {
+  font-size: clamp(17px, 1.7vw, 21px); line-height: 1.55; color: var(--body);
+  max-width: 640px; margin: 22px auto 0;
+}
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 34px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 15px 28px; border-radius: 999px; border: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+  transition: transform .15s, background .15s, box-shadow .15s;
+}
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 14px 30px -14px rgba(99, 120, 255, 0.7); }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+.btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); }
+.btn-ghost:hover { background: var(--surface-2); }
+.btn:focus-visible, a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* каскад появления hero */
+@media (prefers-reduced-motion: no-preference) {
+  .fx { opacity: 0; transform: translateY(16px); animation: fadeUp .8s var(--ease) forwards; }
+  .fx-1 { animation-delay: .05s; }
+  .fx-2 { animation-delay: .18s; }
+  .fx-3 { animation-delay: .32s; }
+  .fx-4 { animation-delay: .46s; }
+  .fx-5 { animation-delay: .62s; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+}
+
+/* ---------- демо-окно под hero ---------- */
+.demo-stage { position: relative; max-width: 760px; margin: clamp(44px, 6vw, 64px) auto 0; text-align: left; }
+.demo-window {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: 0 48px 110px -48px rgba(21, 20, 15, 0.42);
+  overflow: hidden;
+}
+.demo-bar { display: flex; align-items: center; gap: 9px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.demo-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.demo-bar .name { margin-left: 6px; font-size: 12.5px; color: var(--faint); }
+.demo-score {
+  margin-left: auto; display: inline-flex; align-items: baseline; gap: 6px;
+  background: var(--ink); color: #C9C5BC; border-radius: 999px; padding: 6px 13px;
+  font-size: 11px; white-space: nowrap;
+}
+.demo-score b { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #9FE6B8; transition: color .3s; }
+.demo-chat { padding: 22px 22px 8px; min-height: 210px; }
+.demo-q {
+  display: inline-flex; align-items: center; max-width: 92%;
+  background: var(--accent); color: #fff; border-radius: 18px 18px 6px 18px;
+  padding: 11px 16px; font-size: 14.5px; line-height: 1.45; min-height: 42px;
+}
+.demo-caret { display: inline-block; width: 2px; height: 16px; background: rgba(255,255,255,0.9); margin-left: 3px; animation: caretblink 0.9s step-end infinite; }
+@keyframes caretblink { 50% { opacity: 0; } }
+.demo-a {
+  margin: 14px 0 0 auto; max-width: 100%;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 18px 18px 18px 6px;
+  padding: 15px 17px;
+  opacity: 0; transform: translateY(10px); transition: opacity .45s ease-out, transform .45s ease-out;
+}
+.demo-a-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+.demo-a-head .spark { color: var(--accent); }
+.demo-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: 999px; padding: 6px 13px; font-size: 13.5px; font-weight: 600; color: var(--ink-2);
+}
+.chip-you {
+  background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok);
+  opacity: 0; transform: scale(0.85); transition: opacity .4s ease-out, transform .45s var(--ease);
+}
+.demo-miss {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  font-size: 13px; font-weight: 600; color: var(--fail);
+  opacity: 0; transition: opacity .4s ease-out;
+}
+.demo-report { border-top: 1px solid var(--line); background: var(--surface-2); padding: 15px 22px 18px; min-height: 108px; }
+.demo-report-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+.demo-finding {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--fail-bg); border: 1px solid var(--fail-line); border-radius: var(--r-small);
+  padding: 10px 13px; font-size: 13.5px; font-weight: 600; color: var(--ink);
+  opacity: 0; transform: translateY(8px); transition: opacity .4s ease-out, transform .4s ease-out;
+}
+.demo-finding .mark { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: var(--fail-dot); color: #fff; font-weight: 700; font-size: 13px; }
+.demo-fix-btn {
+  margin-left: auto; border: none; cursor: default;
+  background: var(--accent); color: #fff; border-radius: 999px;
+  padding: 7px 15px; font-size: 12.5px; font-weight: 600; font-family: 'Inter', sans-serif;
+  transition: transform .15s, background .2s;
+}
+.demo-fix-btn.pressed { transform: scale(0.95); background: var(--accent-hover); }
+.demo-fixed {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+  font-size: 13px; font-weight: 600; color: var(--ok);
+  opacity: 0; transition: opacity .4s ease-out;
+}
+.demo[data-step="2"] .demo-a, .demo[data-step="3"] .demo-a, .demo[data-step="4"] .demo-a { opacity: 1; transform: none; }
+.demo[data-step="2"] .demo-miss, .demo[data-step="3"] .demo-miss { opacity: 1; }
+.demo[data-step="3"] .demo-finding, .demo[data-step="4"] .demo-finding { opacity: 1; transform: none; }
+.demo[data-step="4"] .demo-miss { display: none; }
+.demo[data-step="4"] .demo-fixed { opacity: 1; }
+.demo[data-step="4"] .chip-you { opacity: 1; transform: scale(1); }
+.demo[data-step="1"] .demo-score b,
+.demo[data-step="2"] .demo-score b,
+.demo[data-step="3"] .demo-score b { color: #E2B589; }
+.demo-caption { display: flex; align-items: center; gap: 14px; justify-content: center; margin-top: 18px; font-size: 13px; color: var(--faint); flex-wrap: wrap; }
+@media (max-width: 480px) {
+  .demo-bar .name { display: none; }
+  .demo-chat { min-height: 230px; }
+}
+
+/* providers */
+.providers {
+  display: flex; flex-wrap: wrap; gap: 12px 34px; align-items: center; justify-content: center;
+  margin-top: clamp(40px, 5vw, 56px); font-size: 13.5px; color: var(--faint); font-weight: 500;
+}
+.providers b { font-weight: 600; color: var(--ink-2); }
+.providers .soon { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 2px 9px; border-radius: 999px; }
+
+/* ---------- trend ---------- */
+.trend-grid { display: flex; flex-wrap: wrap; gap: clamp(34px, 5vw, 72px); align-items: flex-start; }
+.trend-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: clamp(24px, 3vw, 32px); box-shadow: var(--shadow-card); }
+.trend-card-label { font-size: 12px; color: var(--faint); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+.trend-bar-track { height: 9px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.trend-bar { height: 100%; border-radius: 999px; }
+.trend-note { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--faint); line-height: 1.5; }
+
+/* ---------- journey ---------- */
+.journey { counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; margin-top: 48px; }
+.journey-step { position: relative; padding: 0 28px 8px 0; }
+.journey-step + .journey-step { padding-left: 28px; }
+.journey-num {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500;
+  background: var(--surface); border: 2px solid var(--accent); color: var(--accent-ink);
+  margin-bottom: 20px; position: relative; z-index: 1;
+}
+.journey-step:last-child .journey-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.journey-step::before {
+  content: ""; position: absolute; top: 21px; left: 0; right: 0; height: 1px;
+  border-top: 2px dotted rgba(99, 120, 255, 0.45);
+}
+.journey-step:first-child::before { left: 42px; }
+.journey-step:last-child::before { right: calc(100% - 42px - 28px); }
+.journey-step h3 { font-size: 18.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 10px; }
+.journey-step p { font-size: 14.5px; line-height: 1.55; color: var(--body); margin: 0; }
+@media (max-width: 700px) {
+  .journey { grid-template-columns: 1fr; gap: 26px; }
+  .journey-step, .journey-step + .journey-step { padding: 0; }
+  .journey-step::before { display: none; }
+  .journey-num { margin-bottom: 14px; }
+}
+
+/* ---------- whom ---------- */
+.whom { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border-top: 1px solid var(--line); margin-top: 44px; }
+.whom-col { padding: 30px 30px 6px 0; }
+.whom-col + .whom-col { border-left: 1px solid var(--line); padding-left: 30px; }
+.whom-col h3 { display: flex; align-items: center; gap: 12px; font-size: 18.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 12px; }
+.whom-col h3 svg { color: var(--accent); flex: none; }
+.whom-col p { font-size: 14.5px; line-height: 1.6; color: var(--body); margin: 0; }
+@media (max-width: 880px) {
+  .whom { grid-template-columns: 1fr; }
+  .whom-col + .whom-col { border-left: none; border-top: 1px solid var(--line); padding-left: 0; }
+  .whom-col { padding-right: 0; }
+}
+
+/* ---------- audit lanes ---------- */
+.audit-lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 44px; }
+.audit-lane { border-radius: var(--r-card); padding: clamp(24px, 3vw, 34px); background: var(--surface); border: 1px solid var(--line); }
+.audit-lane-geo { border-color: var(--accent-line); background: linear-gradient(180deg, rgba(99, 120, 255, 0.06), rgba(99, 120, 255, 0.015) 55%), var(--surface); box-shadow: var(--shadow-card); }
+.audit-lane-tag { display: inline-flex; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 26px; }
+.audit-lane-seo .audit-lane-tag { background: var(--surface-2); color: var(--ink); }
+.audit-lane-geo .audit-lane-tag { background: var(--accent); color: #fff; }
+.audit-item { display: flex; gap: 15px; align-items: flex-start; padding: 17px 0; }
+.audit-item + .audit-item { border-top: 1px solid var(--line); }
+.audit-item .ic { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-small); }
+.audit-lane-seo .audit-item .ic { background: var(--surface-2); color: var(--ink); }
+.audit-lane-geo .audit-item .ic { background: var(--accent); color: #fff; }
+.audit-item h3 { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 6px; }
+.audit-item p { font-size: 14px; line-height: 1.55; margin: 0; color: var(--body); }
+@media (max-width: 880px) { .audit-lanes { grid-template-columns: 1fr; } }
+
+/* ---------- monitoring ---------- */
+.mon-grid { display: flex; flex-wrap: wrap; gap: clamp(34px, 5vw, 64px); align-items: center; }
+.mon-list { display: flex; flex-direction: column; }
+.mon-item { display: flex; gap: 15px; align-items: flex-start; padding: 18px 0; }
+.mon-item + .mon-item { border-top: 1px solid var(--line); }
+.mon-item .ic { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: var(--r-small); background: var(--accent); color: #fff; }
+.mon-item h3 { font-size: 17.5px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 6px; }
+.mon-item p { font-size: 14.5px; line-height: 1.55; color: var(--body); margin: 0; }
+.tg-alert { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 24px; box-shadow: var(--shadow-card); }
+.tg-alert-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.tg-alert-head .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; }
+.tg-alert-head b { font-size: 14.5px; }
+.tg-alert-head small { display: block; font-size: 12px; color: var(--faint); }
+.tg-alert-body { background: var(--surface-2); border-radius: 14px; padding: 15px 16px; font-size: 13.5px; line-height: 1.65; color: var(--ink-2); }
+.tg-alert-body .fail { color: var(--fail); font-weight: 600; }
+.tg-alert-body .ok { color: var(--ok); font-weight: 600; }
+.tg-alert-actions { display: flex; gap: 8px; margin-top: 12px; }
+.tg-alert-actions span { flex: 1; text-align: center; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); background: var(--accent-bg); border: 1px solid var(--accent-line); border-radius: 999px; padding: 8px 6px; }
+
+/* ---------- before / after ---------- */
+.ba-grid { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; margin-top: 44px; }
+.ba-col { flex: 1 1 340px; min-width: 290px; display: flex; flex-direction: column; border-radius: var(--r-card); padding: 24px; }
+.ba-col-before { background: var(--surface-2); border: 1px solid var(--line); }
+.ba-col-after { background: var(--surface); border: 1px solid var(--ok-line); box-shadow: var(--shadow-card); }
+.ba-head { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.ba-head i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.ba-quote { font-size: 14.5px; line-height: 1.6; margin: 0 0 14px; font-family: 'JetBrains Mono', monospace; border-radius: var(--r-small); padding: 14px; }
+.ba-list { margin: auto 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.ba-list li { display: flex; gap: 8px; }
+.ba-arrow { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+@media (max-width: 740px) { .ba-arrow { width: 100%; transform: rotate(90deg); } }
+
+/* ---------- code showcase ---------- */
+.code-steps { display: flex; flex-direction: column; gap: 16px; }
+.code-step { display: flex; gap: 13px; }
+.code-step b { flex: none; font-variant-numeric: tabular-nums; font-size: 20px; color: var(--accent); font-weight: 600; }
+.code-step h3 { font-weight: 600; font-size: 15.5px; margin: 0 0 2px; }
+.code-step p { font-size: 14px; color: var(--body); line-height: 1.5; margin: 0; }
+.codeblock { background: var(--code-bg); border-radius: 16px; overflow: hidden; }
+.codeblock-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.codeblock-head .filename { font-size: 12.5px; color: #7E8AB0; font-family: 'JetBrains Mono', monospace; }
+.codeblock pre { margin: 0; padding: 18px; overflow-x: auto; }
+.codeblock code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; color: #D6DBE8; white-space: pre; }
+.copy-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--accent); color: #fff; border: none;
+  padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; font-family: 'Inter', sans-serif;
+  transition: background .15s;
+}
+.copy-btn:hover { background: var(--accent-hover); }
+
+/* ---------- comparison ---------- */
+.cmp-grid { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 44px; }
+.cmp-col { flex: 1 1 360px; min-width: 290px; border-radius: var(--r-card); padding: 30px; }
+.cmp-col-them { background: var(--surface-2); border: 1px solid var(--line); }
+.cmp-col-us { background: var(--surface); border: 1px solid var(--accent-line); box-shadow: var(--shadow-card); }
+.cmp-title { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 22px; }
+.cmp-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.cmp-list li { display: flex; gap: 12px; font-size: 15.5px; line-height: 1.5; }
+
+/* ---------- pricing ---------- */
+.price-hero {
+  position: relative; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--accent-line);
+  border-radius: 28px; padding: clamp(28px, 4vw, 44px);
+  margin-bottom: 30px; box-shadow: var(--shadow-card);
+}
+.price-hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(640px 300px at 18% -60px, rgba(99, 120, 255, 0.12), transparent 70%);
+}
+.price-hero > div { position: relative; }
+.price-hero-grid { display: flex; flex-wrap: wrap; gap: 34px; align-items: center; justify-content: space-between; }
+.price-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 11px 22px; max-width: 560px; }
+.price-features span { display: flex; align-items: baseline; gap: 10px; font-size: 14.5px; color: var(--ink-2); }
+.price-features span::before { content: ""; flex: none; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); transform: translateY(-2px); }
+.price-box { flex: 0 1 280px; min-width: 240px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 20px; padding: 28px; text-align: center; }
+.price-num { font-family: 'Commissioner', sans-serif; font-size: clamp(40px, 4.8vw, 54px); font-weight: 700; letter-spacing: -0.02em; }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.plan { border-radius: var(--r-card); padding: 26px; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); }
+.plan-em { border: 1.5px solid var(--accent); position: relative; box-shadow: var(--shadow-card); background: linear-gradient(180deg, rgba(99, 120, 255, 0.05), rgba(99, 120, 255, 0.0) 45%), var(--surface); }
+.plan-tag { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; color: var(--faint); }
+.plan-em .plan-tag { color: var(--accent-ink); }
+.plan-price { display: flex; align-items: baseline; gap: 5px; margin-bottom: 4px; }
+.plan-price b { font-family: 'Commissioner', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+.plan-note { font-size: 13px; margin-bottom: 18px; color: var(--faint); }
+.plan-list { margin: 0 0 24px; padding: 0; list-style: none; display: flex; flex-direction: column; font-size: 14px; color: var(--ink-2); }
+.plan-list li { padding: 9px 0; }
+.plan-list li + li { border-top: 1px solid var(--line); }
+.plan-cta { margin-top: auto; text-align: center; padding: 13px; border-radius: 999px; font-weight: 600; font-size: 14.5px; transition: background .15s, transform .15s; }
+.plan-cta:hover { transform: translateY(-1px); }
+.plan-cta-soft { background: var(--surface-2); color: var(--ink); }
+.plan-cta-soft:hover { background: #F1F0EC; }
+.plan-cta-accent { background: var(--accent); color: #fff; }
+.plan-cta-accent:hover { background: var(--accent-hover); }
+.plan-popular {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+  padding: 5px 14px; border-radius: 999px; white-space: nowrap;
+}
+
+/* ---------- blog ---------- */
+.posts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.post-card { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; transition: transform .18s, box-shadow .18s; }
+.post-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+.post-cover { aspect-ratio: 16/9; background: var(--accent-bg); overflow: hidden; }
+.post-cover img { width: 100%; height: 100%; object-fit: cover; }
+.post-body { padding: 22px; }
+.post-meta { font-size: 12.5px; color: var(--faint); margin-bottom: 10px; }
+.post-title { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.3; margin: 0 0 9px; }
+.post-desc { font-size: 14px; color: var(--body); line-height: 1.5; margin: 0; }
+
+/* ---------- final CTA ---------- */
+.final-cta {
+  position: relative; overflow: hidden; text-align: center;
+  background: var(--surface); border: 1px solid var(--accent-line);
+  border-radius: 32px; padding: clamp(48px, 7vw, 96px) clamp(28px, 5vw, 64px);
+  box-shadow: var(--shadow-card);
+}
+.final-cta::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(900px 420px at 50% -140px, rgba(99, 120, 255, 0.16), transparent 72%);
+}
+.final-cta::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(99, 120, 255, 0.5) 1.1px, transparent 1.1px);
+  background-size: 24px 24px; opacity: 0.25;
+  -webkit-mask-image: radial-gradient(620px 300px at 50% -20px, #000 12%, transparent 74%);
+  mask-image: radial-gradient(620px 300px at 50% -20px, #000 12%, transparent 74%);
+}
+.final-cta > div { position: relative; }
+
+/* ---------- футер ---------- */
+.footer { border-top: 1px solid var(--line); }
+.footer-inner { max-width: 1160px; margin: 0 auto; padding: 54px 24px 40px; display: flex; flex-wrap: wrap; gap: 34px; justify-content: space-between; }
+.footer-brand p { font-size: 14px; color: var(--faint); line-height: 1.55; margin: 0; max-width: 300px; }
+.footer-logo-name { display: flex; flex-direction: column; line-height: 1.05; }
+.footer-logo-name b { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+.footer-logo-name small { font-size: 11px; color: var(--faint); font-weight: 500; }
+.footer-cols { display: flex; gap: 54px; flex-wrap: wrap; }
+.footer-col { display: flex; flex-direction: column; gap: 12px; }
+.footer-col-title { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+.footer-col a { font-size: 14.5px; color: var(--ink-2); transition: color .15s; }
+.footer-col a:hover { color: var(--ink); }
+.footer-bottom { border-top: 1px solid var(--line); }
+.footer-bottom-inner { max-width: 1160px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; font-size: 13px; color: var(--faint); }
+
+/* ---------- scroll reveal ---------- */
+[data-reveal], [data-reveal-group] > * { will-change: opacity, transform; }
+/* ?static=1 — служебный режим без анимаций (скриншоты, отладка) */
+html.static-mode .fx { opacity: 1 !important; transform: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- Плавающая pill-навигация -->
+<nav class="pnav">
+  <a class="pnav-logo" href="/">
+    <img src="/static/img/spiral-icon.svg" width="28" height="28" alt="SEOdyssey">
+    <b>SEOdyssey</b>
+  </a>
+  <div class="pnav-links">
+    <a href="#how">Возможности</a>
+    <a href="#audit">Аудит</a>
+    <a href="/geo-check/">GEO-проверка</a>
+    <a href="#pricing">Тарифы</a>
+    <a href="/blog/">Блог</a>
+  </div>
+  <a class="pnav-cta" href="https://app.seodyssey.ru/">Начать</a>
+  <button class="pnav-burger" type="button" data-action="toggle-menu" aria-label="Открыть меню" aria-expanded="false">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+</nav>
+<div class="pnav-mobile">
+  <a href="#how" data-action="close-menu">Возможности</a>
+  <a href="#audit" data-action="close-menu">Аудит</a>
+  <a href="/geo-check/" data-action="close-menu">GEO-проверка</a>
+  <a href="#pricing" data-action="close-menu">Тарифы</a>
+  <a href="/blog/" data-action="close-menu">Блог</a>
+  <a class="pnav-cta" href="https://app.seodyssey.ru/">Начать</a>
+</div>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <a class="hero-badge fx fx-1" href="/geo-check/">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"/></svg>
+      Бесплатная GEO-проверка: видимость в Яндекс Нейро и ChatGPT
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </a>
+    <h1 class="display fx fx-2">В ответе нейросети три бренда. <span class="acc">Ваш там есть?</span></h1>
+    <p class="hero-sub fx fx-3">Проверяем сайт так, как его видят Google, Яндекс и нейросети: находим, что мешает попасть в ответы, и пишем код правок под вашу страницу</p>
+    <div class="hero-ctas fx fx-4">
+      <a class="btn btn-primary" href="/geo-check/">Проверить сайт бесплатно</a>
+      <a class="btn btn-ghost" href="#audit">Как это работает</a>
+    </div>
+  </div>
+
+  <!-- Живое демо: запрос → ответ без вас → находка → код → вы в ответе -->
+  <div class="demo-stage fx fx-5">
+    <div class="demo" id="heroDemo" data-step="4">
+      <div class="demo-window">
+        <div class="demo-bar">
+          <i style="background:#FF6058;"></i><i style="background:#FEBC2E;"></i><i style="background:#28C840;"></i>
+          <span class="name mono">нейровыдача · демо</span>
+          <span class="demo-score">GEO Score <b id="demoScore">89%</b></span>
+        </div>
+        <div class="demo-chat">
+          <div class="demo-q"><span id="demoQ">где заказать роллы с доставкой?</span><span class="demo-caret" id="demoCaret" hidden></span></div>
+          <div class="demo-a">
+            <div class="demo-a-head"><svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"/></svg>Нейросеть отвечает</div>
+            <div class="demo-chips">
+              <span class="chip">Суши Вёсла</span>
+              <span class="chip">Токио Сити</span>
+              <span class="chip">Ролл Мастер</span>
+              <span class="chip chip-you"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>ваш бренд</span>
+            </div>
+            <div class="demo-miss">✕ вашего бренда нет в ответе</div>
+          </div>
+        </div>
+        <div class="demo-report">
+          <div class="demo-report-label">SEOdyssey нашёл причину</div>
+          <div class="demo-finding">
+            <span class="mark">!</span>
+            Не найдена FAQPage-разметка
+            <button class="demo-fix-btn" id="demoFixBtn" type="button" tabindex="-1" aria-hidden="true">Вставить код</button>
+          </div>
+          <div class="demo-fixed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Код вставлен – при новом запросе бренд попал в ответ</div>
+        </div>
+      </div>
+      <div class="demo-caption">
+        <span>Так работает GEO-аудит, проверьте на своём сайте</span>
+        <span>Без регистрации, результат за пару минут</span>
+      </div>
+    </div>
+
+    <div class="providers">
+      <span style="text-transform:uppercase;letter-spacing:0.08em;font-size:12px;">Проверяем видимость в</span>
+      <b>Яндекс Нейро</b>
+      <b>ChatGPT</b>
+      <b style="display:inline-flex;align-items:center;gap:7px;">Google AI <span class="soon">скоро</span></b>
+    </div>
+  </div>
+</header>
+
+<!-- ===== TREND ===== -->
+<section id="trend" class="section-tint">
+  <div class="wrap section">
+    <div class="trend-grid">
+      <div style="flex:1 1 420px;min-width:300px;" data-reveal>
+        <h2 class="display">Ответ нейросети стал первым экраном поиска</h2>
+        <p class="lead" style="margin:22px 0 18px;">Всё больше запросов заканчивается прямо на странице выдачи: человек читает ответ нейросети и не открывает ни одной ссылки</p>
+        <p class="lead" style="margin:0;">Пока в этом ответе три чужих бренда, клиенты достаются им. Попадание в ответ зависит от вполне конкретных вещей на сайте – их можно проверить и починить</p>
+      </div>
+      <div class="trend-card" style="flex:1 1 360px;min-width:300px;" data-reveal>
+        <div class="trend-card-label">Куда уходит трафик</div>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:var(--ink-2);"><span>Ответ нейросети на странице</span><span style="color:var(--ok);font-weight:600;">растёт</span></div>
+            <div class="trend-bar-track"><div class="trend-bar" style="width:74%;background:linear-gradient(90deg,#6378FF,#63C78A);"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px;color:var(--ink-2);"><span>Переходы из классической выдачи</span><span style="color:var(--warn);font-weight:600;">падает</span></div>
+            <div class="trend-bar-track"><div class="trend-bar" style="width:38%;background:#CBC6BB;"></div></div>
+          </div>
+          <div class="trend-note">Чем чаще нейросеть отвечает за вас, тем важнее, чтобы она называла именно ваш бренд.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how">
+  <div class="wrap section">
+    <div class="sec-head" data-reveal>
+      <h2 class="display">Маршрут: от первой проверки до сайта под присмотром</h2>
+      <p class="lead">Начинается с бесплатной проверки. Дальше аудит, нейросети и мониторинг работают в одном месте</p>
+    </div>
+    <div class="journey" data-reveal-group>
+      <div class="journey-step">
+        <span class="journey-num">01</span>
+        <h3>Бесплатная проверка</h3>
+        <p>Вводите адрес, без регистрации. Видите, что нейросети думают о вашем бренде, и получаете первый код правок</p>
+      </div>
+      <div class="journey-step">
+        <span class="journey-num">02</span>
+        <h3>Полный аудит</h3>
+        <p>Заводите аккаунт – и сайт проходит 80+ проверок: техника, индексация, мета, доверие, видимость в ИИ</p>
+      </div>
+      <div class="journey-step">
+        <span class="journey-num">03</span>
+        <h3>ИИ-рекомендации</h3>
+        <p>К каждой проблеме – код и переписанный текст, собранные из реальных данных вашей страницы</p>
+      </div>
+      <div class="journey-step">
+        <span class="journey-num">04</span>
+        <h3>Постоянный мониторинг</h3>
+        <p>Система проверяет сайт по расписанию и пишет в Telegram, если что-то упало. Узнаёте о проблеме раньше клиентов</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOR WHOM ===== -->
+<section class="section-tint">
+  <div class="wrap section">
+    <h2 class="display" data-reveal>Кому это нужно</h2>
+    <div class="whom" data-reveal-group>
+      <div class="whom-col">
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>SEO-специалисты и фрилансеры</h3>
+        <p>Первичный аудит клиентского сайта занимает минуты. Внутри те же проверки, что вы делаете руками: рендер, индексация, разметка, мета</p>
+      </div>
+      <div class="whom-col">
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 4v16"></path></svg>Небольшие агентства</h3>
+        <p>Отчёт можно отдать заказчику как есть: находки объяснены словами, к каждой приложен код для разработчика</p>
+      </div>
+      <div class="whom-col">
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>Владельцы сайтов и магазинов</h3>
+        <p>Штатного сеошника нет – и не нужно: система обычными словами говорит, что вставить и куда. Начать можно с бесплатной проверки</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== AUDIT ===== -->
+<section id="audit">
+  <div class="wrap section">
+    <div class="sec-head" data-reveal>
+      <h2 class="display">Что внутри отчёта</h2>
+      <p class="lead">Отчёт состоит из двух частей: классический технический SEO и видимость бренда в нейросетях. Обе собраны из конкретных находок на вашей странице</p>
+    </div>
+
+    <div class="audit-lanes" data-reveal-group>
+      <div class="audit-lane audit-lane-seo">
+        <span class="audit-lane-tag">SEO-аудит – техническое здоровье</span>
+        <div class="audit-item">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></span>
+          <div>
+            <h3>Техническое здоровье</h3>
+            <p>Скорость, ошибки рендера, доступность для ботов, корректность robots.txt – включая правила для AI-краулеров</p>
+          </div>
+        </div>
+        <div class="audit-item">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
+          <div>
+            <h3>Индексируемость и структура</h3>
+            <p>Видят ли поисковики страницу, логична ли иерархия заголовков, нет ли каннибализации и дублей</p>
+          </div>
+        </div>
+        <div class="audit-item">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+          <div>
+            <h3>Мета-теги и E-E-A-T</h3>
+            <p>Качество title / description / H1 конкретной страницы, сигналы экспертности и доверия – не главной, а той, что продвигаете</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="audit-lane audit-lane-geo">
+        <span class="audit-lane-tag">GEO/AI-аудит – видимость в нейросетях</span>
+        <div class="audit-item">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.6L19 9.2l-3.7 3.3.9 5L12 15l-4.2 2.5.9-5L5 9.2l5.1-1.6z"></path></svg></span>
+          <div>
+            <h3>Видимость и цитируемость</h3>
+            <p>Называет ли вас Яндекс Нейро и ChatGPT в ответах по вашим темам, как часто и в каком контексте</p>
+          </div>
+        </div>
+        <div class="audit-item">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4"></path><path d="M5 9h14l1 12H4z"></path><path d="M9 13v3M15 13v3"></path></svg></span>
+          <div>
+            <h3>Классификация источников</h3>
+            <p>Кто вас цитирует: свой сайт, агрегаторы, СМИ или соцсети. Видно, на чьих словах нейросеть строит мнение о бренде</p>
+          </div>
+        </div>
+        <div class="audit-item">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3-3 6-4 9-4s6 1 9 4"></path><path d="M12 3v8"></path><path d="m8 7 4-4 4 4"></path></svg></span>
+          <div>
+            <h3>Подтверждения извне</h3>
+            <p>Нейросеть знает вас только с ваших слов, без подтверждений в СМИ и обзорах. Показываем этот разрыв и где его закрывать</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MONITORING ===== -->
+<section id="monitoring" class="section-tint">
+  <div class="wrap section">
+    <div class="mon-grid">
+      <div style="flex:1 1 420px;min-width:300px;" data-reveal>
+        <h2 class="display">Дальше сайт живёт под присмотром</h2>
+        <p class="lead" style="margin:18px 0 28px;">Сертификат истекает, страница отдаёт 500, из индекса выпал раздел – такое случается тихо. Система замечает это в тот же день</p>
+        <div class="mon-list">
+          <div class="mon-item">
+            <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+            <div>
+              <h3>Автоаудит по расписанию</h3>
+              <p>Ежедневно или еженедельно, зависит от тарифа. Помнить о проверках не нужно</p>
+            </div>
+          </div>
+          <div class="mon-item">
+            <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></span>
+            <div>
+              <h3>Telegram-алерты</h3>
+              <p>Упала страница, слетел SSL, выросли ошибки индексации – приходит уведомление с причиной и решением</p>
+            </div>
+          </div>
+          <div class="mon-item">
+            <span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg></span>
+            <div>
+              <h3>История и динамика</h3>
+              <p>Видно, как показатели меняются со временем: лучше или хуже после правок</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1 1 340px;min-width:300px;" data-reveal>
+        <div class="tg-alert">
+          <div class="tg-alert-head">
+            <span class="avatar"><img src="/static/img/spiral-icon.svg" width="20" height="20" alt=""></span>
+            <div>
+              <b>SEOdyssey</b>
+              <small>Telegram · сегодня, 08:00</small>
+            </div>
+          </div>
+          <div class="tg-alert-body">
+            <span class="fail">✕ SSL-сертификат истекает через 3 дня</span><br>
+            site.ru · проверка от 08:00<br><br>
+            Продлите сертификат у хостера или включите автопродление. После продления запустите проверку заново.<br><br>
+            <span class="ok">✓ Остальные 79 проверок в порядке</span>
+          </div>
+          <div class="tg-alert-actions">
+            <span>Открыть отчёт</span>
+            <span>Перепроверить</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BEFORE / AFTER ===== -->
+<section id="rewrite">
+  <div class="wrap section">
+    <div class="sec-head" data-reveal>
+      <h2 class="display">AI переписывает ваши тексты фактами</h2>
+      <p class="lead">Система берёт настоящий текст вашей страницы – первый абзац, мета-теги, название компании – и переписывает его так, чтобы нейросети было что процитировать. В правках уже стоят ваши данные, а не «вставьте название сюда»</p>
+    </div>
+
+    <div class="ba-grid" data-reveal-group>
+      <div class="ba-col ba-col-before">
+        <div class="ba-head" style="color:var(--faint);"><i style="background:#B9B4A8;"></i>Было – ваш текст сейчас</div>
+        <p class="ba-quote" style="color:var(--body);background:var(--surface);border:1px solid var(--line);">«Мы молодая компания, которая занимается доставкой. У нас выгодные цены и хороший сервис.»</p>
+        <ul class="ba-list" style="color:var(--faint);">
+          <li><span style="color:var(--fail-dot);">✕</span> нет фактов, которые нейросеть может процитировать</li>
+          <li><span style="color:var(--fail-dot);">✕</span> нет географии, цифр, условий</li>
+        </ul>
+      </div>
+
+      <div class="ba-arrow">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+      </div>
+
+      <div class="ba-col ba-col-after">
+        <div class="ba-head" style="color:var(--ok);"><i style="background:#63C78A;"></i>Стало – переписал AI</div>
+        <p class="ba-quote" style="color:var(--ink-2);background:var(--ok-bg);border:1px solid var(--ok-line);">«Служба доставки X работает в Москве с 2019 года. Бесплатная доставка от 3000 ₽, среднее время – 90 минут, более 12 000 заказов в месяц.»</p>
+        <ul class="ba-list" style="color:var(--ink-2);">
+          <li><span style="color:var(--ok);">✓</span> конкретные факты – нейросети есть что цитировать</li>
+          <li><span style="color:var(--ok);">✓</span> готово к вставке + сгенерирован код разметки</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CODE SHOWCASE ===== -->
+<section id="code" class="section-tint">
+  <div class="wrap section">
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(34px,5vw,64px);align-items:center;">
+      <div style="flex:1 1 360px;min-width:300px;" data-reveal>
+        <h2 class="display">Код правок уже написан</h2>
+        <p class="lead" style="margin:20px 0 26px;">У каждой находки есть блок кода под вашу страницу. Его остаётся скопировать и вставить в шаблон</p>
+        <div class="code-steps">
+          <div class="code-step"><b>01</b><div><h3>Находим проблему</h3><p>«Не найдена FAQPage-разметка» – с объяснением, почему это мешает попасть в ответы нейросетей</p></div></div>
+          <div class="code-step"><b>02</b><div><h3>Генерируем код под вас</h3><p>JSON-LD с вашими реальными вопросами и ответами – не пустой шаблон</p></div></div>
+          <div class="code-step"><b>03</b><div><h3>Вставляете – и всё</h3><p>Одна кнопка «Копировать». Без правок руками и без обращения к разработчику</p></div></div>
+        </div>
+      </div>
+
+      <div style="flex:1 1 420px;min-width:300px;" data-reveal>
+        <div style="background:var(--fail-bg);border:1px solid var(--fail-line);border-radius:14px;padding:15px 18px;display:flex;gap:11px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+          <span style="flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--fail-dot);color:#fff;font-weight:700;">!</span>
+          <span style="font-weight:600;font-size:15px;">Не найдена FAQPage-разметка</span>
+          <span style="margin-left:auto;font-size:12px;font-weight:600;color:#C0463F;background:#FFE3DF;padding:4px 10px;border-radius:999px;">высокий приоритет</span>
+        </div>
+        <div data-codeblock="2" class="codeblock" style="box-shadow:0 28px 60px -30px rgba(21,20,15,0.5);">
+          <div class="codeblock-head" style="padding:13px 16px;">
+            <span class="filename">faq.schema.json</span>
+            <button data-action="copy" class="copy-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span data-copy-label="2">Копировать</span>
+            </button>
+          </div>
+          <pre style="padding:18px;"><code style="font-size:13px;"><span style="color:#7E8AB0;">&lt;script type=</span><span style="color:#E2B589;">"application/ld+json"</span><span style="color:#7E8AB0;">&gt;</span>
+{
+  <span style="color:#7FD6A6;">"@context"</span>: <span style="color:#E2B589;">"https://schema.org"</span>,
+  <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"FAQPage"</span>,
+  <span style="color:#7FD6A6;">"mainEntity"</span>: [
+    {
+      <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"Question"</span>,
+      <span style="color:#7FD6A6;">"name"</span>: <span style="color:#E2B589;">"Сколько стоит доставка по Москве?"</span>,
+      <span style="color:#7FD6A6;">"acceptedAnswer"</span>: {
+        <span style="color:#7FD6A6;">"@type"</span>: <span style="color:#E2B589;">"Answer"</span>,
+        <span style="color:#7FD6A6;">"text"</span>: <span style="color:#E2B589;">"Бесплатно от 3000 ₽, иначе 290 ₽."</span>
+      }
+    }
+  ]
+}
+<span style="color:#7E8AB0;">&lt;/script&gt;</span></code></pre>
+        </div>
+        <p style="display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--body);margin:13px 4px 0;line-height:1.5;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6378FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 6 9 17l-5-5"></path></svg><span>Разбираться в коде не нужно – вставляется одной кнопкой. А если не ведёте сайт сами, просто перешлите этот блок своему разработчику</span></p>
+        <p style="font-size:13px;color:var(--faint);margin:8px 4px 0;line-height:1.5;">Зачем: FAQPage-разметка даёт нейросетям готовые пары «вопрос-ответ» – и они охотнее цитируют вас напрямую</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== COMPARISON ===== -->
+<section id="compare">
+  <div class="wrap section">
+    <h2 class="display" style="max-width:740px;" data-reveal>Другие говорят, <span style="color:var(--warn);">что случилось</span>. Мы говорим, <span style="color:var(--ok);">что делать</span></h2>
+    <div class="cmp-grid" data-reveal-group>
+      <div class="cmp-col cmp-col-them">
+        <div class="cmp-title" style="color:var(--faint);">Обычные инструменты</div>
+        <ul class="cmp-list" style="color:var(--body);">
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Показывают, что вас не цитируют</li>
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Дают оценку и красивый график</li>
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Список общих рекомендаций</li>
+          <li><span style="color:var(--fail-dot);flex:none;">✕</span> Дальше разбирайтесь сами</li>
+        </ul>
+      </div>
+      <div class="cmp-col cmp-col-us">
+        <div class="cmp-title" style="color:var(--accent-ink);">SEOdyssey</div>
+        <ul class="cmp-list" style="color:var(--ink);">
+          <li><span style="color:var(--ok);flex:none;">✓</span> Точная причина, почему вас не цитируют</li>
+          <li><span style="color:var(--ok);flex:none;">✓</span> Готовый код для вставки под вашу страницу</li>
+          <li><span style="color:var(--ok);flex:none;">✓</span> Переписанные AI тексты с реальными фактами</li>
+          <li><span style="color:var(--ok);flex:none;">✓</span> Чёткий план: что вставить и куда</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section id="pricing" class="section-tint">
+  <div class="wrap section">
+    <div style="text-align:center;margin-bottom:46px;" data-reveal>
+      <h2 class="display">Сколько это стоит</h2>
+      <p class="lead" style="margin:16px 0 0;">Можно купить один разбор без подписки. Подписка нужна, только когда хочется постоянного присмотра за сайтом</p>
+    </div>
+
+    <div class="price-hero" data-reveal>
+      <div class="price-hero-grid">
+        <div style="flex:1 1 380px;min-width:280px;">
+          <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:7px 15px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:18px;">С чего начать</div>
+          <h3 style="font-family:'Commissioner',sans-serif;font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-0.02em;margin:0 0 10px;">Pro-отчёт по вашей странице</h3>
+          <p style="font-size:15.5px;color:var(--body);line-height:1.55;margin:0 0 24px;max-width:440px;">Разовая покупка, без подписки. Полный разбор одной страницы со всеми правками и кодом</p>
+          <div class="price-features">
+            <span>Полный разбор всех проблем</span>
+            <span>Правки под вашу страницу</span>
+            <span>Готовый код для вставки</span>
+            <span>Переписанные тексты</span>
+            <span>Выгрузка в PDF</span>
+            <span>GEO + SEO в одном отчёте</span>
+          </div>
+        </div>
+        <div class="price-box">
+          <div style="display:flex;align-items:baseline;gap:10px;justify-content:center;margin-bottom:6px;">
+            <span class="price-num">{% if geo_report %}{{ geo_report.price|thousands }}{% else %}990{% endif %}</span>
+            <span style="font-size:20px;color:var(--body);">₽</span>
+          </div>
+          {% if geo_report.old_price %}
+          <div style="font-size:15px;color:var(--faint);text-decoration:line-through;margin-bottom:18px;">{{ geo_report.old_price|thousands }} ₽</div>
+          {% endif %}
+          <div style="font-size:13px;color:var(--faint);margin-bottom:20px;">разово · одна страница</div>
+          <a href="/geo-check/" style="display:block;background:var(--accent);color:#fff;padding:14px;border-radius:999px;font-weight:600;font-size:15.5px;transition:background .15s;">Получить разбор</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:48px 0 26px;" data-reveal>
+      <h3 style="font-family:'Commissioner',sans-serif;font-size:clamp(20px,2.2vw,26px);font-weight:700;letter-spacing:-0.02em;margin:0 0 8px;">Подписки для постоянного мониторинга</h3>
+      <p style="font-size:15px;color:var(--body);margin:0;">Тарифы отличаются числом проектов и частотой автоматических проверок</p>
+    </div>
+    <div class="plans" data-reveal-group>
+
+      {% for plan in plans %}
+      {% if plan.slug == 'pro' %}
+      <div class="plan plan-em">
+        <span class="plan-popular">Популярный</span>
+        <div class="plan-tag">{{ plan.name }}</div>
+        <div class="plan-price"><b>{{ plan.price_monthly|thousands }}</b><span style="font-size:14px;color:var(--body);">{% if plan.price_monthly %}₽/мес{% endif %}</span></div>
+        <div class="plan-note">для тех, кто ведёт несколько проектов</div>
+        <ul class="plan-list">
+          <li>Проектов: {{ plan.max_projects }}</li>
+          <li>Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+          <li>AI-проверок в месяц: {{ plan.ai_limit }}</li>
+          <li>GEO-аудит видимости в ИИ</li>
+          <li>Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+          {% if plan.telegram_alerts %}<li>Telegram-алерты</li>{% endif %}
+          <li>История: {% if plan.history_days is None %}без лимита{% else %}{{ plan.history_days }} дн.{% endif %}</li>
+        </ul>
+        <a class="plan-cta plan-cta-accent" href="https://app.seodyssey.ru/">Выбрать {{ plan.name }}</a>
+      </div>
+      {% else %}
+      <div class="plan">
+        <div class="plan-tag">{{ plan.name }}</div>
+        <div class="plan-price"><b>{{ plan.price_monthly|thousands }}</b><span style="font-size:14px;color:var(--faint);">{% if plan.price_monthly %}₽/мес{% else %}₽{% endif %}</span></div>
+        <div class="plan-note">{% if plan.slug == 'free' %}для первого знакомства{% elif plan.slug == 'start' %}для одного сайта, который нельзя терять{% elif plan.slug == 'agency' %}для агентств и потока клиентов{% else %}{{ plan.name }}{% endif %}</div>
+        <ul class="plan-list">
+          <li>Проектов: {{ plan.max_projects }}</li>
+          <li>Автоаудит: {{ plan.get_audit_frequency_display }}</li>
+          <li>AI-проверок в месяц: {{ plan.ai_limit }}</li>
+          {% if plan.slug == 'free' %}<li style="color:var(--faint);">GEO-аудит – на платных тарифах</li>{% else %}<li>GEO-аудит видимости в ИИ</li>{% endif %}
+          <li>Интеграций: {% if plan.max_integrations is None %}без лимита{% else %}{{ plan.max_integrations }}{% endif %}</li>
+          {% if plan.telegram_alerts %}<li>Telegram-алерты</li>{% endif %}
+        </ul>
+        <a class="plan-cta plan-cta-soft" href="https://app.seodyssey.ru/">{% if plan.price_monthly %}Выбрать {{ plan.name }}{% else %}Начать бесплатно{% endif %}</a>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== BLOG ===== -->
+<section id="blog">
+  <div class="wrap section">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:38px;" data-reveal>
+      <h2 class="display">Разборы, кейсы и статьи</h2>
+      <a class="btn btn-ghost" style="padding:12px 24px;font-size:14.5px;" href="/blog/">Все статьи</a>
+    </div>
+    <div class="posts" data-reveal-group>
+      {% for post in latest_posts %}
+      <a class="post-card" href="/blog/{{ post.slug }}/">
+        {% if post.cover %}
+        <div class="post-cover"><img src="{{ post.cover.url }}" alt="{{ post.title }}"></div>
+        {% else %}
+        <div style="height:150px;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path></svg></div>
+        {% endif %}
+        <div class="post-body">
+          <div class="post-meta">{% if post.published_at %}{{ post.published_at|date:"d.m.Y" }}{% else %}{{ post.created_at|date:"d.m.Y" }}{% endif %} · {{ post.read_time }} мин</div>
+          <h3 class="post-title">{{ post.title }}</h3>
+          <p class="post-desc">{{ post.description }}</p>
+        </div>
+      </a>
+      {% empty %}
+      <p style="font-size:15px;color:var(--faint);grid-column:1/-1;">Скоро здесь появятся разборы и кейсы</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section id="cta">
+  <div class="wrap section" style="padding-top:0;">
+    <div class="final-cta" data-reveal>
+      <div>
+        <h2 class="display" style="margin:0 auto 20px;max-width:680px;">Проверьте, что нейросети говорят о вас</h2>
+        <p class="lead" style="margin:0 auto 34px;max-width:520px;">Бесплатная проверка занимает пару минут и не требует регистрации. Что чинить первым – увидите в первом же отчёте</p>
+        <a class="btn btn-primary" style="padding:16px 34px;font-size:17px;" href="/geo-check/">Проверить сайт бесплатно</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
+        <img src="/static/img/spiral-icon.svg" width="34" height="34" alt="SEOdyssey" style="display:block;">
+        <span class="footer-logo-name">
+          <b>SEOdyssey</b>
+          <small>аудит · нейросети · мониторинг</small>
+        </span>
+      </div>
+      <p>SEO-аудит, видимость в нейросетях и мониторинг сайта. К каждой находке прилагается код правок</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <span class="footer-col-title">Продукт</span>
+        <a href="#how">Возможности</a>
+        <a href="#audit">Аудит</a>
+        <a href="#pricing">Тарифы</a>
+        <a href="/blog/">Блог</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">Инструменты</span>
+        <a href="{% url 'tools_index' %}">Все инструменты</a>
+        <a href="{% url 'geo_check' %}">GEO-проверка</a>
+        <a href="{% url 'robots_txt_check' %}">Проверка robots.txt</a>
+        <a href="{% url 'meta_tags_check' %}">Проверка title и description</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">Связь</span>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener">Поддержка</a>
+        <a href="https://t.me/seodyssey" target="_blank" rel="noopener">Telegram</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">Документы</span>
+        <a href="/offer/">Оферта</a>
+        <a href="/requisites/">Реквизиты</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <span>© {% now "Y" %} SEOdyssey. Все права защищены.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+if (location.search.indexOf('static=1') !== -1) { document.documentElement.classList.add('static-mode'); }
+(function(){
+  // Копирование кода, бургер-меню
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action="copy"]');
+    if (btn){
+      var block = btn.closest('[data-codeblock]');
+      if (block){
+        var code = block.querySelector('code');
+        if (code && navigator.clipboard){ try{ navigator.clipboard.writeText(code.innerText); }catch(_){}}
+        var label = btn.querySelector('[data-copy-label]');
+        if (label){ var prev = label.textContent; label.textContent = 'Скопировано ✓'; setTimeout(function(){ label.textContent = prev; }, 1600); }
+      }
+      return;
+    }
+    var burger = e.target.closest('[data-action="toggle-menu"]');
+    if (burger){
+      var m = document.querySelector('.pnav-mobile');
+      if (m){
+        var open = m.style.display === 'flex';
+        m.style.display = open ? 'none' : 'flex';
+        burger.setAttribute('aria-expanded', open ? 'false' : 'true');
+      }
+      return;
+    }
+    var closer = e.target.closest('[data-action="close-menu"]');
+    if (closer){ var mm = document.querySelector('.pnav-mobile'); if (mm){ mm.style.display = 'none'; } return; }
+  });
+
+  // Scroll-reveal: элементы видимы по умолчанию, скрываются только при поддержке IO
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var staticMode = document.documentElement.classList.contains('static-mode');
+  if (!reduce && !staticMode && 'IntersectionObserver' in window){
+    var targets = [];
+    document.querySelectorAll('[data-reveal-group]').forEach(function(g){
+      Array.prototype.slice.call(g.children).forEach(function(c,i){ c.__d = Math.min(i,8)*85; targets.push(c); });
+    });
+    document.querySelectorAll('[data-reveal]').forEach(function(s){ s.__d = 0; targets.push(s); });
+    targets.forEach(function(el){ el.style.opacity='0'; el.style.transform='translateY(26px)'; el.style.transition='opacity .55s ease-out, transform .55s ease-out'; });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(!en.isIntersecting) return; var el=en.target; setTimeout(function(){ el.style.opacity='1'; el.style.transform='none'; }, el.__d||0); io.unobserve(el); });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    targets.forEach(function(el){ io.observe(el); });
+  }
+})();
+
+(function(){
+  // Живое демо в hero: набор запроса → ответ без бренда → находка → код → бренд в ответе.
+  // При prefers-reduced-motion остаётся статичный финальный кадр (data-step="4" в разметке).
+  var demo = document.getElementById('heroDemo');
+  if (!demo) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) return;
+  if (document.documentElement.classList.contains('static-mode')) return;
+
+  var q = document.getElementById('demoQ');
+  var caret = document.getElementById('demoCaret');
+  var score = document.getElementById('demoScore');
+  var fixBtn = document.getElementById('demoFixBtn');
+  var QUERY = 'где заказать роллы с доставкой?';
+  var timers = [];
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+  function typeQuery(done){
+    var i = 0;
+    q.textContent = '';
+    caret.hidden = false;
+    (function tick(){
+      if (i <= QUERY.length){
+        q.textContent = QUERY.slice(0, i);
+        i++;
+        later(tick, 42);
+      } else {
+        later(function(){ caret.hidden = true; done(); }, 350);
+      }
+    })();
+  }
+
+  function run(){
+    clearTimers();
+    demo.setAttribute('data-step', '1');
+    score.textContent = '64%';
+    fixBtn.classList.remove('pressed');
+    typeQuery(function(){
+      demo.setAttribute('data-step', '2');
+      later(function(){
+        demo.setAttribute('data-step', '3');
+        later(function(){
+          fixBtn.classList.add('pressed');
+          later(function(){
+            fixBtn.classList.remove('pressed');
+            demo.setAttribute('data-step', '4');
+            score.textContent = '89%';
+            later(run, 5200);
+          }, 380);
+        }, 1400);
+      }, 2000);
+    });
+  }
+
+  var started = false;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting && !started){ started = true; run(); io.disconnect(); }
+    });
+  }, { threshold: 0.35 });
+  io.observe(demo);
+
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden){ clearTimers(); }
+    else if (started){ run(); }
+  });
+})();
+</script>
+</body>
+</html>
